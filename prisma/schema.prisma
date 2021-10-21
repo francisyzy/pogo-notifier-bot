@@ -11,9 +11,65 @@ generator client {
 }
 
 model User {
-  telegramId   Int      @id
-  phone_number String?
-  name         String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @default(now()) @updatedAt
+  telegramId      Int       @id
+  name            String
+  createdAt       DateTime  @default(now())
+  silentStartTime DateTime?
+  silentEndTime   DateTime?
+
+  //stats
+  gymTimesNotified      Int      @default(0)
+  locationTimesNotified Int      @default(0)
+  lastActivity          DateTime @default(now())
+
+  //f keys
+  GymSubscribe      GymSubscribe[]
+  LocationSubscribe LocationSubscribe[]
+}
+
+model Gym {
+  id           String         @id @default(uuid())
+  gymString    String
+  lat          Float
+  long         Float
+  GymSubscribe GymSubscribe[]
+}
+
+model GymSubscribe {
+  subscriber     User       @relation(fields: [userTelegramId], references: [telegramId])
+  userTelegramId Int
+  gym            Gym        @relation(fields: [gymId], references: [id])
+  gymId          String
+  GymEvent       GymEvent[]
+
+  @@id([userTelegramId, gymId])
+}
+
+model GymEvent {
+  eventTime                  DateTime
+  gymSubscribe               GymSubscribe @relation(fields: [gymSubscribeUserTelegramId, gymSubscribeGymId], references: [userTelegramId, gymId])
+  gymSubscribeUserTelegramId Int
+  gymSubscribeGymId          String
+
+  @@id([eventTime, gymSubscribeGymId, gymSubscribeUserTelegramId])
+}
+
+model LocationSubscribe {
+  locationId     String          @id @default(uuid())
+  subscriber     User            @relation(fields: [userTelegramId], references: [telegramId])
+  userTelegramId Int
+  lat            Float
+  long           Float
+  Radius         Float
+  LocationEvent  LocationEvent[]
+}
+
+model LocationEvent {
+  locationSubscribe           LocationSubscribe @relation(fields: [locationSubscribeLocationId], references: [locationId])
+  locationSubscribeLocationId String
+  lat                         Float
+  long                        Float
+  eventTime                   DateTime
+
+  @@id([locationSubscribeLocationId, eventTime])
 }

@@ -1,7 +1,7 @@
 {
-  "name": "telegraf-postgresql-template",
+  "name": "pogo-notifier-bot",
   "version": "0.1.0",
-  "description": "Template for creating future telegram bot apps",
+  "description": "Pokemon go bot that scrapes mappers and other apis for data to notify users of revelant information",
   "main": "dist/index.js",
   "scripts": {
     "start": "node dist/index.js",
@@ -14,13 +14,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/HavenOfExcellence/telegraf-PostgreSQL-template.git"
+    "url": "git+https://github.com/francisyzy/pogo-notifier-bot.git"
   },
   "author": "francisyzy",
   "bugs": {
-    "url": "https://github.com/HavenOfExcellence/telegraf-PostgreSQL-template/issues"
+    "url": "https://github.com/francisyzy/pogo-notifier-bot/issues"
   },
-  "homepage": "https://github.com/HavenOfExcellence/telegraf-PostgreSQL-template#readme",
+  "homepage": "https://github.com/francisyzy/pogo-notifier-bot#readme",
   "engines": {
     "node": "15.x"
   },
