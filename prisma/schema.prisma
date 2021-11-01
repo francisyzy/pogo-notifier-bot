@@ -29,7 +29,7 @@ model User {
 
 model Gym {
   id           String         @id @default(uuid())
-  gymString    String
+  gymString    String         @unique
   lat          Float
   long         Float
   GymSubscribe GymSubscribe[]
