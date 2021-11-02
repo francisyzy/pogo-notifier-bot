@@ -47,7 +47,7 @@ model GymSubscribe {
 
 model GymEvent {
   eventTime                  DateTime
-  gymSubscribe               GymSubscribe @relation(fields: [gymSubscribeUserTelegramId, gymSubscribeGymId], references: [userTelegramId, gymId])
+  gymSubscribe               GymSubscribe @relation(fields: [gymSubscribeUserTelegramId, gymSubscribeGymId], references: [userTelegramId, gymId], onDelete: Cascade)
   gymSubscribeUserTelegramId Int
   gymSubscribeGymId          String
 
@@ -65,7 +65,7 @@ model LocationSubscribe {
 }
 
 model LocationEvent {
-  locationSubscribe           LocationSubscribe @relation(fields: [locationSubscribeLocationId], references: [locationId])
+  locationSubscribe           LocationSubscribe @relation(fields: [locationSubscribeLocationId], references: [locationId], onDelete: Cascade)
   locationSubscribeLocationId String
   lat                         Float
   long                        Float
