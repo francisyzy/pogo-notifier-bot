@@ -13,6 +13,18 @@ export function getBotCommands(): BotCommand[] {
       command: "account",
       description: "Get account information of user",
     },
+    {
+      command: "searchname",
+      description: "Find gym by name",
+    },
+    {
+      command: "searchlocation",
+      description: "Find gym by location",
+    },
+    {
+      command: "checkraid",
+      description: "Check if gyms you subscribed to has raids",
+    },
   ];
   return BotCommand;
 }

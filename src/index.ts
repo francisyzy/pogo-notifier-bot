@@ -4,11 +4,12 @@ import { Telegraf } from "telegraf";
 import config from "./config";
 
 import bot from "./lib/bot";
-import helper from "./commands/helper";
-import echo from "./commands/echo";
-
 import { toEscapeHTMLMsg } from "./utils/messageHandler";
+
+import helper from "./commands/helper";
 import catchAll from "./commands/catch-all";
+import checkRaid from "./commands/checkRaid";
+import subscribe from "./commands/subscribeGym";
 
 //Production Settings
 if (process.env.NODE_ENV === "production") {
@@ -50,7 +51,8 @@ if (process.env.NODE_ENV === "production") {
 }
 
 helper();
-echo();
+checkRaid();
+subscribe();
 
 //Catch all unknown messages/commands
 catchAll();
