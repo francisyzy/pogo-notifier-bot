@@ -43,7 +43,7 @@ export async function notifyAndUpdateUsers(): Promise<void> {
             const fiveMinMS = 300000;
             const offsetMillis =
               raidMessage.start.getTime() -
-              new Date().getTime() +
+              new Date().getTime() -
               fiveMinMS;
             setTimeout(() => {
               bot.telegram.sendMessage(
