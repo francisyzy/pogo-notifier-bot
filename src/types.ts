@@ -1,3 +1,5 @@
+import { GymSubscribe } from ".prisma/client";
+
 interface raid {
   gym_name: string;
   cell_id: string;
@@ -28,4 +30,11 @@ interface weather {
 
 interface weathers extends Array<weather> {}
 
-export { raids, weathers };
+interface raidMessage extends GymSubscribe {
+  name: string;
+  level: number;
+  start: Date;
+  pokemonId: number;
+}
+
+export { raids, weathers, raidMessage };

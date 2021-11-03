@@ -11,6 +11,7 @@ import catchAll from "./commands/catch-all";
 import checkRaid from "./commands/checkRaid";
 import subscribe from "./commands/subscribeGym";
 import manageGyms from "./commands/manageSubscribeGym";
+import { notifyAndUpdateUsers } from "./utils/notifier";
 
 //Production Settings
 if (process.env.NODE_ENV === "production") {
@@ -58,6 +59,9 @@ manageGyms();
 
 //Catch all unknown messages/commands
 catchAll();
+
+//Check raids every 5 mins
+setInterval(() => notifyAndUpdateUsers(), 600000);
 
 // Enable graceful stop
 process.once("SIGINT", () => bot.stop("SIGINT"));
