@@ -22,6 +22,10 @@ model User {
   locationTimesNotified Int      @default(0)
   lastActivity          DateTime @default(now())
 
+  //notify settings
+  raidLevelNotify      Int[]
+  stopNotifyingMeToday DateTime?
+
   //f keys
   GymSubscribe      GymSubscribe[]
   LocationSubscribe LocationSubscribe[]
