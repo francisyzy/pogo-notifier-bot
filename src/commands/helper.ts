@@ -2,8 +2,6 @@ import bot from "../lib/bot";
 import { PrismaClient } from "@prisma/client";
 import { toEscapeHTMLMsg } from "../utils/messageHandler";
 import { getBotCommands } from "../utils/botCommands";
-import got from "got";
-import { raids } from "../types";
 import { notifyAndUpdateUsers } from "../utils/notifier";
 
 const prisma = new PrismaClient();
@@ -18,6 +16,7 @@ const helper = () => {
         update: { name: ctx.from.first_name },
         create: {
           telegramId: ctx.from.id,
+          raidLevelNotify: [1, 3, 5, 6],
           name: ctx.from.first_name,
         },
       });
@@ -31,6 +30,14 @@ const helper = () => {
 
   bot.command("test", async (ctx) => {
     notifyAndUpdateUsers();
+  });
+
+  bot.command("stopNotifyingMeToday", async (ctx) => {
+    await prisma.user.update({
+      where: { telegramId: ctx.from.id },
+      data: { stopNotifyingMeToday: new Date() },
+    });
+    ctx.reply("Will stop notifying you about raids today!");
   });
 
   bot.command("account", async (ctx) => {

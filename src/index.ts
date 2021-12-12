@@ -12,6 +12,7 @@ import checkRaid from "./commands/checkRaid";
 import subscribe from "./commands/subscribeGym";
 import manageGyms from "./commands/manageSubscribeGym";
 import { notifyAndUpdateUsers } from "./utils/notifier";
+import manageRaidLevels from "./commands/manageRaidLevel";
 
 //Production Settings
 if (process.env.NODE_ENV === "production") {
@@ -56,6 +57,7 @@ helper();
 checkRaid();
 subscribe();
 manageGyms();
+manageRaidLevels();
 
 //Catch all unknown messages/commands
 catchAll();

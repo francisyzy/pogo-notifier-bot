@@ -25,6 +25,14 @@ export function getBotCommands(): BotCommand[] {
       command: "checkraid",
       description: "Check if gyms you subscribed to has raids",
     },
+    {
+      command: "managegyms",
+      description: "Manage gyms you subscribed to",
+    },
+    {
+      command: "manageraidlevel",
+      description: "Manage the gym level you want to get notified about",
+    },
   ];
   return BotCommand;
 }

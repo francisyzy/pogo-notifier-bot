@@ -5,7 +5,8 @@ const prisma = new PrismaClient();
 
 export async function updateGyms(raids: raids): Promise<void> {
   raids.forEach(async (raid) => {
-    await prisma.gym.upsert({
+    //check if can bulk entry
+    prisma.gym.upsert({
       where: { gymString: raid.gym_name },
       update: {
         lat: raid.lat,

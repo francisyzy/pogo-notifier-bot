@@ -42,7 +42,7 @@ const manageGyms = () => {
     gymHandler.command(
       "/cancel",
       (ctx) => (
-        ctx.reply("Exiting gym search", {
+        ctx.reply("Exiting gym management. /managegyms to remove gyms", {
           ...Markup.removeKeyboard(),
         }),
         ctx.scene.leave()

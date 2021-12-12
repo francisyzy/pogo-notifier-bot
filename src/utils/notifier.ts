@@ -1,5 +1,5 @@
 import { Prisma, PrismaClient } from ".prisma/client";
-import { subDays } from "date-fns";
+import { isToday, subDays } from "date-fns";
 import bot from "../lib/bot";
 import { getRaids } from "./getMaper";
 import { gymChecker } from "./gymChecker";
@@ -15,6 +15,19 @@ export async function notifyAndUpdateUsers(): Promise<void> {
   const raids = await getRaids();
   const raidMessages = await gymChecker(raids);
   for (const raidMessage of raidMessages) {
+    const user = await prisma.user.findUnique({
+      where: { telegramId: raidMessage.userTelegramId },
+    });
+    if (user?.raidLevelNotify.indexOf(raidMessage.level) === -1) {
+      console.log("Skipped Raid " + raidMessage.level);
+      continue;
+    } else if (
+      user?.stopNotifyingMeToday &&
+      isToday(user.stopNotifyingMeToday)
+      ) {
+      console.log("Skipped Raid stop notify");
+      continue;
+    }
     const message = `Level ${raidMessage.level} Raid at ${
       raidMessage.name
     } ${raidMessage.pokemonId === 0 ? "starting" : "started"} at ${
@@ -23,6 +36,7 @@ export async function notifyAndUpdateUsers(): Promise<void> {
 
     await sleep(0.5);
     try {
+      //Delete not working
       prisma.gymEvent.deleteMany({
         where: { eventTime: { lt: subDays(new Date(), 1) } },
       });
@@ -35,6 +49,14 @@ export async function notifyAndUpdateUsers(): Promise<void> {
           },
         })
         .then(async () => {
+          await prisma.user.update({
+            where: { telegramId: raidMessage.userTelegramId },
+            data: {
+              gymTimesNotified: {
+                increment: 1,
+              },
+            },
+          });
           const originalMessage = await bot.telegram.sendMessage(
             raidMessage.userTelegramId,
             message,
@@ -48,7 +70,7 @@ export async function notifyAndUpdateUsers(): Promise<void> {
             setTimeout(() => {
               bot.telegram.sendMessage(
                 raidMessage.userTelegramId,
-                "Raid starting in 5 mins",
+                "Raid starting in 5 mins\n/stopNotifyingMeToday to stop being notified about raids for the rest of the day",
                 { reply_to_message_id: originalMessage.message_id },
               );
             }, offsetMillis);
