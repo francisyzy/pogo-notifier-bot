@@ -37,7 +37,18 @@ const helper = () => {
       where: { telegramId: ctx.from.id },
       data: { stopNotifyingMeToday: new Date() },
     });
-    ctx.reply("Will stop notifying you about raids today!");
+    return ctx.replyWithHTML(
+      "Will stop notifying you about raids today!\n<i>/undoStopNotifyingMeToday</i>",
+    );
+  });
+  bot.command("undoStopNotifyingMeToday", async (ctx) => {
+    await prisma.user.update({
+      where: { telegramId: ctx.from.id },
+      data: { stopNotifyingMeToday: null },
+    });
+    return ctx.replyWithHTML(
+      "Will notify you about raids today!\n<i>/stopNotifyingMeToday</i>",
+    );
   });
 
   bot.command("account", async (ctx) => {

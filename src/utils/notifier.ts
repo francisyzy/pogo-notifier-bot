@@ -19,13 +19,13 @@ export async function notifyAndUpdateUsers(): Promise<void> {
       where: { telegramId: raidMessage.userTelegramId },
     });
     if (user?.raidLevelNotify.indexOf(raidMessage.level) === -1) {
-      console.log("Skipped Raid " + raidMessage.level);
+      console.log(user.name + " Skipped Raid " + raidMessage.level);
       continue;
     } else if (
       user?.stopNotifyingMeToday &&
       isToday(user.stopNotifyingMeToday)
-      ) {
-      console.log("Skipped Raid stop notify");
+    ) {
+      console.log(user.name + " Skipped Raid stop notify");
       continue;
     }
     const message = `Level ${raidMessage.level} Raid at ${
@@ -70,8 +70,11 @@ export async function notifyAndUpdateUsers(): Promise<void> {
             setTimeout(() => {
               bot.telegram.sendMessage(
                 raidMessage.userTelegramId,
-                "Raid starting in 5 mins\n/stopNotifyingMeToday to stop being notified about raids for the rest of the day",
-                { reply_to_message_id: originalMessage.message_id },
+                "Raid starting in 5 mins\n<i>/stopNotifyingMeToday to stop being notified about raids for the rest of the day</i>",
+                {
+                  reply_to_message_id: originalMessage.message_id,
+                  parse_mode: "HTML",
+                },
               );
             }, offsetMillis);
           }
