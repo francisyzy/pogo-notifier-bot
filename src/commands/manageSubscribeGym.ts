@@ -10,6 +10,10 @@ const manageGyms = () => {
     const gymHandler = new Composer<Scenes.WizardContext>();
     gymHandler.action(/.+/, async (ctx) => {
       const selectedGymId = ctx.match[0];
+      //exit condition
+      if (selectedGymId[0] === "e") {
+        await ctx.editMessageText(`Exit manage gym subscription`);
+      }
 
       await prisma.gymSubscribe
         .delete({
@@ -42,9 +46,12 @@ const manageGyms = () => {
     gymHandler.command(
       "/cancel",
       (ctx) => (
-        ctx.reply("Exiting gym management. /managegyms to remove gyms", {
-          ...Markup.removeKeyboard(),
-        }),
+        ctx.reply(
+          "Exiting gym management. /managegyms to remove gyms",
+          {
+            ...Markup.removeKeyboard(),
+          },
+        ),
         ctx.scene.leave()
       ),
     );
@@ -80,9 +87,10 @@ const manageGyms = () => {
                   ),
                 );
               });
+              gymBtnList.push(Markup.button.callback("🚫", "e"));
 
               await ctx.reply(
-                "Select gym you want to remove from your subscription(s)",
+                "Select gym you want to remove from your subscription(s) or 🚫 to exit",
                 Markup.inlineKeyboard(gymBtnList, {
                   //set up custom keyboard wraps for two columns
                   wrap: (btn, index, currentRow) => {

@@ -15,7 +15,7 @@ const subscribe = () => {
 
       const { latitude, longitude } = ctx.message.location;
 
-      const range = 0.005;
+      const range = 0.003;
 
       const gyms = await prisma.gym.findMany({
         where: {
