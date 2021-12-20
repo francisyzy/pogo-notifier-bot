@@ -70,7 +70,7 @@ export async function notifyAndUpdateUsers(): Promise<void> {
             setTimeout(() => {
               bot.telegram.sendMessage(
                 raidMessage.userTelegramId,
-                "Raid starting in 5 mins\n<i>/stopNotifyingMeToday to stop being notified about raids for the rest of the day</i>",
+                "Raid starting in 5 mins\n\n<i>/stopNotifyingMeToday to stop being notified about raids for the rest of the day</i>",
                 {
                   reply_to_message_id: originalMessage.message_id,
                   parse_mode: "HTML",

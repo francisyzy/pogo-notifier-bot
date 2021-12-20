@@ -10,10 +10,6 @@ export function getBotCommands(): BotCommand[] {
       description: "Set/Change your name",
     },
     {
-      command: "account",
-      description: "Get account information of user",
-    },
-    {
       command: "searchname",
       description: "Find gym by name",
     },
@@ -31,7 +27,13 @@ export function getBotCommands(): BotCommand[] {
     },
     {
       command: "manageraidlevel",
-      description: "Manage the gym level you want to get notified about",
+      description:
+        "Manage the gym level you want to get notified about",
+    },
+    {
+      command: "addlocation",
+      description:
+        "Get notified about perfect pokemons at this location",
     },
   ];
   return BotCommand;

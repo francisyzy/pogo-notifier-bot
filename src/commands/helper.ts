@@ -38,7 +38,7 @@ const helper = () => {
       data: { stopNotifyingMeToday: new Date() },
     });
     return ctx.replyWithHTML(
-      "Will stop notifying you about raids today!\n<i>/undoStopNotifyingMeToday</i>",
+      "Will stop notifying you about raids today!\n\n<i>/undoStopNotifyingMeToday</i>",
     );
   });
   bot.command("undoStopNotifyingMeToday", async (ctx) => {
@@ -47,7 +47,7 @@ const helper = () => {
       data: { stopNotifyingMeToday: null },
     });
     return ctx.replyWithHTML(
-      "Will notify you about raids today!\n<i>/stopNotifyingMeToday</i>",
+      "Will notify you about raids today!\n\n<i>/stopNotifyingMeToday</i>",
     );
   });
 
