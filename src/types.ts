@@ -23,6 +23,28 @@ interface raid {
 
 interface raids extends Array<raid> {}
 
+interface pokemon {
+  pokemon_id: number;
+  lat: number;
+  lng: number;
+  despawn: number;
+  disguise: number;
+  attack: number;
+  defence: number;
+  stamina: number;
+  move1: number;
+  move2: number;
+  costume: number;
+  gender: number;
+  shiny: number;
+  form: number;
+  cp: number;
+  level: number;
+  weather: number;
+}
+
+interface pokemons extends Array<pokemon> {}
+
 interface weather {
   cell_id: string;
   weather: number;
@@ -36,5 +58,10 @@ interface raidMessage extends GymSubscribe {
   start: Date;
   pokemonId: number;
 }
+interface pokemonMessage extends pokemon {
+  userTelegramId: number;
+  locationId: string;
+  despawnDate: Date;
+}
 
-export { raids, weathers, raidMessage };
+export { raids, pokemons, weathers, raidMessage, pokemonMessage };

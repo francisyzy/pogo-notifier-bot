@@ -6,16 +6,16 @@ import { BotCommand } from "typegram";
 export function getBotCommands(): BotCommand[] {
   const BotCommand: BotCommand[] = [
     {
-      command: "start",
-      description: "Set/Change your name",
-    },
-    {
       command: "searchname",
       description: "Find gym by name",
     },
     {
       command: "searchlocation",
       description: "Find gym by location",
+    },
+    {
+      command: "checkpokemon",
+      description: "Check all the perfect pokemon currently spawning",
     },
     {
       command: "checkraid",
@@ -33,7 +33,7 @@ export function getBotCommands(): BotCommand[] {
     {
       command: "addlocation",
       description:
-        "Get notified about perfect pokemons at this location",
+        "Get notified about perfect pokemons at the location you send",
     },
   ];
   return BotCommand;
