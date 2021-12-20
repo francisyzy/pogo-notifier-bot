@@ -48,7 +48,7 @@ const helper = () => {
     );
   });
 
-  bot.command("account", async (ctx) => {
+  bot.command("stats", async (ctx) => {
     const user = await prisma.user.findUnique({
       where: { telegramId: ctx.from.id },
     });
@@ -56,7 +56,13 @@ const helper = () => {
       return ctx.replyWithHTML(
         `<b>Name</b>: ${toEscapeHTMLMsg(
           user.name,
-        )} \n<b>Joined at</b>: ${user.createdAt}`,
+        )} \n<b>Joined at</b>: ${
+          user.createdAt
+        }\n<b>Number of Raids notified about</b>: ${
+          user.gymTimesNotified
+        }\n<b>Number of Pefect pokemon notified about</b>: ${
+          user.locationTimesNotified
+        }`,
       );
     } else {
       return ctx.reply("Please /start to create an account");

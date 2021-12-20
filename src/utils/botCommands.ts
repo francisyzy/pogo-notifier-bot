@@ -35,6 +35,10 @@ export function getBotCommands(): BotCommand[] {
       description:
         "Get notified about perfect pokemons at the location you send",
     },
+    {
+      command: "stats",
+      description: "See how many times you have been notified",
+    },
   ];
   return BotCommand;
 }
