@@ -62,6 +62,7 @@ const helper = () => {
       return ctx.reply("Please /start to create an account");
     }
   });
+
   bot.help(async (ctx) => {
     const commands = getBotCommands();
     let returnString =
@@ -70,6 +71,7 @@ const helper = () => {
       returnString += "/" + command.command + "\n";
       returnString += "<i>" + command.description + "</i>\n\n";
     });
+    returnString += `<i>For bug reports, please create an issue at <a href="https://github.com/francisyzy/pogo-notifier-bot/issues">Github</a></i>`;
     return ctx.replyWithHTML(returnString);
   });
 };
