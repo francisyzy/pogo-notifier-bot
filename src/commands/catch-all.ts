@@ -8,11 +8,11 @@ const catchAll = () => {
 
   bot.on("message", (ctx) => ctx.reply("/help for more info"));
 
-  bot.action(/.+/, async (ctx) => {
-    await ctx.editMessageText(
-      "Buttons not valid anymore, please try again.",
-    );
-  });
+  bot.action(/.+/, (ctx) =>
+    ctx.editMessageText(
+      "Buttons are not valid anymore, please try again.",
+    ),
+  );
 };
 
 export default catchAll;
