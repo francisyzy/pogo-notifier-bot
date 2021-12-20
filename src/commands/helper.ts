@@ -2,7 +2,6 @@ import bot from "../lib/bot";
 import { PrismaClient } from "@prisma/client";
 import { toEscapeHTMLMsg } from "../utils/messageHandler";
 import { getBotCommands } from "../utils/botCommands";
-import { notifyAndUpdateUsers } from "../utils/notifier";
 
 const prisma = new PrismaClient();
 //General helper commands
@@ -22,14 +21,12 @@ const helper = () => {
       });
     }
     if (ctx.message && ctx.message.chat.type === "private") {
-      return ctx.reply("Welcome to the Pokemon Go Notifier Bot");
+      return ctx.reply(
+        "Welcome to the Pokemon Go Notifier Butler. \n\n/help for more info",
+      );
     } else {
       return ctx.reply("Please use the bot in a private chat");
     }
-  });
-
-  bot.command("test", async (ctx) => {
-    notifyAndUpdateUsers();
   });
 
   bot.command("stopNotifyingMeToday", async (ctx) => {
@@ -65,7 +62,16 @@ const helper = () => {
       return ctx.reply("Please /start to create an account");
     }
   });
-  bot.help((ctx) => ctx.reply("Help message"));
+  bot.help(async (ctx) => {
+    const commands = getBotCommands();
+    let returnString =
+      "Use the following commands to configure the bot to notify you about Perfect Pokemon spawns or Raid Events\n\n";
+    commands.forEach((command) => {
+      returnString += "/" + command.command + "\n";
+      returnString += "<i>" + command.description + "</i>\n\n";
+    });
+    return ctx.replyWithHTML(returnString);
+  });
 };
 
 export default helper;
