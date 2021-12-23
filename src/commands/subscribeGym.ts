@@ -74,7 +74,7 @@ const subscribe = () => {
         "https://user-images.githubusercontent.com/24467184/135873047-1f1636ad-d99c-466e-8044-4f3e72b4b4b7.JPG",
         {
           caption:
-            "Please send your location by clicking the button on the keyboard",
+            "Please send your location by clicking the button on the keyboard or /cancel to exit location search",
         },
       ),
     );
@@ -86,6 +86,11 @@ const subscribe = () => {
           ...Markup.removeKeyboard(),
         }),
         ctx.scene.leave()
+      ),
+    );
+    searchHandler.command("/searchname", (ctx) =>
+      ctx.reply(
+        "You can enter the gym name to search for it. /cancel to exit",
       ),
     );
     searchHandler.on("message", async (ctx) => {
