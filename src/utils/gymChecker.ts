@@ -1,4 +1,4 @@
-import { PrismaClient } from ".prisma/client";
+import { PrismaClient, GymSubscribe, Gym } from ".prisma/client";
 import { raids, raidMessage } from "../types";
 import { updateGyms } from "./gymAdder";
 
@@ -6,12 +6,23 @@ const prisma = new PrismaClient();
 
 export async function gymChecker(
   raids: raids,
+  userTelegramId?: number,
 ): Promise<raidMessage[]> {
   updateGyms(raids);
   let raidMessages: raidMessage[] = [];
-  const subscribes = await prisma.gymSubscribe.findMany({
-    include: { gym: true },
-  });
+  let subscribes: (GymSubscribe & {
+    gym: Gym;
+  })[];
+  if (userTelegramId) {
+    subscribes = await prisma.gymSubscribe.findMany({
+      include: { gym: true },
+      where: { userTelegramId: userTelegramId },
+    });
+  } else {
+    subscribes = await prisma.gymSubscribe.findMany({
+      include: { gym: true },
+    });
+  }
   const subscribesGymName = [
     ...new Set(
       subscribes.map((subscribe) => subscribe.gym.gymString),

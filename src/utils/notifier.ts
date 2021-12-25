@@ -4,8 +4,7 @@ import bot from "../lib/bot";
 import { getRaids } from "./getMaper";
 import { gymChecker } from "./gymChecker";
 import { sleep } from "./sleep";
-import got from "got";
-import { raidBosses } from "../types";
+import { raidMessageFormatter } from "./messageFormatter";
 
 const prisma = new PrismaClient();
 
@@ -31,37 +30,7 @@ export async function notifyAndUpdateUsers(): Promise<void> {
       continue;
     }
 
-    const raidBosses = (await got(
-      "https://raw.githubusercontent.com/pmgo-professor-willow/data-leekduck/gh-pages/raid-bosses.min.json",
-    ).json()) as raidBosses;
-
-    let possibleBosses = `\n\n<a href="https://www.leekduck.com/boss/">Possible raid boss</a>: (`;
-    raidBosses.forEach((raidBoss) => {
-      if (Number(raidBoss.tier) === raidMessage.level) {
-        possibleBosses += raidBoss.originalName;
-        possibleBosses += raidBoss.shinyAvailable ? "✨, " : ", ";
-      }
-    });
-    possibleBosses = possibleBosses.slice(0, -2);
-    possibleBosses += ")";
-
-    let bossName = "";
-    if (raidMessage.pokemonId !== 0) {
-      const { name: name } = await got(
-        `https://pokeapi.co/api/v2/pokemon/${raidMessage.pokemonId}`,
-      ).json();
-      bossName = name;
-    }
-
-    const message = `Level ${raidMessage.level} Raid at ${
-      raidMessage.name
-    } ${raidMessage.pokemonId === 0 ? "starting" : "started"} at ${
-      raidMessage.start
-    }${
-      raidMessage.pokemonId === 0
-        ? possibleBosses
-        : `with pokemon ${bossName}`
-    }`;
+    const message = await raidMessageFormatter(raidMessage);
 
     await sleep(0.5);
     try {
