@@ -4,7 +4,7 @@ import bot from "../lib/bot";
 import { getPerfect } from "./getMaper";
 import { perfectChecker } from "./perfectChecker";
 import { sleep } from "./sleep";
-import got from "got";
+import { perfectMessageFormatter } from "./messageFormatter";
 
 const prisma = new PrismaClient();
 
@@ -16,14 +16,7 @@ export async function notifyPerfect(): Promise<void> {
   const pokemons = await getPerfect();
   const pokemonMessages = await perfectChecker(pokemons);
   for (const pokemonMessage of pokemonMessages) {
-    const { name: name } = await got(
-      `https://pokeapi.co/api/v2/pokemon/${pokemonMessage.pokemon_id}`,
-    ).json();
-
-    const message = `Perfect pokemon ${name}(CP ${
-      pokemonMessage.cp
-    }) despawns at ${pokemonMessage.despawnDate.toString()}`;
-
+    const message = await perfectMessageFormatter(pokemonMessage);
     await sleep(0.5);
     try {
       //Delete not working

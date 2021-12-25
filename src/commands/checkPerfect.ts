@@ -1,6 +1,6 @@
 import bot from "../lib/bot";
 import { getPerfect } from "../utils/getMaper";
-import got from "got";
+import { perfectMessageFormatter } from "../utils/messageFormatter";
 
 const checkPerfect = () => {
   try {
@@ -12,16 +12,15 @@ const checkPerfect = () => {
       }
 
       for await (const pokemon of pokemons) {
-        const { name: name } = await got(
-          `https://pokeapi.co/api/v2/pokemon/${pokemon.pokemon_id}`,
-        ).json();
-        ctx.reply(
-          `Perfect pokemon ${name}(CP ${
-            pokemon.cp
-          }) despawns at ${new Date(
+        const pokemonMessage = {
+          despawnDate: new Date(
             Number(pokemon.despawn.toString() + "000"),
-          )}`,
-        );
+          ),
+          userTelegramId: 0,
+          locationId: "id",
+          ...pokemon,
+        };
+        ctx.reply(await perfectMessageFormatter(pokemonMessage));
         ctx.replyWithLocation(pokemon.lat, pokemon.lng);
       }
     });
