@@ -69,9 +69,8 @@ const subscribe = () => {
       ),
     );
     locationHandler.use((ctx) =>
-      //TODO update this photo
       ctx.replyWithPhoto(
-        "https://user-images.githubusercontent.com/24467184/135873047-1f1636ad-d99c-466e-8044-4f3e72b4b4b7.JPG",
+        "https://user-images.githubusercontent.com/24467184/147383291-61994fe2-ad11-4e0e-be8d-baf0cdec6b3d.png",
         {
           caption:
             "Please send your location by clicking the button on the keyboard or /cancel to exit location search",
