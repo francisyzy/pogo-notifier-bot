@@ -88,7 +88,7 @@ const subscribe = () => {
         ctx.scene.leave()
       ),
     );
-    searchHandler.command("/searchname", (ctx) =>
+    searchHandler.command("/subscribebyname", (ctx) =>
       ctx.reply(
         "You can enter the gym name to search for it. /cancel to exit",
       ),
@@ -235,10 +235,10 @@ const subscribe = () => {
     bot.use(session());
     bot.use(stage.middleware());
 
-    bot.command("searchlocation", (ctx) => {
+    bot.command("subscribebylocation", (ctx) => {
       return ctx.scene.enter("gymSearchLocation");
     });
-    bot.command("searchname", (ctx) => {
+    bot.command("subscribebyname", (ctx) => {
       return ctx.scene.enter("gymNameSearchLocation");
     });
   } catch (error) {

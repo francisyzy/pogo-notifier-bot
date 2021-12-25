@@ -6,12 +6,12 @@ import { BotCommand } from "typegram";
 export function getBotCommands(): BotCommand[] {
   const BotCommand: BotCommand[] = [
     {
-      command: "searchname",
-      description: "Find gym by name",
+      command: "subscribebyname",
+      description: "Subscribe gym raid notification by name",
     },
     {
-      command: "searchlocation",
-      description: "Find gym by location",
+      command: "subscribebylocation",
+      description: "Subscribe gym raid notification by location",
     },
     {
       command: "checkpokemon",
