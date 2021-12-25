@@ -20,8 +20,11 @@ const checkPerfect = () => {
           locationId: "id",
           ...pokemon,
         };
-        ctx.reply(await perfectMessageFormatter(pokemonMessage));
-        ctx.replyWithLocation(pokemon.lat, pokemon.lng);
+        ctx
+          .reply(await perfectMessageFormatter(pokemonMessage))
+          .then(() => {
+            ctx.replyWithLocation(pokemon.lat, pokemon.lng);
+          });
       }
     });
   } catch (error) {
