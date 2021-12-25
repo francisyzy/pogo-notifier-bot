@@ -22,7 +22,7 @@ const helper = () => {
     }
     if (ctx.message && ctx.message.chat.type === "private") {
       return ctx.reply(
-        "Welcome to the Pokemon Go Notifier Butler. \n\n/help for more info",
+        "Welcome to the Pokemon Go Notifier Butler. This bot will notify you about raids at your gyms or perfect pokemon near you \n\n/help for more info",
       );
     } else {
       return ctx.reply("Please use the bot in a private chat");

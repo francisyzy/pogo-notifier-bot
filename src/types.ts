@@ -58,10 +58,35 @@ interface raidMessage extends GymSubscribe {
   start: Date;
   pokemonId: number;
 }
+
 interface pokemonMessage extends pokemon {
   userTelegramId: number;
   locationId: string;
   despawnDate: Date;
 }
 
-export { raids, pokemons, weathers, raidMessage, pokemonMessage };
+interface raidBoss {
+  tier: string;
+  no: number;
+  name: string;
+  originalName: string;
+  imageUrl: string;
+  shinyAvailable: boolean;
+  types: string[];
+  typeUrls: string[];
+  cp: { min: number; max: number };
+  boostedCp: { min: number; max: number };
+  boostedWeathers: string[];
+  boostedWeatherUrls: string[];
+}
+
+interface raidBosses extends Array<raidBoss> {}
+
+export {
+  raids,
+  pokemons,
+  weathers,
+  raidMessage,
+  pokemonMessage,
+  raidBosses,
+};
