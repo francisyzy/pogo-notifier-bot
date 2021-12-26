@@ -41,7 +41,7 @@ export async function raidMessageFormatter(
   possibleBosses += ")";
 
   //If leed duck has no info and raid has popped
-  if (bossName === "" && raidMessage.level !== 0) {
+  if (bossName === "" && raidMessage.pokemonId !== 0) {
     const { name: name } = await got(
       `https://pokeapi.co/api/v2/pokemon/${raidMessage.pokemonId}`,
     ).json();
