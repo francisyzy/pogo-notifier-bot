@@ -77,7 +77,7 @@ const helper = () => {
       returnString += "/" + command.command + "\n";
       returnString += "<i>" + command.description + "</i>\n\n";
     });
-    returnString += `<i>For bug reports, please create an issue at <a href="https://github.com/francisyzy/pogo-notifier-bot/issues">Github</a></i>`;
+    returnString += `<i>For bug reports, please create an issue at <a href="http://go.francisyzy.com/pogo-notifier-bot-issues">Github</a></i>`;
     return ctx.replyWithHTML(returnString);
   });
 };
