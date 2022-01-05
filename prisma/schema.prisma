@@ -77,10 +77,3 @@ model LocationEvent {
 
   @@id([locationSubscribeLocationId, eventTime])
 }
-
-model Event {
-  eventURL  String   @id
-  eventName String
-  eventTime DateTime
-  isLocaleTime Boolean
-}
