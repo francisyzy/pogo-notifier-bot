@@ -1,6 +1,7 @@
 import bot from "../lib/bot";
 import { getPerfect } from "../utils/getMaper";
 import { perfectMessageFormatter } from "../utils/messageFormatter";
+import { sleep } from "../utils/sleep";
 
 const checkPerfect = () => {
   try {
@@ -20,7 +21,9 @@ const checkPerfect = () => {
           locationId: "id",
           ...pokemon,
         };
-        ctx
+        //Make sure the messages are sent in order
+        await sleep(0.5)
+        await ctx
           .reply(await perfectMessageFormatter(pokemonMessage))
           .then(() => {
             ctx.replyWithLocation(pokemon.lat, pokemon.lng);
