@@ -16,6 +16,9 @@ import manageRaidLevels from "./commands/manageRaidLevel";
 import { notifyPerfect } from "./utils/perfectNotifier";
 import subscribeLocation from "./commands/subscribeLocation";
 import checkPerfect from "./commands/checkPerfect";
+import { eventAdder } from "./utils/eventAdd";
+import { notifyEvent } from "./utils/eventNotifier";
+import { schedule } from "node-cron";
 
 //Production Settings
 if (process.env.NODE_ENV === "production") {
@@ -67,6 +70,17 @@ checkPerfect();
 //Catch all unknown messages/commands
 catchAll();
 
+//https://www.serverless.com/blog/cron-jobs-on-aws/
+eventAdder();
+//https://crontab.guru/#55_0-23_*_*_*
+schedule("45 0-23 * * *", () => {
+  console.log(new Date());
+  console.log(new Date().toString());
+  notifyEvent();
+});
+// notifyEvent();
+notifyAndUpdateUsers();
+notifyPerfect();
 //Check raids every 5 mins
 setInterval(() => notifyAndUpdateUsers(), 600000);
 setInterval(() => notifyPerfect(), 300000);
