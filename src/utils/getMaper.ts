@@ -1,4 +1,4 @@
-import { raids, pokemons } from "../types";
+import { raids, pokemons, rawEvents } from "../types";
 import got from "got";
 
 /**
@@ -28,4 +28,16 @@ export async function getPerfect(): Promise<pokemons> {
   ).json();
 
   return pokemons as pokemons;
+}
+
+/**
+ * Get list of events from leek duck
+ * @return {rawEvents} List of rawEvents
+ */
+export async function getEvents(): Promise<rawEvents> {
+  const events = await got(
+    "https://raw.githubusercontent.com/pmgo-professor-willow/data-leekduck/gh-pages/events.min.json",
+  ).json();
+
+  return events as rawEvents;
 }

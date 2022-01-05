@@ -82,6 +82,19 @@ interface raidBoss {
 
 interface raidBosses extends Array<raidBoss> {}
 
+interface rawEvent {
+  title: string;
+  link: string;
+  type: string;
+  imageUrl: string;
+  label: string;
+  isLocaleTime: boolean;
+  startTime: string;
+  endTime: string;
+}
+
+interface rawEvents extends Array<rawEvent> {}
+
 export {
   raids,
   pokemons,
@@ -89,4 +102,5 @@ export {
   raidMessage,
   pokemonMessage,
   raidBosses,
+  rawEvents
 };
