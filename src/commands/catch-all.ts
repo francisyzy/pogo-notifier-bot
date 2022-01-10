@@ -10,7 +10,7 @@ const catchAll = () => {
 
   bot.action(/.+/, (ctx) =>
     ctx.editMessageText(
-      "Buttons are not valid anymore, please try again.",
+      "Buttons are not valid any more, please try again.",
     ),
   );
 };

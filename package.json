@@ -1,7 +1,7 @@
 {
   "name": "pogo-notifier-bot",
   "version": "0.2.0",
-  "description": "Pokemon go bot that scrapes mappers and other apis for data to notify users of revelant information",
+  "description": "Pokemon go bot that scrapes mappers and other apis for data to notify users of revenant information",
   "main": "dist/index.js",
   "scripts": {
     "start": "node dist/index.js",

@@ -60,7 +60,7 @@ const helper = () => {
           user.createdAt
         }\n<b>Number of Raids notified about</b>: ${
           user.gymTimesNotified
-        }\n<b>Number of Pefect pokemon notified about</b>: ${
+        }\n<b>Number of Perfect pokemon notified about</b>: ${
           user.locationTimesNotified
         }`,
       );
