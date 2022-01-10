@@ -5,6 +5,7 @@ import { getRaids } from "./getMaper";
 import { gymChecker } from "./gymChecker";
 import { sleep } from "./sleep";
 import { raidMessageFormatter } from "./messageFormatter";
+import config from "../config";
 
 const prisma = new PrismaClient();
 
@@ -61,21 +62,21 @@ export async function notifyAndUpdateUsers(): Promise<void> {
             { parse_mode: "HTML", disable_web_page_preview: true },
           );
           if (raidMessage.pokemonId === 0) {
-            const fiveMinMS = 300000;
-            const offsetMillis =
+            const offsetMs =
               raidMessage.start.getTime() -
               new Date().getTime() -
-              fiveMinMS;
+              config.raidAlertMinutes * 60000;
+            //* 60000, 1min = 60000ms
             setTimeout(() => {
               bot.telegram.sendMessage(
                 raidMessage.userTelegramId,
-                "Raid starting in 5 mins\n\n<i>/stopNotifyingMeToday to stop being notified about raids for the rest of the day</i>",
+                `Raid starting in ${config.raidAlertMinutes} mins\n\n<i>/stopNotifyingMeToday to stop being notified about raids for the rest of the day</i>`,
                 {
                   reply_to_message_id: originalMessage.message_id,
                   parse_mode: "HTML",
                 },
               );
-            }, offsetMillis);
+            }, offsetMs);
           }
         })
         .catch(async (error) => {

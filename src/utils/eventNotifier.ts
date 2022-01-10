@@ -1,8 +1,7 @@
 import { addMinutes, isWithinInterval, subMinutes } from "date-fns";
 import bot from "../lib/bot";
 import { getEvents } from "./getMaper";
-
-const minuteBuffer = 20;
+import config from "../config";
 
 /**
  * Check events from the source & notifies if event is about to start
@@ -42,16 +41,16 @@ export async function notifyEvent(): Promise<void> {
       //https://github.com/date-fns/date-fns/issues/366
       if (
         isWithinInterval(localEventTime, {
-          start: subMinutes(new Date(), minuteBuffer),
-          end: addMinutes(new Date(), minuteBuffer),
+          start: subMinutes(new Date(), config.eventBuffer),
+          end: addMinutes(new Date(), config.eventBuffer),
         })
       ) {
         notifier.push({ link: event.link, title: event.title });
       }
     } else if (
       isWithinInterval(new Date(event.startTime), {
-        start: subMinutes(new Date(), minuteBuffer),
-        end: addMinutes(new Date(), minuteBuffer),
+        start: subMinutes(new Date(), config.eventBuffer),
+        end: addMinutes(new Date(), config.eventBuffer),
       })
     ) {
       notifier.push({ link: event.link, title: event.title });
@@ -67,7 +66,7 @@ export async function notifyEvent(): Promise<void> {
   notifier.forEach((notify) => {
     bot.telegram.sendMessage(
       "@SGPogoEvents",
-      `<a href="${notify.link}">${notify.title}</a> is happening soon!`,
+      `<a href="${notify.link}">${notify.title}</a> is starting soon!`,
       { parse_mode: "HTML" },
     );
   });

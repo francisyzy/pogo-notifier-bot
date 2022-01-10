@@ -8,6 +8,8 @@ const config = {
   API_TOKEN: process.env.API_TOKEN,
   LOG_GROUP_ID: process.env.LOG_GROUP_ID,
   URL: process.env.URL,
+  eventBuffer: 20,
+  raidAlertMinutes: 5,
 };
 
 export default config;
