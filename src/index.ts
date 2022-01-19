@@ -18,6 +18,7 @@ import subscribeLocation from "./commands/subscribeLocation";
 import checkPerfect from "./commands/checkPerfect";
 import { notifyEvent } from "./utils/eventNotifier";
 import { schedule } from "node-cron";
+import location from "./commands/location";
 
 //Production Settings
 if (process.env.NODE_ENV === "production") {
@@ -62,6 +63,7 @@ helper();
 checkRaid();
 subscribe();
 manageGyms();
+location();
 manageRaidLevels();
 subscribeLocation();
 checkPerfect();

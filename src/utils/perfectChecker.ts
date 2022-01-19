@@ -29,6 +29,30 @@ export async function perfectChecker(
   return pokemonMessages;
 }
 
+export async function perfectCheckerAdHoc(
+  perfectList: pokemons,
+  latitude: number,
+  longitude: number,
+): Promise<pokemonMessage[]> {
+  let pokemonMessages: pokemonMessage[] = [];
+  const range = 0.001; //https://gis.stackexchange.com/a/8674
+  perfectList.forEach((perfect) => {
+    if (withinRange(latitude, perfect.lat, range)) {
+      if (withinRange(longitude, perfect.lng, range)) {
+        pokemonMessages.push({
+          despawnDate: new Date(
+            Number(perfect.despawn.toString() + "000"),
+          ),
+          userTelegramId: 0,
+          locationId: "string",
+          ...perfect,
+        });
+      }
+    }
+  });
+  return pokemonMessages;
+}
+
 function withinRange(
   originalPoint: number,
   incomingPoint: number,

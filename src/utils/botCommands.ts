@@ -6,6 +6,11 @@ import { BotCommand } from "typegram";
 export function getBotCommands(): BotCommand[] {
   const rawBotCommands = [
     {
+      command: "sendlocation",
+      description:
+        "Send your current location to check for nearby events",
+    },
+    {
       command: "subscribebyname",
       description: "Subscribe gym raid notification by name",
     },

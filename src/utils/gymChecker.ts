@@ -53,3 +53,31 @@ export async function gymChecker(
 
   return raidMessages;
 }
+export async function gymCheckerAdHoc(
+  raids: raids,
+  gyms: Gym[],
+): Promise<raidMessage[]> {
+  updateGyms(raids);
+  let raidInfo: raidMessage[] = [];
+  const gymName = [...new Set(gyms.map((gym) => gym.gymString))];
+  const gymRaids = raids.filter((raid) =>
+    gymName.includes(raid.gym_name),
+  );
+  for (const raid of gymRaids) {
+    const raidStart = new Date(
+      Number(raid.raid_start.toString() + "000"),
+    );
+    if (raidStart > new Date() || raid.pokemon_id != 0) {
+      raidInfo.push({
+        userTelegramId: 0,
+        gymId: "string",
+        name: raid.gym_name,
+        level: raid.level,
+        start: raidStart,
+        pokemonId: raid.pokemon_id,
+      });
+    }
+  }
+
+  return raidInfo;
+}

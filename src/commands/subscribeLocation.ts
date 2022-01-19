@@ -82,6 +82,27 @@ const subscribeLocation = () => {
     bot.command("addlocation", (ctx) => {
       return ctx.scene.enter("subscribeLocation");
     });
+    bot.action(/SP_+/, async (ctx) => {
+      const input = ctx.match.input.split("_");
+      ctx.editMessageText("Searching for gyms");
+      if (ctx.from) {
+        await prisma.locationSubscribe.create({
+          data: {
+            userTelegramId: ctx.from.id,
+            lat: Number(input[1]),
+            long: Number(input[2]),
+            Radius: 0.05, //https://gis.stackexchange.com/a/8674
+          },
+        });
+        return ctx.reply("Added a perfect pokemon notify location", {
+          ...Markup.removeKeyboard(),
+        });
+      } else {
+        return ctx.reply("Please use the bot in a private chat", {
+          ...Markup.removeKeyboard(),
+        });
+      }
+    });
   } catch (error) {
     console.log(error);
   }
