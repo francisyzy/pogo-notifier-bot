@@ -114,6 +114,7 @@ const subscribe = () => {
 
     const gymHandler = new Composer<Scenes.WizardContext>();
     gymHandler.action(/.+/, async (ctx) => {
+      await ctx.answerCbQuery("Gym selected");
       const selectedGymId = ctx.match[0];
 
       await prisma.gymSubscribe
@@ -257,6 +258,7 @@ const subscribe = () => {
       return ctx.scene.enter("gymNameSearchLocation");
     });
     bot.action(/SG_+/, (ctx) => {
+      ctx.answerCbQuery("Looking for nearby gyms");
       const input = ctx.match.input.split("_");
       ctx.editMessageText("Searching for gyms");
       //https://stackoverflow.com/a/66858541

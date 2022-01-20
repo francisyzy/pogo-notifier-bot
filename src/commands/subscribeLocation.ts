@@ -83,8 +83,9 @@ const subscribeLocation = () => {
       return ctx.scene.enter("subscribeLocation");
     });
     bot.action(/SP_+/, async (ctx) => {
+      await ctx.answerCbQuery("Adding location");
       const input = ctx.match.input.split("_");
-      ctx.editMessageText("Searching for gyms");
+      ctx.editMessageText("Adding location");
       if (ctx.from) {
         await prisma.locationSubscribe.create({
           data: {

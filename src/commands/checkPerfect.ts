@@ -32,6 +32,7 @@ const checkPerfect = () => {
       }
     });
     bot.action(/CP_+/, async (ctx) => {
+      await ctx.answerCbQuery("Checking perfect pokemon");
       const input = ctx.match.input.split("_");
       ctx.editMessageText("Looking for perfect pokemon nearby");
       const pokemons = await getPerfect();

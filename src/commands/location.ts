@@ -60,9 +60,10 @@ const location = () => {
       }),
     );
   });
-  bot.action("e", (ctx) =>
-    ctx.editMessageText("Exit location handler"),
-  );
+  bot.action("e", (ctx) => {
+    ctx.answerCbQuery("Exit");
+    ctx.editMessageText("Exit location handler");
+  });
 };
 
 export default location;

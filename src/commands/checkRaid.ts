@@ -22,6 +22,7 @@ const checkRaid = () => {
       }
     });
     bot.action(/CG_+/, async (ctx) => {
+      await ctx.answerCbQuery("Checking raids");
       const input = ctx.match.input.split("_");
       ctx.editMessageText("Looking for raids nearby");
       const gyms = await gymSearcher(
