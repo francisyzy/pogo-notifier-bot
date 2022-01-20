@@ -56,6 +56,7 @@ interface raidMessage extends GymSubscribe {
   name: string;
   level: number;
   start: Date;
+  end: Date;
   pokemonId: number;
 }
 
@@ -102,5 +103,5 @@ export {
   raidMessage,
   pokemonMessage,
   raidBosses,
-  rawEvents
+  rawEvents,
 };

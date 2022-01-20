@@ -54,6 +54,10 @@ export async function raidMessageFormatter(
     raidMessage.start
   }${
     raidMessage.pokemonId === 0
+      ? ""
+      : " and will end at " + raidMessage.end
+  }${
+    raidMessage.pokemonId === 0
       ? possibleBosses
       : ` with boss ${bossName}`
   }`;

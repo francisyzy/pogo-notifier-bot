@@ -39,12 +39,16 @@ export async function gymChecker(
       const raidStart = new Date(
         Number(raid.raid_start.toString() + "000"),
       );
+      const raidEnd = new Date(
+        Number(raid.raid_end.toString() + "000"),
+      );
       if (raidStart > new Date() || raid.pokemon_id != 0) {
         raidMessages.push({
           ...subscriber,
           name: raid.gym_name,
           level: raid.level,
           start: raidStart,
+          end: raidEnd,
           pokemonId: raid.pokemon_id,
         });
       }
@@ -53,6 +57,7 @@ export async function gymChecker(
 
   return raidMessages;
 }
+
 export async function gymCheckerAdHoc(
   raids: raids,
   gyms: Gym[],
@@ -67,6 +72,9 @@ export async function gymCheckerAdHoc(
     const raidStart = new Date(
       Number(raid.raid_start.toString() + "000"),
     );
+    const raidEnd = new Date(
+      Number(raid.raid_end.toString() + "000"),
+    );
     if (raidStart > new Date() || raid.pokemon_id != 0) {
       raidInfo.push({
         userTelegramId: 0,
@@ -74,6 +82,7 @@ export async function gymCheckerAdHoc(
         name: raid.gym_name,
         level: raid.level,
         start: raidStart,
+        end: raidEnd,
         pokemonId: raid.pokemon_id,
       });
     }
