@@ -36,14 +36,14 @@ const location = () => {
         `CG_${latitude}_${longitude}`,
       ),
       Markup.button.callback(
-        "Subscribe to perfect pokemon",
+        "Subscribe to perfect pokemon at this location",
         `SP_${latitude}_${longitude}`,
       ),
       Markup.button.callback(
         "Check nearby for perfect pokemon",
         `CP_${latitude}_${longitude}`,
       ),
-      Markup.button.callback("🚫", `e`),
+      Markup.button.callback("🚫 exit", `e`),
     ];
 
     return ctx.reply(
@@ -51,11 +51,7 @@ const location = () => {
       Markup.inlineKeyboard(featureList, {
         //set up custom keyboard wraps for two columns
         wrap: (btn, index, currentRow) => {
-          if (currentRow.length === 2) {
-            return true;
-          } else {
-            return false;
-          }
+          return true;
         },
       }),
     );
