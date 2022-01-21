@@ -80,8 +80,12 @@ schedule("45 0-23 * * *", () => {
 });
 notifyAndUpdateUsers();
 notifyPerfect();
-//Check raids every 5 mins
-setInterval(() => notifyAndUpdateUsers(), 600000);
+//Check raids every 10 mins, disable night checking
+//https://crontab.guru/#*/10_5-20_*_*_*
+schedule("*/10 5-20 * * *", () => {
+  notifyAndUpdateUsers();
+});
+//Check perfect pokemon every 5 mins
 setInterval(() => notifyPerfect(), 300000);
 
 // Enable graceful stop
