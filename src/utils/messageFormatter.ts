@@ -3,6 +3,8 @@ import { pokemonMessage, raidBosses, raidMessage } from "../types";
 
 /**
  * Formats raid message
+ * @param raidMessage original raidMessage information
+ * @returns {Promise<string>} Message formatted to send to user
  */
 export async function raidMessageFormatter(
   raidMessage: raidMessage,
@@ -40,7 +42,7 @@ export async function raidMessageFormatter(
   possibleBosses = possibleBosses.slice(0, -2);
   possibleBosses += ")";
 
-  //If leed duck has no info and raid has popped
+  //If leek duck has no info and raid has popped
   if (bossName === "" && raidMessage.pokemonId !== 0) {
     const { name: name } = await got(
       `https://pokeapi.co/api/v2/pokemon/${raidMessage.pokemonId}`,
@@ -65,7 +67,26 @@ export async function raidMessageFormatter(
 }
 
 /**
+ * Checks how many pokemon are there in each raid level
+ * @param raidMessage original raidMessage information
+ * @returns {Promise<number>} number of possible bosses from information given
+ */
+export async function bossCount(
+  raidMessage: raidMessage,
+): Promise<number> {
+  const raidBosses = (await got(
+    "https://raw.githubusercontent.com/pmgo-professor-willow/data-leekduck/gh-pages/raid-bosses.min.json",
+  ).json()) as raidBosses;
+
+  return raidBosses.filter(
+    (boss) => Number(boss.tier) === raidMessage.level,
+  ).length;
+}
+
+/**
  * Formats perfect message
+ * @param pokemonMessage original pokemonMessage information
+ * @returns {Promise<string>} Message formatted to send to the user
  */
 export async function perfectMessageFormatter(
   pokemonMessage: pokemonMessage,
