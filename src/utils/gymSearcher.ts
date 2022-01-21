@@ -1,6 +1,7 @@
 import { PrismaClient, Gym } from ".prisma/client";
 import { InlineKeyboardButton } from "typegram";
 import { Markup } from "telegraf";
+import config from "../config";
 
 const prisma = new PrismaClient();
 
@@ -26,7 +27,7 @@ export async function gymSearcher(
   latitude: number,
   longitude: number,
 ): Promise<Gym[]> {
-  const range = 0.003;
+  const range = config.gymRange;
 
   const gyms = await prisma.gym.findMany({
     where: {

@@ -10,6 +10,10 @@ const config = {
   URL: process.env.URL,
   eventBuffer: 20,
   raidAlertMinutes: 5,
+  //https://gis.stackexchange.com/a/8674
+  gymRange: 0.003,
+  perfectRange: 0.001,
+  perfectAdHocRange: 0.003,
 };
 
 export default config;
