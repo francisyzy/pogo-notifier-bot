@@ -69,6 +69,9 @@ export async function gymCheckerAdHoc(
     gymName.includes(raid.gym_name),
   );
   for (const raid of gymRaids) {
+    const gym = gyms.filter((gym) =>
+      gym.gymString.includes(raid.gym_name),
+    );
     const raidStart = new Date(
       Number(raid.raid_start.toString() + "000"),
     );
@@ -78,7 +81,7 @@ export async function gymCheckerAdHoc(
     if (raidStart > new Date() || raid.pokemon_id != 0) {
       raidInfo.push({
         userTelegramId: 0,
-        gymId: "string",
+        gymId: gym[0].id,
         name: raid.gym_name,
         level: raid.level,
         start: raidStart,

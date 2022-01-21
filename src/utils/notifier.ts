@@ -4,7 +4,7 @@ import bot from "../lib/bot";
 import { getRaids } from "./getMaper";
 import { gymChecker } from "./gymChecker";
 import { sleep } from "./sleep";
-import { raidMessageFormatter } from "./messageFormatter";
+import { bossCount, raidMessageFormatter } from "./messageFormatter";
 import config from "../config";
 
 const prisma = new PrismaClient();
@@ -61,7 +61,12 @@ export async function notifyAndUpdateUsers(): Promise<void> {
             message,
             { parse_mode: "HTML", disable_web_page_preview: true },
           );
+          //If raid has not started, send reminder
           if (raidMessage.pokemonId === 0) {
+            //Gets the number of bosses possible (for reminder message)
+            const numberOfBoss = await bossCount(raidMessage);
+            //telegram command - is not clickable whereas _ is clickable
+            const gymId = raidMessage.gymId.replaceAll("-", "_");
             const offsetMs =
               raidMessage.start.getTime() -
               new Date().getTime() -
@@ -70,7 +75,13 @@ export async function notifyAndUpdateUsers(): Promise<void> {
             setTimeout(() => {
               bot.telegram.sendMessage(
                 raidMessage.userTelegramId,
-                `Raid starting in ${config.raidAlertMinutes} mins\n\n<i>/stopNotifyingMeToday to stop being notified about raids for the rest of the day</i>`,
+                `Raid starting in ${config.raidAlertMinutes} mins${
+                  numberOfBoss === 1
+                    ? ""
+                    : "\n\n/checkraid_" +
+                      gymId +
+                      " to check which raid boss spawned, after the egg popped"
+                }\n\n<i>/stopNotifyingMeToday to stop being notified about raids for the rest of the day</i>`,
                 {
                   reply_to_message_id: originalMessage.message_id,
                   parse_mode: "HTML",
