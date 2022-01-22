@@ -7,6 +7,7 @@ const config = {
   DATABASE_URL: process.env.DATABASE_URL,
   API_TOKEN: process.env.API_TOKEN,
   LOG_GROUP_ID: process.env.LOG_GROUP_ID,
+  OWNER_ID: Number(process.env.OWNER_ID),
   URL: process.env.URL,
   eventBuffer: 20,
   raidAlertMinutes: 5,

@@ -25,28 +25,41 @@ if (process.env.NODE_ENV === "production") {
   //Production Logging
   bot.use((ctx, next) => {
     if (ctx.message && config.LOG_GROUP_ID) {
-      let userInfo: string;
-      if (ctx.message.from.username) {
-        userInfo = `name: <a href="tg://user?id=${
-          ctx.message.from.id
-        }">${toEscapeHTMLMsg(ctx.message.from.first_name)}</a> (@${
-          ctx.message.from.username
-        })`;
-      } else {
-        userInfo = `name: <a href="tg://user?id=${
-          ctx.message.from.id
-        }">${toEscapeHTMLMsg(ctx.message.from.first_name)}</a>`;
+      //Remove logging from botOwner
+      if (ctx.message.from.id !== config.OWNER_ID) {
+        let userInfo: string;
+        if (ctx.message.from.username) {
+          userInfo = `name: <a href="tg://user?id=${
+            ctx.message.from.id
+          }">${toEscapeHTMLMsg(ctx.message.from.first_name)}</a> (@${
+            ctx.message.from.username
+          })`;
+        } else {
+          userInfo = `name: <a href="tg://user?id=${
+            ctx.message.from.id
+          }">${toEscapeHTMLMsg(ctx.message.from.first_name)}</a>`;
+        }
+        const text = `\ntext: ${
+          (ctx.message as Message.TextMessage).text
+        }`;
+        const logMessage = userInfo + toEscapeHTMLMsg(text);
+        bot.telegram.sendMessage(config.LOG_GROUP_ID, logMessage, {
+          parse_mode: "HTML",
+        });
       }
-      const text = `\ntext: ${
-        (ctx.message as Message.TextMessage).text
-      }`;
-      const logMessage = userInfo + toEscapeHTMLMsg(text);
-      bot.telegram.sendMessage(config.LOG_GROUP_ID, logMessage, {
-        parse_mode: "HTML",
-      });
     }
     return next();
   });
+  if (config.LOG_GROUP_ID) {
+    //https://crontab.guru/#*/9_0-23_*_*_*
+    schedule("*/9 0-23 * * *", () => {
+      bot.telegram.sendMessage(
+        config.LOG_GROUP_ID!,
+        "Server still alive",
+        { disable_notification: true },
+      );
+    });
+  }
   // bot.launch({
   //   webhook: {
   //     domain: config.URL,
@@ -74,7 +87,7 @@ checkPerfect();
 catchAll();
 
 //https://www.serverless.com/blog/cron-jobs-on-aws/
-//https://crontab.guru/#55_0-23_*_*_*
+//https://crontab.guru/#45_0-23_*_*_*
 schedule("45 0-23 * * *", () => {
   console.log(new Date());
   console.log(new Date().toString());
