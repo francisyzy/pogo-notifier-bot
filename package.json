@@ -1,14 +1,15 @@
 {
   "name": "pogo-notifier-bot",
   "version": "0.2.0",
-  "description": "Pokemon go bot that scrapes mappers and other apis for data to notify users of revenant information",
+  "description": "Pokemon go bot that scrapes mappers and other apis for data to notify users of relevant information",
   "main": "dist/index.js",
   "scripts": {
     "start": "node dist/index.js",
-    "build": "npm run generate && npm run deploy && tsc -p .",
+    "build": "npm run generateProxy && tsc -p .",
     "dev": "nodemon src/index.ts",
     "seed": "ts-node prisma/seed.ts",
     "generate": "prisma generate",
+    "generateProxy": "PRISMA_CLIENT_ENGINE_TYPE='dataproxy' prisma generate",
     "deploy": "prisma migrate deploy",
     "studio": "prisma studio",
     "migrate": "prisma migrate dev",
