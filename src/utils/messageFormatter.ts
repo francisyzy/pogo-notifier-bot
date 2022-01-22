@@ -66,7 +66,7 @@ export async function raidMessageFormatter(
           representation: "time",
         })}(${formatDistanceToNow(raidMessage.end, {
           addSuffix: true,
-        })}))`
+        })})`
   }${
     raidMessage.pokemonId === 0
       ? possibleBosses

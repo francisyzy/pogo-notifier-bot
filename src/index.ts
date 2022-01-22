@@ -66,7 +66,6 @@ if (process.env.NODE_ENV === "production") {
   //     port: Number(config.PORT),
   //   },
   // });
-  bot.use(Telegraf.log());
   bot.launch();
 } else {
   //Development logging
