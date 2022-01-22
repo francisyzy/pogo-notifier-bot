@@ -1,3 +1,4 @@
+import { formatDistanceToNow, formatISO9075 } from "date-fns";
 import got from "got";
 import { pokemonMessage, raidBosses, raidMessage } from "../types";
 
@@ -52,12 +53,20 @@ export async function raidMessageFormatter(
 
   const message = `${raidMessage.level}★ Raid at <u>${
     raidMessage.name
-  }</u> ${raidMessage.pokemonId === 0 ? "starting" : "started"} at ${
-    raidMessage.start
-  }${
+  }</u> ${
+    raidMessage.pokemonId === 0 ? "starting" : "started"
+  } at ${formatISO9075(raidMessage.start, {
+    representation: "time",
+  })} (${formatDistanceToNow(raidMessage.start, {
+    addSuffix: true,
+  })})${
     raidMessage.pokemonId === 0
       ? ""
-      : " and will end at " + raidMessage.end
+      : ` and will end at ${formatISO9075(raidMessage.end, {
+          representation: "time",
+        })}(${formatDistanceToNow(raidMessage.end, {
+          addSuffix: true,
+        })}))`
   }${
     raidMessage.pokemonId === 0
       ? possibleBosses
