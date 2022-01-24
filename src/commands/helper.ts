@@ -49,21 +49,6 @@ const helper = () => {
     );
   });
 
-  bot.command("pull", async (ctx) => {
-    if (process.env.NODE_ENV === "production") {
-      const commands = await execSync(
-        "git pull && npm run build && pm2 reload all",
-        {
-          stdio: "inherit",
-        },
-      );
-      console.log(commands);
-      return ctx.reply("Pulled from Git");
-    } else {
-      return ctx.reply("Not on prod");
-    }
-  });
-
   bot.command("stats", async (ctx) => {
     const user = await prisma.user.findUnique({
       where: { telegramId: ctx.from.id },

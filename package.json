@@ -2,9 +2,9 @@
   "name": "pogo-notifier-bot",
   "version": "0.2.0",
   "description": "Pokemon go bot that scrapes mappers and other apis for data to notify users of relevant information",
-  "main": "dist/index.js",
+  "main": "dist/src/index.js",
   "scripts": {
-    "start": "node dist/index.js",
+    "start": "node dist/src/index.js",
     "build": "npm run generateProxy && tsc -p .",
     "dev": "nodemon src/index.ts",
     "seed": "ts-node prisma/seed.ts",
@@ -29,7 +29,6 @@
   },
   "dependencies": {
     "@prisma/client": "^3.7.0",
-    "@types/dotenv": "^8.2.0",
     "date-fns": "^2.27.0",
     "dotenv": "^10.0.0",
     "got": "^11.8.3",
