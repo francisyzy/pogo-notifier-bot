@@ -2,6 +2,7 @@ import bot from "../lib/bot";
 import { PrismaClient } from "@prisma/client";
 import { toEscapeHTMLMsg } from "../utils/messageHandler";
 import { getBotCommands } from "../utils/botCommands";
+const { execSync } = require("child_process");
 
 const prisma = new PrismaClient();
 //General helper commands
@@ -46,6 +47,21 @@ const helper = () => {
     return ctx.replyWithHTML(
       "Will notify you about raids today!\n\n<i>/stopNotifyingMeToday</i>",
     );
+  });
+
+  bot.command("pull", async (ctx) => {
+    if (process.env.NODE_ENV === "production") {
+      const commands = await execSync(
+        "git pull && npm run build && pm2 reload all",
+        {
+          stdio: "inherit",
+        },
+      );
+      console.log(commands);
+      return ctx.reply("Pulled from Git");
+    } else {
+      return ctx.reply("Not on prod");
+    }
   });
 
   bot.command("stats", async (ctx) => {
