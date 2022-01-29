@@ -2,7 +2,6 @@ import bot from "../lib/bot";
 import { PrismaClient } from "@prisma/client";
 import { toEscapeHTMLMsg } from "../utils/messageHandler";
 import { getBotCommands } from "../utils/botCommands";
-const { execSync } = require("child_process");
 
 const prisma = new PrismaClient();
 //General helper commands

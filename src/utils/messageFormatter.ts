@@ -106,7 +106,11 @@ export async function perfectMessageFormatter(
 
   const message = `Perfect pokemon ${toTitleCase(name)}(CP ${
     pokemonMessage.cp
-  }) despawns at ${pokemonMessage.despawnDate.toString()}`;
+  }) despawns at ${formatISO9075(pokemonMessage.despawnDate, {
+    representation: "time",
+  })}(${formatDistanceToNow(pokemonMessage.despawnDate, {
+    addSuffix: true,
+  })})`;
   return message;
 }
 
