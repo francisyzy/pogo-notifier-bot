@@ -20,11 +20,11 @@ export async function raidMessageFormatter(
   raidBosses.forEach((raidBoss) => {
     //change mega formatting
     let customMegaFormat = "";
+    //TODO check if future forms are still correct
     if (raidBoss.tier === "mega") {
       raidBoss.tier = "6";
       customMegaFormat = raidBoss.originalName.slice(5) + "_MEGA";
     }
-    //TODO check if future forms are still correct
     //If the egg has popped, use leek duck info at the start
     if (raidMessage.pokemonId === raidBoss.no) {
       bossName = `<a href="https://www.pokebattler.com/raids/${
@@ -48,7 +48,13 @@ export async function raidMessageFormatter(
     const { name: name } = await got(
       `https://pokeapi.co/api/v2/pokemon/${raidMessage.pokemonId}`,
     ).json();
-    bossName = toTitleCase(name);
+    bossName = toTitleCase(
+      `<a href="https://www.pokebattler.com/raids/${
+        raidMessage.level === 6
+          ? name + "_MEGA"
+          : name.replace(/\s/g, "_")
+      }${name}</a>`,
+    );
   }
 
   const message = `${raidMessage.level}★ Raid at <u>${
@@ -114,6 +120,11 @@ export async function perfectMessageFormatter(
   return message;
 }
 
+/**
+ * Caps the first char of all words
+ * @param str input string
+ * @returns Title Case Strings
+ */
 function toTitleCase(str: string): string {
   return str
     .toLowerCase()
