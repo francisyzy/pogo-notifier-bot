@@ -26,17 +26,31 @@ export async function raidMessageFormatter(
       customMegaFormat = raidBoss.originalName.slice(5) + "_MEGA";
     }
     //If the egg has popped, use leek duck info at the start
+    let url = `https://www.pokebattler.com/raids/${
+      customMegaFormat || raidBoss.originalName.replace(/\s/g, "_")
+    }`;
+    if (raidBoss.originalName.includes("Deoxys (Att")) {
+      url = `https://www.pokebattler.com/raids/DEOXYS_ATTACK_FORM`;
+    } else if (raidBoss.originalName.includes("Deoxys (Def")) {
+      url = `https://www.pokebattler.com/raids/DEOXYS_DEFENSE_FORM`;
+    } else if (raidBoss.originalName.includes("Deoxys (Speed")) {
+      url = `https://www.pokebattler.com/raids/DEOXYS_SPEED_FORM`;
+    } else if (raidBoss.originalName.includes("Deoxys (Normal")) {
+      url = `https://www.pokebattler.com/raids/DEOXYS`;
+    } else if (raidBoss.originalName.includes("Genesect (Shock)")) {
+      url = `https://www.pokebattler.com/raids/GENESECT_SHOCK_FORM`;
+    } else if (raidBoss.originalName.includes("Genesect (Chill)")) {
+      url = `https://www.pokebattler.com/raids/GENESECT_CHILL_FORM`;
+    } else if (raidBoss.originalName.includes("Genesect (Burn)")) {
+      url = `https://www.pokebattler.com/raids/GENESECT_BURN_FORM`;
+    } else if (raidBoss.originalName.includes("Genesect (Douse)")) {
+      url = `https://www.pokebattler.com/raids/GENESECT_DOUSE_FORM`;
+    }
     if (raidMessage.pokemonId === raidBoss.no) {
-      bossName = `<a href="https://www.pokebattler.com/raids/${
-        customMegaFormat || raidBoss.originalName.replace(/\s/g, "_")
-      }">${raidBoss.originalName}</a>`;
+      bossName = `<a href="${url}">${raidBoss.originalName}</a>`;
       bossName += raidBoss.shinyAvailable ? "✨" : "";
     } else if (Number(raidBoss.tier) === raidMessage.level) {
-      possibleBosses += `<a href="https://www.pokebattler.com/raids/${
-        raidMessage.level === 6
-          ? customMegaFormat
-          : raidBoss.originalName.replace(/\s/g, "_")
-      }">${raidBoss.originalName}</a>`;
+      possibleBosses += `<a href="${url}">${raidBoss.originalName}</a>`;
       possibleBosses += raidBoss.shinyAvailable ? "✨, " : ", ";
     }
   });
