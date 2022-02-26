@@ -17,12 +17,25 @@ const prisma = new PrismaClient();
 const checkRaid = () => {
   try {
     bot.command("checkraid", async (ctx) => {
+      const editMessage = await ctx.reply("Checking raids");
       const raids = await getRaids();
       updateGyms(raids);
       const raidMessages = await gymChecker(raids, ctx.from.id);
       //Exit condition early to end command
       if (raidMessages.length === 0) {
-        return ctx.reply("You have no raids at your subscriptions");
+        return ctx.telegram.editMessageText(
+          ctx.message.chat.id,
+          editMessage.message_id,
+          undefined,
+          "You have no raids at your subscriptions",
+        );
+      } else {
+        ctx.telegram.editMessageText(
+          ctx.message.chat.id,
+          editMessage.message_id,
+          undefined,
+          `You have ${raidMessages.length} raids at your subscriptions:`,
+        );
       }
       for (const raidMessage of raidMessages) {
         ctx.replyWithHTML(await raidMessageFormatter(raidMessage), {

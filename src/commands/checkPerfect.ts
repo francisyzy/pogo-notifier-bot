@@ -7,10 +7,26 @@ import { sleep } from "../utils/sleep";
 const checkPerfect = () => {
   try {
     bot.command("checkpokemon", async (ctx) => {
+      const editMessage = await ctx.reply(
+        "Checking for perfect pokemon",
+      );
       const pokemons = await getPerfect();
 
       if (pokemons.length === 0) {
-        return ctx.reply("No Perfect Pokemon detected at the moment");
+        return ctx.telegram.editMessageText(
+          ctx.message.chat.id,
+          editMessage.message_id,
+          undefined,
+          "No Perfect Pokemon detected at the moment",
+        );
+      }else{
+        ctx.telegram.editMessageText(
+          ctx.message.chat.id,
+          editMessage.message_id,
+          undefined,
+          `${[pokemons.length]} Perfect Pokemon found:`,
+        );
+
       }
 
       for await (const pokemon of pokemons) {

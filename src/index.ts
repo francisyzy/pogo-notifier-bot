@@ -105,7 +105,7 @@ schedule("*/10 5-20 * * *", () => {
 });
 //Check perfect pokemon every 5 mins
 setInterval(() => notifyPerfect(), 300000);
-setInterval(() => notifyLegendary(), 300000);
+setInterval(() => notifyLegendary(), 330000);
 
 // Enable graceful stop
 process.once("SIGINT", () => bot.stop("SIGINT"));
