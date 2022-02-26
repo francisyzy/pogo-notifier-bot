@@ -69,7 +69,7 @@ export async function notifyPerfect(): Promise<void> {
  * Check for legendary trio pokemons and notifies the user if there are pokemons
  */
 export async function notifyLegendary(): Promise<void> {
-  console.log("Checking pokemons");
+  console.log("Checking legendary pokemons");
   const pokemons = await getTrio();
   const pokemonMessages = await perfectChecker(pokemons);
   for (const pokemonMessage of pokemonMessages) {

@@ -97,6 +97,7 @@ schedule("45 0-23 * * *", () => {
 });
 notifyAndUpdateUsers();
 notifyPerfect();
+notifyLegendary();
 //Check raids every 10 mins, disable night checking
 //https://crontab.guru/#*/10_5-20_*_*_*
 schedule("*/10 5-20 * * *", () => {

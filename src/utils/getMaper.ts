@@ -36,7 +36,7 @@ export async function getPerfect(): Promise<pokemons> {
  */
 export async function getTrio(): Promise<pokemons> {
   const { pokemons: pokemons } = await got(
-    `https://sgpokemap.com/query2.php?mons=243%2C244%2C245&time=${new Date().valueOf()}&since=0`,
+    `https://sgpokemap.com/query2.php?mons=144,145,146,150,243,244,245,249,250,377,378,379,380,381,382,383,384,480,481,482,485,486,488,638,639,640,641,642,643,644,645,646,716,717,718,888,889&time=${new Date().valueOf()}&since=0`,
     {
       headers: {
         referer: "https://sgpokemap.com/index.html",
