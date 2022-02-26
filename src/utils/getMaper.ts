@@ -31,6 +31,23 @@ export async function getPerfect(): Promise<pokemons> {
 }
 
 /**
+ * Get list of perfect pokemons spawning
+ * @return {pokemons} List of pokemons
+ */
+export async function getTrio(): Promise<pokemons> {
+  const { pokemons: pokemons } = await got(
+    `https://sgpokemap.com/query2.php?mons=243%2C244%2C245&time=${new Date().valueOf()}&since=0`,
+    {
+      headers: {
+        referer: "https://sgpokemap.com/index.html",
+      },
+    },
+  ).json();
+
+  return pokemons as pokemons;
+}
+
+/**
  * Get list of events from leek duck
  * @return {rawEvents} List of rawEvents
  */

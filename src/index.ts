@@ -13,7 +13,10 @@ import subscribe from "./commands/subscribeGym";
 import manageGyms from "./commands/manageSubscribeGym";
 import { notifyAndUpdateUsers } from "./utils/notifier";
 import manageRaidLevels from "./commands/manageRaidLevel";
-import { notifyPerfect } from "./utils/perfectNotifier";
+import {
+  notifyLegendary,
+  notifyPerfect,
+} from "./utils/perfectNotifier";
 import subscribeLocation from "./commands/subscribeLocation";
 import checkPerfect from "./commands/checkPerfect";
 import { notifyEvent } from "./utils/eventNotifier";
@@ -101,6 +104,7 @@ schedule("*/10 5-20 * * *", () => {
 });
 //Check perfect pokemon every 5 mins
 setInterval(() => notifyPerfect(), 300000);
+setInterval(() => notifyLegendary(), 300000);
 
 // Enable graceful stop
 process.once("SIGINT", () => bot.stop("SIGINT"));
