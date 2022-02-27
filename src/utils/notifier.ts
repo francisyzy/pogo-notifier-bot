@@ -67,27 +67,31 @@ export async function notifyAndUpdateUsers(): Promise<void> {
             const numberOfBoss = await bossCount(raidMessage);
             //telegram command - is not clickable whereas _ is clickable
             const gymId = raidMessage.gymId.replaceAll("-", "_");
+            const configOffSetMs = config.raidAlertMinutes * 60000;
+            //* 60000, 1min = 60000ms
             const offsetMs =
               raidMessage.start.getTime() -
               new Date().getTime() -
-              config.raidAlertMinutes * 60000;
-            //* 60000, 1min = 60000ms
-            setTimeout(() => {
-              bot.telegram.sendMessage(
-                raidMessage.userTelegramId,
-                `Raid starting in ${config.raidAlertMinutes} mins${
-                  numberOfBoss === 1
-                    ? ""
-                    : "\n\n/checkraid_" +
-                      gymId +
-                      " to check which raid boss spawned, after the egg popped"
-                }\n\n<i>/stopNotifyingMeToday to stop being notified about raids for the rest of the day</i>`,
-                {
-                  reply_to_message_id: originalMessage.message_id,
-                  parse_mode: "HTML",
-                },
-              );
-            }, offsetMs);
+              configOffSetMs;
+            //Send reminder if its more than the configured minutes
+            if (offsetMs > configOffSetMs) {
+              setTimeout(() => {
+                bot.telegram.sendMessage(
+                  raidMessage.userTelegramId,
+                  `Raid starting in ${config.raidAlertMinutes} mins${
+                    numberOfBoss === 1
+                      ? ""
+                      : "\n\n/checkraid_" +
+                        gymId +
+                        " to check which raid boss spawned, after the egg popped"
+                  }\n\n<i>/stopNotifyingMeToday to stop being notified about raids for the rest of the day</i>`,
+                  {
+                    reply_to_message_id: originalMessage.message_id,
+                    parse_mode: "HTML",
+                  },
+                );
+              }, offsetMs);
+            }
           }
         })
         .catch(async (error) => {
