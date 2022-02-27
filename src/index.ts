@@ -54,22 +54,6 @@ if (process.env.NODE_ENV === "production") {
     }
     return next();
   });
-  if (config.LOG_GROUP_ID) {
-    //https://crontab.guru/#*/9_0-23_*_*_*
-    schedule("*/9 0-23 * * *", () => {
-      bot.telegram.sendMessage(
-        config.LOG_GROUP_ID!,
-        "Server still alive",
-        { disable_notification: true },
-      );
-    });
-  }
-  // bot.launch({
-  //   webhook: {
-  //     domain: config.URL,
-  //     port: Number(config.PORT),
-  //   },
-  // });
   bot.launch();
 } else {
   //Development logging
