@@ -1,6 +1,6 @@
 {
   "name": "pogo-notifier-bot",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Pokemon go bot that scrapes mappers and other apis for data to notify users of relevant information",
   "main": "dist/src/index.js",
   "scripts": {
@@ -25,7 +25,7 @@
   },
   "homepage": "https://github.com/francisyzy/pogo-notifier-bot#readme",
   "engines": {
-    "node": "15.x"
+    "node": "17.x"
   },
   "dependencies": {
     "@prisma/client": "^3.7.0",
@@ -33,11 +33,13 @@
     "dotenv": "^10.0.0",
     "got": "^11.8.3",
     "node-cron": "^3.0.0",
+    "qrcode-terminal": "^0.12.0",
     "telegraf": "^4.4.2"
   },
   "devDependencies": {
     "@types/node": "^15.3.1",
     "@types/node-cron": "^3.0.0",
+    "@types/qrcode-terminal": "^0.12.0",
     "nodemon": "^2.0.15",
     "prettier": "^2.5.0",
     "prisma": "^3.7.0",

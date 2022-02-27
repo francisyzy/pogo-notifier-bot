@@ -22,6 +22,7 @@ import checkPerfect from "./commands/checkPerfect";
 import { notifyEvent } from "./utils/eventNotifier";
 import { schedule } from "node-cron";
 import location from "./commands/location";
+import { printBotInfo } from "./utils/consolePrintUsername";
 
 //Production Settings
 if (process.env.NODE_ENV === "production") {
@@ -74,6 +75,7 @@ if (process.env.NODE_ENV === "production") {
   //Development logging
   bot.use(Telegraf.log());
   bot.launch();
+  printBotInfo(bot);
 }
 
 helper();
