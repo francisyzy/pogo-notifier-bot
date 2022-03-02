@@ -23,6 +23,7 @@ import { notifyEvent } from "./utils/eventNotifier";
 import { schedule } from "node-cron";
 import location from "./commands/location";
 import { printBotInfo } from "./utils/consolePrintUsername";
+import checkBoss from "./commands/checkBoss";
 
 //Production Settings
 if (process.env.NODE_ENV === "production") {
@@ -71,6 +72,7 @@ location();
 manageRaidLevels();
 subscribeLocation();
 checkPerfect();
+checkBoss();
 
 //Catch all unknown messages/commands
 catchAll();

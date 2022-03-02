@@ -8,7 +8,7 @@ const checkPerfect = () => {
   try {
     bot.command("checkpokemon", async (ctx) => {
       const editMessage = await ctx.reply(
-        "Checking for perfect pokemon",
+        "Checking for perfect pokemon…",
       );
       const pokemons = await getPerfect();
 

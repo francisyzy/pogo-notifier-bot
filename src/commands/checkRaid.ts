@@ -17,7 +17,7 @@ const prisma = new PrismaClient();
 const checkRaid = () => {
   try {
     bot.command("checkraid", async (ctx) => {
-      const editMessage = await ctx.reply("Checking raids");
+      const editMessage = await ctx.reply("Checking raids…");
       const raids = await getRaids();
       updateGyms(raids);
       const raidMessages = await gymChecker(raids, ctx.from.id);
