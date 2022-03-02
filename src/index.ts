@@ -54,6 +54,7 @@ if (process.env.NODE_ENV === "production") {
     }
     return next();
   });
+  bot.use(Telegraf.log());
   bot.launch();
 } else {
   //Development logging
