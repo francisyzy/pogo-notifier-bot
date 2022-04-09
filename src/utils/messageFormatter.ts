@@ -45,6 +45,12 @@ export async function raidMessageFormatter(
       url = `https://www.pokebattler.com/raids/GENESECT_BURN_FORM`;
     } else if (raidBoss.originalName.includes("Genesect (Douse)")) {
       url = `https://www.pokebattler.com/raids/GENESECT_DOUSE_FORM`;
+    } else if (raidBoss.originalName.includes("Thundurus (Therian)")) {
+      url = `https://www.pokebattler.com/raids/THUNDURUS_THERIAN_FORM`;
+    } else if (raidBoss.originalName.includes("Tornadus (Therian)")) {
+      url = `https://www.pokebattler.com/raids/TORNADUS_THERIAN_FORM`;
+    } else if (raidBoss.originalName.includes("Landorus (Therian)")) {
+      url = `https://www.pokebattler.com/raids/LANDORUS_THERIAN_FORM`;
     }
     if (raidMessage.pokemonId === raidBoss.no) {
       bossName = `<a href="${url}">${raidBoss.originalName}</a>`;
