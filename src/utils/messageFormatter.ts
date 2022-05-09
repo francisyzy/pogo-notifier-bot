@@ -18,44 +18,15 @@ export async function raidMessageFormatter(
   let bossName = "";
 
   raidBosses.forEach((raidBoss) => {
-    //change mega formatting
-    let customMegaFormat = "";
-    //TODO check if future forms are still correct
-    if (raidBoss.tier === "mega") {
-      raidBoss.tier = "6";
-      customMegaFormat = raidBoss.originalName.slice(5) + "_MEGA";
-    }
+    const url = urlFormatter(raidBoss.originalName, raidBoss.tier);
     //If the egg has popped, use leek duck info at the start
-    let url = `https://www.pokebattler.com/raids/${
-      customMegaFormat || raidBoss.originalName.replace(/\s/g, "_")
-    }`;
-    if (raidBoss.originalName.includes("Deoxys (Att")) {
-      url = `https://www.pokebattler.com/raids/DEOXYS_ATTACK_FORM`;
-    } else if (raidBoss.originalName.includes("Deoxys (Def")) {
-      url = `https://www.pokebattler.com/raids/DEOXYS_DEFENSE_FORM`;
-    } else if (raidBoss.originalName.includes("Deoxys (Speed")) {
-      url = `https://www.pokebattler.com/raids/DEOXYS_SPEED_FORM`;
-    } else if (raidBoss.originalName.includes("Deoxys (Normal")) {
-      url = `https://www.pokebattler.com/raids/DEOXYS`;
-    } else if (raidBoss.originalName.includes("Genesect (Shock)")) {
-      url = `https://www.pokebattler.com/raids/GENESECT_SHOCK_FORM`;
-    } else if (raidBoss.originalName.includes("Genesect (Chill)")) {
-      url = `https://www.pokebattler.com/raids/GENESECT_CHILL_FORM`;
-    } else if (raidBoss.originalName.includes("Genesect (Burn)")) {
-      url = `https://www.pokebattler.com/raids/GENESECT_BURN_FORM`;
-    } else if (raidBoss.originalName.includes("Genesect (Douse)")) {
-      url = `https://www.pokebattler.com/raids/GENESECT_DOUSE_FORM`;
-    } else if (raidBoss.originalName.includes("Thundurus (Therian)")) {
-      url = `https://www.pokebattler.com/raids/THUNDURUS_THERIAN_FORM`;
-    } else if (raidBoss.originalName.includes("Tornadus (Therian)")) {
-      url = `https://www.pokebattler.com/raids/TORNADUS_THERIAN_FORM`;
-    } else if (raidBoss.originalName.includes("Landorus (Therian)")) {
-      url = `https://www.pokebattler.com/raids/LANDORUS_THERIAN_FORM`;
-    }
     if (raidMessage.pokemonId === raidBoss.no) {
       bossName = `<a href="${url}">${raidBoss.originalName}</a>`;
       bossName += raidBoss.shinyAvailable ? "✨" : "";
-    } else if (Number(raidBoss.tier) === raidMessage.level) {
+    } else if (
+      Number(raidBoss.tier === "mega" ? "6" : raidBoss.tier) ===
+      raidMessage.level
+    ) {
       possibleBosses += `<a href="${url}">${raidBoss.originalName}</a>`;
       possibleBosses += raidBoss.shinyAvailable ? "✨, " : ", ";
     }
@@ -153,4 +124,44 @@ function toTitleCase(str: string): string {
       return word.charAt(0).toUpperCase() + word.slice(1);
     })
     .join(" ");
+}
+
+export function urlFormatter(
+  originalName: string,
+  raidTier: string,
+): string {
+  let url = `https://www.pokebattler.com/raids/${originalName.replace(
+    /\s/g,
+    "_",
+  )}`;
+  if (raidTier === "mega" || raidTier === "6") {
+    //TODO check if future forms are still correct
+    url = `https://www.pokebattler.com/raids/${
+      originalName.slice(5) + "_MEGA"
+    }`;
+  } else if (originalName.includes("Deoxys (Att")) {
+    url = `https://www.pokebattler.com/raids/DEOXYS_ATTACK_FORM`;
+  } else if (originalName.includes("Deoxys (Def")) {
+    url = `https://www.pokebattler.com/raids/DEOXYS_DEFENSE_FORM`;
+  } else if (originalName.includes("Deoxys (Speed")) {
+    url = `https://www.pokebattler.com/raids/DEOXYS_SPEED_FORM`;
+  } else if (originalName.includes("Deoxys (Normal")) {
+    url = `https://www.pokebattler.com/raids/DEOXYS`;
+  } else if (originalName.includes("Genesect (Shock)")) {
+    url = `https://www.pokebattler.com/raids/GENESECT_SHOCK_FORM`;
+  } else if (originalName.includes("Genesect (Chill)")) {
+    url = `https://www.pokebattler.com/raids/GENESECT_CHILL_FORM`;
+  } else if (originalName.includes("Genesect (Burn)")) {
+    url = `https://www.pokebattler.com/raids/GENESECT_BURN_FORM`;
+  } else if (originalName.includes("Genesect (Douse)")) {
+    url = `https://www.pokebattler.com/raids/GENESECT_DOUSE_FORM`;
+  } else if (originalName.includes("Thundurus (Therian)")) {
+    url = `https://www.pokebattler.com/raids/THUNDURUS_THERIAN_FORM`;
+  } else if (originalName.includes("Tornadus (Therian)")) {
+    url = `https://www.pokebattler.com/raids/TORNADUS_THERIAN_FORM`;
+  } else if (originalName.includes("Landorus (Therian)")) {
+    url = `https://www.pokebattler.com/raids/LANDORUS_THERIAN_FORM`;
+  }
+
+  return url;
 }
