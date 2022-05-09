@@ -22,7 +22,7 @@ const helper = () => {
     }
     if (ctx.message && ctx.message.chat.type === "private") {
       return ctx.reply(
-        "Welcome to the Pokemon Go Notifier Butler. This bot will notify you about raids at your gyms or perfect pokemon near you \n\n/help for more info",
+        "Welcome to the Pokemon Go Notifier Butler. This bot will notify you about raids at your gyms or perfect pokemon near you\n\nUse the menu to find out more about the commands\n\n/help for more info",
       );
     } else {
       return ctx.reply("Please use the bot in a private chat");
@@ -72,13 +72,23 @@ const helper = () => {
   bot.help(async (ctx) => {
     const commands = getBotCommands();
     let returnString =
-      "Use the following commands to configure the bot to notify you about Perfect Pokemon spawns or Raid Events\n\n";
+      "Use the following commands to configure the bot to notify you about Perfect Pokemon spawns or Raids\n\n";
     commands.forEach((command) => {
       returnString += "/" + command.command + "\n";
       returnString += "<i>" + command.description + "</i>\n\n";
     });
     returnString += `<i>For bug reports, please create an issue at <a href="http://go.francisyzy.com/pogo-notifier-bot-issues">Github</a></i>`;
     return ctx.replyWithHTML(returnString);
+  });
+  bot.command("perfect", (ctx) => {
+    return ctx.replyWithHTML(
+      "/checkPerfect to get the list of perfect Pokemons currently spawned\n\n<u>Use this commands to add notification</u>\n/addLocation to send your location to get notified when a perfect Pokemon spawns\n\n<u>Options</u>\n/managePerfect to remove a perfect location",
+    );
+  });
+  bot.command("raids", (ctx) => {
+    return ctx.replyWithHTML(
+      "/checkraid to check for all raids at your gyms\n\n/current boss to get the list of raid bosses\n\n<u>Use these commands to add notification when the gym has any raids.</u>\n/gymLocation to send your location to look for nearby Gyms\n\n/gymName to search for Gyms using Gym Names\n\n<u>Options</u>\n/managegyms to remove gym notifications\n\n/manageraidlevel to select which ★ level to get notified about",
+    );
   });
 };
 

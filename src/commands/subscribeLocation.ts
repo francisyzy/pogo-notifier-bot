@@ -79,7 +79,7 @@ const subscribeLocation = () => {
     bot.use(session());
     bot.use(stage.middleware());
 
-    bot.command("addlocation", (ctx) => {
+    bot.command("addLocation", (ctx) => {
       return ctx.scene.enter("subscribeLocation");
     });
     bot.action(/SP_+/, async (ctx) => {

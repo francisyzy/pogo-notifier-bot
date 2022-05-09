@@ -8,41 +8,23 @@ export function getBotCommands(): BotCommand[] {
     {
       command: "sendlocation",
       description:
-        "Send your current location to check for nearby events",
+        "Send your current location to check for nearby perfect pokemon or raids",
     },
     {
-      command: "subscribebyname",
-      description: "Subscribe gym raid notification by name",
+      command: "raids",
+      description: "Get raids submenu",
     },
     {
-      command: "subscribebylocation",
-      description: "Subscribe gym raid notification by location",
-    },
-    {
-      command: "checkpokemon",
-      description: "Check all the perfect pokemon currently spawning",
-    },
-    {
-      command: "checkraid",
-      description: "Check if gyms you subscribed to has raids",
-    },
-    {
-      command: "managegyms",
-      description: "Manage gyms you subscribed to",
-    },
-    {
-      command: "manageraidlevel",
-      description:
-        "Manage the gym level you want to get notified about",
-    },
-    {
-      command: "addlocation",
-      description:
-        "Get notified about perfect pokemons at the location you send",
+      command: "perfect",
+      description: "Get perfect Pokemon submenu",
     },
     {
       command: "stats",
       description: "See how many times you have been notified",
+    },
+    {
+      command: "currentboss",
+      description: "Get current raid boss list",
     },
   ];
   let botCommands: BotCommand[] = [];

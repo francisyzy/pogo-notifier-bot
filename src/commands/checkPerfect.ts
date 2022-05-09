@@ -6,7 +6,7 @@ import { sleep } from "../utils/sleep";
 
 const checkPerfect = () => {
   try {
-    bot.command("checkpokemon", async (ctx) => {
+    bot.command("checkPerfect", async (ctx) => {
       const editMessage = await ctx.reply(
         "Checking for perfect pokemon…",
       );

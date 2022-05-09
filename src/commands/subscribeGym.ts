@@ -251,10 +251,10 @@ const subscribe = () => {
     bot.use(session());
     bot.use(stage.middleware());
 
-    bot.command("subscribebylocation", (ctx) => {
+    bot.command("gymLocation", (ctx) => {
       return ctx.scene.enter("gymSearchLocation");
     });
-    bot.command("subscribebyname", (ctx) => {
+    bot.command("gymName", (ctx) => {
       return ctx.scene.enter("gymNameSearchLocation");
     });
     bot.action(/SG_+/, (ctx) => {
