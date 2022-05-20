@@ -19,14 +19,13 @@ const checkPerfect = () => {
           undefined,
           "No Perfect Pokemon detected at the moment",
         );
-      }else{
+      } else {
         ctx.telegram.editMessageText(
           ctx.message.chat.id,
           editMessage.message_id,
           undefined,
           `${[pokemons.length]} Perfect Pokemon found:`,
         );
-
       }
 
       for await (const pokemon of pokemons) {

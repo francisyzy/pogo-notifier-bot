@@ -161,6 +161,20 @@ export function urlFormatter(
     url = `https://www.pokebattler.com/raids/TORNADUS_THERIAN_FORM`;
   } else if (originalName.includes("Landorus (Therian)")) {
     url = `https://www.pokebattler.com/raids/LANDORUS_THERIAN_FORM`;
+  } else if (originalName.includes("Alolan Raichu")) {
+    url = `https://www.pokebattler.com/raids/RAICHU_ALOLA_FORM`;
+  } else if (originalName.includes("Alolan Exegg")) {
+    url = `https://www.pokebattler.com/raids/EXEGGUTOR_ALOLA_FORM/`;
+  } else if (originalName.includes("Alolan Sandshrew")) {
+    url = `https://www.pokebattler.com/raids/SANDSHREW_ALOLA_FORM/`;
+  } else if (originalName.includes("Alolan Dig")) {
+    url = `https://www.pokebattler.com/raids/DIGLETT_ALOLA_FORM/`;
+  } else if (originalName.includes("Alolan Geo")) {
+    url = `https://www.pokebattler.com/raids/GEODUDE_ALOLA_FORM/`;
+  } else if (originalName.includes("Alolan Grimer")) {
+    url = `https://www.pokebattler.com/raids/GRIMER_ALOLA_FORM/`;
+  } else if (originalName.includes("Alolan Graveler")) {
+    url = `https://www.pokebattler.com/raids/GRAVELER_ALOLA_FORM/`;
   }
 
   return url;
