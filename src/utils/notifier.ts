@@ -67,7 +67,9 @@ export async function notifyAndUpdateUsers(): Promise<void> {
             const numberOfBoss = await bossCount(raidMessage);
             //telegram command - is not clickable whereas _ is clickable
             const gymId = raidMessage.gymId.replaceAll("-", "_");
-            const configOffSetMs = config.raidAlertMinutes * 60000;
+            const raidAlertMinutes =
+              user?.raidAlertMinutes || config.raidAlertMinutes;
+            const configOffSetMs = raidAlertMinutes * 60000;
             //* 60000, 1min = 60000ms
             const offsetMs =
               raidMessage.start.getTime() -
@@ -78,7 +80,7 @@ export async function notifyAndUpdateUsers(): Promise<void> {
               setTimeout(() => {
                 bot.telegram.sendMessage(
                   raidMessage.userTelegramId,
-                  `Raid starting in ${config.raidAlertMinutes} mins${
+                  `Raid starting in ${raidAlertMinutes} mins${
                     numberOfBoss === 1
                       ? ""
                       : "\n\n/checkraid_" +

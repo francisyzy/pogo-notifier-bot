@@ -156,18 +156,23 @@ const checkRaid = () => {
         .split("_")[2]
         .replaceAll("-", "_");
       const numberOfBoss = Number(ctx.match.input.split("_")[3]);
+      const user = await prisma.user.findUnique({
+        where: { telegramId: ctx.from!.id },
+      });
+      const raidAlertMinutes =
+        user?.raidAlertMinutes || config.raidAlertMinutes;
 
       let message = "";
       const offsetMs =
         raidStartTime -
         new Date().getTime() -
-        config.raidAlertMinutes * 60000;
+        raidAlertMinutes * 60000;
       //* 60000, 1min = 60000ms
       if (offsetMs > 0) {
         setTimeout(() => {
           bot.telegram.sendMessage(
             ctx.from!.id,
-            `Raid starting in ${config.raidAlertMinutes} mins${
+            `Raid starting in ${raidAlertMinutes} mins${
               numberOfBoss === 1
                 ? ""
                 : "\n\n/checkraid_" +
@@ -181,15 +186,12 @@ const checkRaid = () => {
             },
           );
         }, offsetMs);
-        message =
-          "Will remind you about this raid when the raid is going to start in 5 minutes";
+        message = `Will remind you about this raid when the raid is going to start in ${raidAlertMinutes} minutes`;
       } else if (
         raidStartTime - new Date().getTime() <
-        config.raidAlertMinutes * 60000
+        raidAlertMinutes * 60000
       ) {
-        message = `Raid starts within ${
-          config.raidAlertMinutes
-        } minutes, you cannot set reminder${
+        message = `Raid starts within ${raidAlertMinutes} minutes, you cannot set reminder${
           numberOfBoss === 1
             ? ""
             : "\n\n/checkraid_" +

@@ -26,6 +26,7 @@ model User {
   //notify settings
   raidLevelNotify      Int[]
   stopNotifyingMeToday DateTime?
+  raidAlertMinutes     Int       @default(5)
 
   //f keys
   GymSubscribe      GymSubscribe[]
