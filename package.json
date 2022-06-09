@@ -9,7 +9,7 @@
     "dev": "nodemon src/index.ts",
     "seed": "ts-node prisma/seed.ts",
     "generate": "prisma generate",
-    "generateProxy": "PRISMA_CLIENT_ENGINE_TYPE='dataproxy' prisma generate",
+    "generateProxy": "PRISMA_CLIENT_ENGINE_TYPE='dataproxy' prisma generate --data-proxy",
     "deploy": "prisma migrate deploy",
     "studio": "prisma studio",
     "migrate": "prisma migrate dev",
