@@ -26,6 +26,10 @@ export function getBotCommands(): BotCommand[] {
       command: "currentboss",
       description: "Get current raid boss list",
     },
+    {
+      command: "events",
+      description: "Get events channel link",
+    },
   ];
   let botCommands: BotCommand[] = [];
   rawBotCommands.forEach((botCommand) => {
