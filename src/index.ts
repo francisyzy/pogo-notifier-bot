@@ -78,6 +78,7 @@ checkBoss();
 catchAll();
 
 //https://www.serverless.com/blog/cron-jobs-on-aws/
+//Checks for event every hour
 //https://crontab.guru/#45_0-23_*_*_*
 schedule("45 0-23 * * *", () => {
   console.log(new Date());
@@ -90,6 +91,11 @@ notifyLegendary();
 //Check raids every 10 mins, disable night checking
 //https://crontab.guru/#*/10_5-20_*_*_*
 schedule("*/10 5-20 * * *", () => {
+  notifyAndUpdateUsers();
+});
+//Check raids every mins when raid hour is starting
+//https://crontab.guru/#49-59_17_*_*_3
+schedule("44-59 17 * * 3", () => {
   notifyAndUpdateUsers();
 });
 //Check perfect pokemon every 5 mins
