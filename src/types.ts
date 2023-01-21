@@ -85,6 +85,7 @@ interface raidBosses extends Array<raidBoss> {}
 
 interface rawEvent {
   title: string;
+  originalTitle: string;
   link: string;
   type: string;
   imageUrl: string;

@@ -45,7 +45,7 @@ export async function notifyEvent(): Promise<void> {
           end: addMinutes(new Date(), config.eventBuffer),
         })
       ) {
-        notifier.push({ link: event.link, title: event.title });
+        notifier.push({ link: event.link, title: event.originalTitle });
       }
     } else if (
       isWithinInterval(new Date(event.startTime), {
@@ -53,7 +53,7 @@ export async function notifyEvent(): Promise<void> {
         end: addMinutes(new Date(), config.eventBuffer),
       })
     ) {
-      notifier.push({ link: event.link, title: event.title });
+      notifier.push({ link: event.link, title: event.originalTitle });
     }
   });
   //Removes duplicate events
