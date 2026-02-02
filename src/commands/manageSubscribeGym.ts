@@ -1,4 +1,4 @@
-import { Scenes, session, Markup, Composer } from "telegraf";
+import { Scenes, Markup, Composer } from "telegraf";
 import bot from "../lib/bot";
 import { InlineKeyboardButton } from "typegram";
 import { PrismaClient, Prisma } from "@prisma/client";
@@ -120,7 +120,6 @@ const manageGyms = () => {
     const stage = new Scenes.Stage<Scenes.WizardContext>([
       gymListWizard,
     ]);
-    bot.use(session());
     bot.use(stage.middleware());
 
     bot.command("mygyms", async (ctx) => {

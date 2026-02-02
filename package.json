@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node dist/src/index.js",
     "build": "npm run generateProxy && tsc -p .",
-    "dev": "prisma generate && tsx watch src/index.ts",
+    "dev": "tsx watch src/index.ts",
     "seed": "ts-node prisma/seed.ts",
     "generate": "prisma generate",
     "generateProxy": "PRISMA_CLIENT_ENGINE_TYPE='dataproxy' prisma generate --data-proxy",

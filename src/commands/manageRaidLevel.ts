@@ -1,4 +1,4 @@
-import { Scenes, session, Markup, Composer } from "telegraf";
+import { Scenes, Markup, Composer } from "telegraf";
 import bot from "../lib/bot";
 import { InlineKeyboardButton } from "typegram";
 import { PrismaClient, Prisma } from "@prisma/client";
@@ -152,7 +152,6 @@ const manageRaidLevels = () => {
     const stage = new Scenes.Stage<Scenes.WizardContext>([
       raidLevelWizard,
     ]);
-    bot.use(session());
     bot.use(stage.middleware());
 
     bot.command("manageraidlevel", (ctx) => {

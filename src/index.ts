@@ -1,9 +1,12 @@
 import { Message } from "typegram";
-import { Telegraf } from "telegraf";
+import { Telegraf, session } from "telegraf";
 
 import config from "./config";
 
 import bot from "./lib/bot";
+
+// Session must be used once before any Scenes/Stage middleware
+bot.use(session());
 import { toEscapeHTMLMsg } from "./utils/messageHandler";
 
 import helper from "./commands/helper";

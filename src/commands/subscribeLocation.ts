@@ -1,4 +1,4 @@
-import { Scenes, session, Markup, Composer } from "telegraf";
+import { Scenes, Markup, Composer } from "telegraf";
 import bot from "../lib/bot";
 import { PrismaClient } from "@prisma/client";
 
@@ -76,7 +76,6 @@ const subscribeLocation = () => {
     const stage = new Scenes.Stage<Scenes.WizardContext>([
       locationSearchWizard,
     ]);
-    bot.use(session());
     bot.use(stage.middleware());
 
     bot.command("addLocation", (ctx) => {

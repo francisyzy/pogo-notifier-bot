@@ -1,4 +1,4 @@
-import { Scenes, session, Markup, Composer } from "telegraf";
+import { Scenes, Markup, Composer } from "telegraf";
 import bot from "../lib/bot";
 import { Message, InlineKeyboardButton } from "typegram";
 import { PrismaClient, Prisma } from "@prisma/client";
@@ -248,7 +248,6 @@ const subscribe = () => {
       nameSearchWizard,
       locationWizard,
     ]);
-    bot.use(session());
     bot.use(stage.middleware());
 
     bot.command("gymLocation", (ctx) => {
