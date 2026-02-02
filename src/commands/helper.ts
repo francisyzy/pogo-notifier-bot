@@ -2,6 +2,7 @@ import bot from "../lib/bot";
 import { PrismaClient } from "@prisma/client";
 import { toEscapeHTMLMsg } from "../utils/messageHandler";
 import { getBotCommands } from "../utils/botCommands";
+import { LINKS } from "../constants";
 
 const prisma = new PrismaClient();
 //General helper commands
@@ -77,7 +78,7 @@ const helper = () => {
       returnString += "/" + command.command + "\n";
       returnString += "<i>" + command.description + "</i>\n\n";
     });
-    returnString += `<i>For bug reports, please create an issue at <a href="http://go.francisyzy.com/pogo-notifier-bot-issues">Github</a></i>`;
+    returnString += `<i>For bug reports, please create an issue at <a href="${LINKS.ISSUES}">Github</a></i>`;
     return ctx.replyWithHTML(returnString);
   });
   bot.command("perfect", (ctx) => {
@@ -92,7 +93,7 @@ const helper = () => {
   });
   bot.command("events", (ctx) => {
     return ctx.reply(
-      "Subscribe to this Telegram Channel to get notified about events 15 minutes before they start!\nhttps://t.me/SGPogoEvents",
+      `Subscribe to this Telegram Channel to get notified about events 15 minutes before they start!\n${LINKS.EVENTS_CHANNEL}`,
     );
   });
 };

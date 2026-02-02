@@ -1,14 +1,12 @@
 import bot from "../lib/bot";
 import { Markup } from "telegraf";
 import { InlineKeyboardButton } from "typegram";
-
-const LOCATION_TUTORIAL_IMAGE =
-  "https://user-images.githubusercontent.com/24467184/147383291-61994fe2-ad11-4e0e-be8d-baf0cdec6b3d.png";
+import { IMAGES } from "../constants";
 
 //location commands
 const location = () => {
   bot.command("sendlocation", async (ctx) => {
-    await ctx.replyWithPhoto(LOCATION_TUTORIAL_IMAGE, {
+    await ctx.replyWithPhoto(IMAGES.LOCATION_TUTORIAL, {
       caption:
         "Press the button below to send your location. You can use it to:\n" +
         "• Subscribe to a nearby gym\n" +

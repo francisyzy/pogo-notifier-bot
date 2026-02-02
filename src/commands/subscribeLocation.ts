@@ -1,6 +1,7 @@
 import { Scenes, Markup, Composer } from "telegraf";
 import bot from "../lib/bot";
 import { PrismaClient } from "@prisma/client";
+import { IMAGES } from "../constants";
 
 const prisma = new PrismaClient();
 
@@ -41,7 +42,7 @@ const subscribeLocation = () => {
     });
     locationHandler.use((ctx) =>
       ctx.replyWithPhoto(
-        "https://user-images.githubusercontent.com/24467184/147383291-61994fe2-ad11-4e0e-be8d-baf0cdec6b3d.png",
+        IMAGES.LOCATION_TUTORIAL,
         {
           caption:
             "Please send your location by clicking the button on the keyboard or /cancel to exit",

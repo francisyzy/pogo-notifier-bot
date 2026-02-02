@@ -1,5 +1,6 @@
 import { formatDistanceToNow, formatISO9075 } from "date-fns";
 import { pokemonMessage, raidBosses, raidMessage } from "../types";
+import { URLS } from "../constants";
 
 async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
   const response = await fetch(url, options);
@@ -14,11 +15,9 @@ async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
 export async function raidMessageFormatter(
   raidMessage: raidMessage,
 ): Promise<string> {
-  const bosses = (await fetchJson<raidBosses>(
-    "https://raw.githubusercontent.com/pmgo-professor-willow/data-leekduck/gh-pages/raid-bosses.min.json",
-  )) as raidBosses;
+  const bosses = (await fetchJson<raidBosses>(URLS.RAID_BOSSES_JSON)) as raidBosses;
 
-  let possibleBosses = `\n\n<a href="https://www.leekduck.com/boss/">Possible raid boss</a>: (`;
+  let possibleBosses = `\n\n<a href="${URLS.LEEKDUCK_BOSS}">Possible raid boss</a>: (`;
   let bossName = "";
 
   bosses.forEach((raidBoss) => {
@@ -41,10 +40,10 @@ export async function raidMessageFormatter(
   //If leek duck has no info and raid has popped
   if (bossName === "" && raidMessage.pokemonId !== 0) {
     const { name: name } = await fetchJson<{ name: string }>(
-      `https://pokeapi.co/api/v2/pokemon/${raidMessage.pokemonId}`,
+      `${URLS.POKEAPI_POKEMON}/${raidMessage.pokemonId}`,
     );
     bossName = toTitleCase(
-      `<a href="https://www.pokebattler.com/raids/${
+      `<a href="${URLS.POKEBATTLER_RAIDS}/${
         raidMessage.level === 6
           ? name + "_MEGA"
           : name.replace(/\s/g, "_")
@@ -84,9 +83,7 @@ export async function raidMessageFormatter(
 export async function bossCount(
   raidMessage: raidMessage,
 ): Promise<number> {
-  const bosses = (await fetchJson<raidBosses>(
-    "https://raw.githubusercontent.com/pmgo-professor-willow/data-leekduck/gh-pages/raid-bosses.min.json",
-  )) as raidBosses;
+  const bosses = (await fetchJson<raidBosses>(URLS.RAID_BOSSES_JSON)) as raidBosses;
 
   return bosses.filter(
     (boss) => Number(boss.tier) === raidMessage.level,
@@ -102,7 +99,7 @@ export async function perfectMessageFormatter(
   pokemonMessage: pokemonMessage,
 ): Promise<string> {
   const { name: name } = await fetchJson<{ name: string }>(
-    `https://pokeapi.co/api/v2/pokemon/${pokemonMessage.pokemon_id}`,
+    `${URLS.POKEAPI_POKEMON}/${pokemonMessage.pokemon_id}`,
   );
 
   const message = `Perfect pokemon ${toTitleCase(name)}(CP ${
@@ -134,51 +131,47 @@ export function urlFormatter(
   originalName: string,
   raidTier: string,
 ): string {
-  let url = `https://www.pokebattler.com/raids/${originalName.replace(
-    /\s/g,
-    "_",
-  )}`;
+  const base = URLS.POKEBATTLER_RAIDS;
+  let url = `${base}/${originalName.replace(/\s/g, "_")}`;
   if (raidTier === "mega" || raidTier === "6") {
     //TODO check if future forms are still correct
-    url = `https://www.pokebattler.com/raids/${
-      originalName.slice(5) + "_MEGA"
-    }`;
+    url = `${base}/${originalName.slice(5) + "_MEGA"}`;
   } else if (originalName.includes("Deoxys (Att")) {
-    url = `https://www.pokebattler.com/raids/DEOXYS_ATTACK_FORM`;
+    url = `${base}/DEOXYS_ATTACK_FORM`;
   } else if (originalName.includes("Deoxys (Def")) {
-    url = `https://www.pokebattler.com/raids/DEOXYS_DEFENSE_FORM`;
+    url = `${base}/DEOXYS_DEFENSE_FORM`;
   } else if (originalName.includes("Deoxys (Speed")) {
-    url = `https://www.pokebattler.com/raids/DEOXYS_SPEED_FORM`;
+    url = `${base}/DEOXYS_SPEED_FORM`;
   } else if (originalName.includes("Deoxys (Normal")) {
-    url = `https://www.pokebattler.com/raids/DEOXYS`;
+    url = `${base}/DEOXYS`;
   } else if (originalName.includes("Genesect (Shock)")) {
-    url = `https://www.pokebattler.com/raids/GENESECT_SHOCK_FORM`;
+    url = `${base}/GENESECT_SHOCK_FORM`;
   } else if (originalName.includes("Genesect (Chill)")) {
-    url = `https://www.pokebattler.com/raids/GENESECT_CHILL_FORM`;
+    url = `${base}/GENESECT_CHILL_FORM`;
   } else if (originalName.includes("Genesect (Burn)")) {
-    url = `https://www.pokebattler.com/raids/GENESECT_BURN_FORM`;
+    url = `${base}/GENESECT_BURN_FORM`;
   } else if (originalName.includes("Genesect (Douse)")) {
-    url = `https://www.pokebattler.com/raids/GENESECT_DOUSE_FORM`;
+    url = `${base}/GENESECT_DOUSE_FORM`;
   } else if (originalName.includes("Thundurus (Therian)")) {
-    url = `https://www.pokebattler.com/raids/THUNDURUS_THERIAN_FORM`;
+    url = `${base}/THUNDURUS_THERIAN_FORM`;
   } else if (originalName.includes("Tornadus (Therian)")) {
-    url = `https://www.pokebattler.com/raids/TORNADUS_THERIAN_FORM`;
+    url = `${base}/TORNADUS_THERIAN_FORM`;
   } else if (originalName.includes("Landorus (Therian)")) {
-    url = `https://www.pokebattler.com/raids/LANDORUS_THERIAN_FORM`;
+    url = `${base}/LANDORUS_THERIAN_FORM`;
   } else if (originalName.includes("Alolan Raichu")) {
-    url = `https://www.pokebattler.com/raids/RAICHU_ALOLA_FORM`;
+    url = `${base}/RAICHU_ALOLA_FORM`;
   } else if (originalName.includes("Alolan Exegg")) {
-    url = `https://www.pokebattler.com/raids/EXEGGUTOR_ALOLA_FORM/`;
+    url = `${base}/EXEGGUTOR_ALOLA_FORM/`;
   } else if (originalName.includes("Alolan Sandshrew")) {
-    url = `https://www.pokebattler.com/raids/SANDSHREW_ALOLA_FORM/`;
+    url = `${base}/SANDSHREW_ALOLA_FORM/`;
   } else if (originalName.includes("Alolan Dig")) {
-    url = `https://www.pokebattler.com/raids/DIGLETT_ALOLA_FORM/`;
+    url = `${base}/DIGLETT_ALOLA_FORM/`;
   } else if (originalName.includes("Alolan Geo")) {
-    url = `https://www.pokebattler.com/raids/GEODUDE_ALOLA_FORM/`;
+    url = `${base}/GEODUDE_ALOLA_FORM/`;
   } else if (originalName.includes("Alolan Grimer")) {
-    url = `https://www.pokebattler.com/raids/GRIMER_ALOLA_FORM/`;
+    url = `${base}/GRIMER_ALOLA_FORM/`;
   } else if (originalName.includes("Alolan Graveler")) {
-    url = `https://www.pokebattler.com/raids/GRAVELER_ALOLA_FORM/`;
+    url = `${base}/GRAVELER_ALOLA_FORM/`;
   }
 
   return url;
