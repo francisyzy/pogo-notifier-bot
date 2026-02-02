@@ -43,18 +43,13 @@ const manageGyms = () => {
 
       return await ctx.scene.leave();
     });
-    gymHandler.command(
-      "/cancel",
-      (ctx) => (
-        ctx.reply(
-          "Exiting gym management. /managegyms to remove gyms",
-          {
-            ...Markup.removeKeyboard(),
-          },
-        ),
-        ctx.scene.leave()
-      ),
-    );
+    gymHandler.command("cancel", async (ctx) => {
+      await ctx.reply(
+        "Exiting gym management. /managegyms to remove gyms",
+        { ...Markup.removeKeyboard() },
+      );
+      return ctx.scene.leave();
+    });
     gymHandler.use((ctx) =>
       ctx.reply(
         "Please select one of the gyms in the list or /cancel to exit",

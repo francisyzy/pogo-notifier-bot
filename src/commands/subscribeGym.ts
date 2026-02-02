@@ -37,15 +37,12 @@ const subscribe = () => {
       }
       return ctx.wizard.next();
     });
-    locationHandler.command(
-      "/cancel",
-      (ctx) => (
-        ctx.reply("Exiting location gym search", {
-          ...Markup.removeKeyboard(),
-        }),
-        ctx.scene.leave()
-      ),
-    );
+    locationHandler.command("cancel", async (ctx) => {
+      await ctx.reply("Exiting location gym search", {
+        ...Markup.removeKeyboard(),
+      });
+      return ctx.scene.leave();
+    });
     locationHandler.use((ctx) =>
       ctx.replyWithPhoto(
         "https://user-images.githubusercontent.com/24467184/147383291-61994fe2-ad11-4e0e-be8d-baf0cdec6b3d.png",
@@ -56,15 +53,12 @@ const subscribe = () => {
       ),
     );
     const searchHandler = new Composer<Scenes.WizardContext>();
-    searchHandler.command(
-      "/cancel",
-      (ctx) => (
-        ctx.reply("Exiting gym search", {
-          ...Markup.removeKeyboard(),
-        }),
-        ctx.scene.leave()
-      ),
-    );
+    searchHandler.command("cancel", async (ctx) => {
+      await ctx.reply("Exiting gym search", {
+        ...Markup.removeKeyboard(),
+      });
+      return ctx.scene.leave();
+    });
     searchHandler.command("/subscribebyname", (ctx) =>
       ctx.reply(
         "You can enter the gym name to search for it. /cancel to exit",
@@ -143,15 +137,12 @@ const subscribe = () => {
 
       return await ctx.scene.leave();
     });
-    gymHandler.command(
-      "/cancel",
-      (ctx) => (
-        ctx.reply("Exiting gym search", {
-          ...Markup.removeKeyboard(),
-        }),
-        ctx.scene.leave()
-      ),
-    );
+    gymHandler.command("cancel", async (ctx) => {
+      await ctx.reply("Exiting gym search", {
+        ...Markup.removeKeyboard(),
+      });
+      return ctx.scene.leave();
+    });
     gymHandler.use((ctx) =>
       ctx.reply(
         "Please select one of the gyms in the list or /cancel to exit",

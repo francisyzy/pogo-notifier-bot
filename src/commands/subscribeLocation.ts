@@ -33,21 +33,18 @@ const subscribeLocation = () => {
 
       return await ctx.scene.leave();
     });
-    locationHandler.command(
-      "/cancel",
-      (ctx) => (
-        ctx.reply("Exiting set perfect pokemon location notify", {
-          ...Markup.removeKeyboard(),
-        }),
-        ctx.scene.leave()
-      ),
-    );
+    locationHandler.command("cancel", async (ctx) => {
+      await ctx.reply("Exiting set perfect pokemon location notify", {
+        ...Markup.removeKeyboard(),
+      });
+      return ctx.scene.leave();
+    });
     locationHandler.use((ctx) =>
       ctx.replyWithPhoto(
         "https://user-images.githubusercontent.com/24467184/147383291-61994fe2-ad11-4e0e-be8d-baf0cdec6b3d.png",
         {
           caption:
-            "Please send your location by clicking the button on the keyboard",
+            "Please send your location by clicking the button on the keyboard or /cancel to exit",
         },
       ),
     );

@@ -68,15 +68,12 @@ const manageRaidLevels = () => {
 
       return await ctx.scene.leave();
     });
-    raidLevelHandler.command(
-      "/cancel",
-      (ctx) => (
-        ctx.reply("Exit raid level management", {
-          ...Markup.removeKeyboard(),
-        }),
-        ctx.scene.leave()
-      ),
-    );
+    raidLevelHandler.command("cancel", async (ctx) => {
+      await ctx.reply("Exit raid level management", {
+        ...Markup.removeKeyboard(),
+      });
+      return ctx.scene.leave();
+    });
     raidLevelHandler.use((ctx) =>
       ctx.reply(
         "Please select one of the raid level in the list or /cancel to exit",

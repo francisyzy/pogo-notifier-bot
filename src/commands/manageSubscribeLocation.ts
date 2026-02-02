@@ -43,18 +43,13 @@ const manageSubscribeLocation = () => {
 
       return await ctx.scene.leave();
     });
-    locationHandler.command(
-      "/cancel",
-      (ctx) => (
-        ctx.reply(
-          "Exiting perfect location management. /managePerfect to remove locations",
-          {
-            ...Markup.removeKeyboard(),
-          },
-        ),
-        ctx.scene.leave()
-      ),
-    );
+    locationHandler.command("cancel", async (ctx) => {
+      await ctx.reply(
+        "Exiting perfect location management. /managePerfect to remove locations",
+        { ...Markup.removeKeyboard() },
+      );
+      return ctx.scene.leave();
+    });
     locationHandler.use((ctx) =>
       ctx.reply(
         "Please select one of the locations in the list or /cancel to exit",
