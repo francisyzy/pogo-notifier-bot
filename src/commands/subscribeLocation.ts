@@ -10,6 +10,15 @@ const subscribeLocation = () => {
     locationHandler.on("location", async (ctx) => {
       const { latitude, longitude } = ctx.message.location;
 
+      await prisma.user.upsert({
+        where: { telegramId: ctx.from.id },
+        update: { name: ctx.from.first_name },
+        create: {
+          telegramId: ctx.from.id,
+          raidLevelNotify: "1, 3, 5, 6, 11, 13",
+          name: ctx.from.first_name,
+        },
+      });
       await prisma.locationSubscribe.create({
         data: {
           userTelegramId: ctx.from.id,
@@ -86,6 +95,15 @@ const subscribeLocation = () => {
       const input = ctx.match.input.split("_");
       ctx.editMessageText("Adding location");
       if (ctx.from) {
+        await prisma.user.upsert({
+          where: { telegramId: ctx.from.id },
+          update: { name: ctx.from.first_name },
+          create: {
+            telegramId: ctx.from.id,
+            raidLevelNotify: "1, 3, 5, 6, 11, 13",
+            name: ctx.from.first_name,
+          },
+        });
         await prisma.locationSubscribe.create({
           data: {
             userTelegramId: ctx.from.id,

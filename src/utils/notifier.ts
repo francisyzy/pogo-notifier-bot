@@ -60,7 +60,7 @@ export async function notifyAndUpdateUsers(): Promise<void> {
           const originalMessage = await bot.telegram.sendMessage(
             raidMessage.userTelegramId,
             message,
-            { parse_mode: "HTML", disable_web_page_preview: true },
+            { parse_mode: "HTML", link_preview_options: { is_disabled: true } },
           );
           //If raid has not started, send reminder
           if (raidMessage.pokemonId === 0) {
@@ -89,7 +89,7 @@ export async function notifyAndUpdateUsers(): Promise<void> {
                         " to check which raid boss spawned, after the egg popped"
                   }\n\n<i>/stopNotifyingMeToday to stop being notified about raids for the rest of the day</i>`,
                   {
-                    reply_to_message_id: originalMessage.message_id,
+                    reply_parameters: { message_id: originalMessage.message_id },
                     parse_mode: "HTML",
                   },
                 );

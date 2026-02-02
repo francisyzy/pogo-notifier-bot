@@ -20,7 +20,7 @@ const checkPerfect = () => {
           "No Perfect Pokemon detected at the moment",
         );
       } else {
-        ctx.telegram.editMessageText(
+        await ctx.telegram.editMessageText(
           ctx.message.chat.id,
           editMessage.message_id,
           undefined,
@@ -39,12 +39,10 @@ const checkPerfect = () => {
         };
         //Make sure the messages are sent in order
         await sleep(0.5);
-        await ctx
-          .reply(await perfectMessageFormatter(pokemonMessage))
-          .then(() => {
-            ctx.replyWithLocation(pokemon.lat, pokemon.lng);
-          });
+        await ctx.reply(await perfectMessageFormatter(pokemonMessage));
+        await ctx.replyWithLocation(pokemon.lat, pokemon.lng);
       }
+      return;
     });
     bot.action(/CP_+/, async (ctx) => {
       await ctx.answerCbQuery("Checking perfect pokemon");
@@ -60,17 +58,15 @@ const checkPerfect = () => {
         Number(input[1]),
         Number(input[2]),
       );
-      pokemonMessages.forEach(async (pokemonMessage) => {
+      for (const pokemonMessage of pokemonMessages) {
         await sleep(0.5);
-        await ctx
-          .reply(await perfectMessageFormatter(pokemonMessage))
-          .then(() => {
-            ctx.replyWithLocation(
-              pokemonMessage.lat,
-              pokemonMessage.lng,
-            );
-          });
-      });
+        await ctx.reply(await perfectMessageFormatter(pokemonMessage));
+        await ctx.replyWithLocation(
+          pokemonMessage.lat,
+          pokemonMessage.lng,
+        );
+      }
+      return;
     });
   } catch (error) {
     console.log(error);

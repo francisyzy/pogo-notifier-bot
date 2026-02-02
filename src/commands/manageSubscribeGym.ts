@@ -93,7 +93,7 @@ const manageGyms = () => {
                 "Select gym you want to remove from your subscription(s) or 🚫 to exit",
                 Markup.inlineKeyboard(gymBtnList, {
                   //set up custom keyboard wraps for two columns
-                  wrap: (btn, index, currentRow) => {
+                  wrap: (_btn, _index, currentRow) => {
                     if (currentRow.length === 2) {
                       return true;
                     } else {

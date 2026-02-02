@@ -34,7 +34,7 @@ const checkBoss = () => {
         editMessage.message_id,
         undefined,
         possibleBosses,
-        { parse_mode: "HTML", disable_web_page_preview: true },
+        { parse_mode: "HTML", link_preview_options: { is_disabled: true } },
       );
     });
   } catch (error) {

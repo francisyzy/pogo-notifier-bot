@@ -1,4 +1,4 @@
-import { GymSubscribe } from ".prisma/client";
+import { GymSubscribe } from "@prisma/client";
 
 interface raid {
   gym_name: string;

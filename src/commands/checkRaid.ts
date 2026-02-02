@@ -30,7 +30,7 @@ const checkRaid = () => {
           "You have no raids at your subscriptions",
         );
       } else {
-        ctx.telegram.editMessageText(
+        await ctx.telegram.editMessageText(
           ctx.message.chat.id,
           editMessage.message_id,
           undefined,
@@ -38,10 +38,11 @@ const checkRaid = () => {
         );
       }
       for (const raidMessage of raidMessages) {
-        ctx.replyWithHTML(await raidMessageFormatter(raidMessage), {
-          disable_web_page_preview: true,
+        await ctx.replyWithHTML(await raidMessageFormatter(raidMessage), {
+          link_preview_options: { is_disabled: true },
         });
       }
+      return;
     });
     bot.hears(/\/checkraid_(.+)/, async (ctx) => {
       //telegram command - is not clickable whereas _ is clickable
@@ -81,7 +82,7 @@ const checkRaid = () => {
           ctx.replyWithHTML(
             await raidMessageFormatter(raidMessages[0]),
             {
-              disable_web_page_preview: true,
+              link_preview_options: { is_disabled: true },
               ...Markup.removeKeyboard(),
               ...Markup.inlineKeyboard(remindBtn),
             },
@@ -92,6 +93,7 @@ const checkRaid = () => {
           ...Markup.removeKeyboard(),
         });
       }
+      return;
     });
 
     bot.command("checkraid_", async (ctx) => {
@@ -107,7 +109,7 @@ const checkRaid = () => {
           )}`,
         );
       }
-      
+      return;
     });
 
     bot.action(/CG_+/, async (ctx) => {
@@ -144,12 +146,13 @@ const checkRaid = () => {
             ),
           );
         }
-        ctx.replyWithHTML(await raidMessageFormatter(raidMessage), {
-          disable_web_page_preview: true,
+        await ctx.replyWithHTML(await raidMessageFormatter(raidMessage), {
+          link_preview_options: { is_disabled: true },
           ...Markup.removeKeyboard(),
           ...Markup.inlineKeyboard(remindBtn),
         });
       }
+      return;
     });
 
     bot.action(/RR_+/, async (ctx) => {
@@ -184,8 +187,11 @@ const checkRaid = () => {
                   " to check which raid boss spawned, after the egg popped"
             }`,
             {
-              reply_to_message_id:
-                ctx.callbackQuery.message?.message_id,
+              ...(ctx.callbackQuery.message?.message_id != null && {
+                reply_parameters: {
+                  message_id: ctx.callbackQuery.message.message_id,
+                },
+              }),
               parse_mode: "HTML",
             },
           );

@@ -22,7 +22,7 @@ const subscribe = () => {
           "Select gym you want to subscribe",
           Markup.inlineKeyboard(gymBtnList, {
             //set up custom keyboard wraps for two columns
-            wrap: (btn, index, currentRow) => {
+            wrap: (_btn, _index, currentRow) => {
               if (currentRow.length === 2) {
                 return true;
               } else {
@@ -79,7 +79,7 @@ const subscribe = () => {
 
       const gyms = await prisma.gym.findMany({
         where: {
-          gymString: { contains: message.text, mode: "insensitive" },
+          gymString: { contains: message.text },
         },
       });
       if (gyms.length != 0) {
@@ -96,7 +96,7 @@ const subscribe = () => {
           "Select gym you want to subscribe",
           Markup.inlineKeyboard(gymBtnList, {
             //set up custom keyboard wraps for two columns
-            wrap: (btn, index, currentRow) => {
+            wrap: (_btn, _index, currentRow) => {
               if (currentRow.length === 2) {
                 return true;
               } else {
@@ -222,7 +222,7 @@ const subscribe = () => {
               "Select gym you want to subscribe",
               Markup.inlineKeyboard(gymBtnList, {
                 //set up custom keyboard wraps for two columns
-                wrap: (btn, index, currentRow) => {
+                wrap: (_btn, _index, currentRow) => {
                   if (currentRow.length === 2) {
                     return true;
                   } else {

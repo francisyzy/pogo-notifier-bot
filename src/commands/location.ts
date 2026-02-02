@@ -50,7 +50,7 @@ const location = () => {
       "Select the feature you want to use with this location",
       Markup.inlineKeyboard(featureList, {
         //set up custom keyboard wraps for two columns
-        wrap: (btn, index, currentRow) => {
+        wrap: (_btn, _index, _currentRow) => {
           return true;
         },
       }),

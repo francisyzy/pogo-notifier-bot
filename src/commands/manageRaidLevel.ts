@@ -32,7 +32,7 @@ const manageRaidLevels = () => {
         // remove raid level
         newRaidLevel = convertBackToArray(
           oldUser?.raidLevelNotify,
-        ).filter(function (value, index, arr) {
+        ).filter(function (value, _index, _arr) {
           return value != raidLevel;
         });
       }
