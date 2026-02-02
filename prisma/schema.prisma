@@ -37,6 +37,7 @@ model Gym {
   gymString    String         @unique
   lat          Float
   long         Float
+  lastRaidAt   DateTime?      // When we last saw a raid at this gym (for staleness cleanup)
   GymSubscribe GymSubscribe[]
 }
 

@@ -15,6 +15,7 @@ import checkRaid from "./commands/checkRaid";
 import subscribe from "./commands/subscribeGym";
 import manageGyms from "./commands/manageSubscribeGym";
 import { notifyAndUpdateUsers } from "./utils/notifier";
+import { removeStaleGyms } from "./utils/gymAdder";
 import manageRaidLevels from "./commands/manageRaidLevel";
 import {
   notifyLegendary,
@@ -91,6 +92,8 @@ schedule("45 0-23 * * *", () => {
 notifyAndUpdateUsers();
 notifyPerfect();
 notifyLegendary();
+// Clean up stale gyms on startup (runs again daily at 4am)
+removeStaleGyms();
 //Check raids every 10 mins, disable night checking
 //https://crontab.guru/#*/10_5-20_*_*_*
 schedule("*/10 5-20 * * *", () => {
@@ -104,6 +107,11 @@ schedule("44-59 17 * * 3", () => {
 //Check perfect pokemon every 5 mins
 setInterval(() => notifyPerfect(), 300000);
 setInterval(() => notifyLegendary(), 330000);
+
+// Remove stale gyms daily at 4am (no raid in 7 days, no subscriptions)
+schedule("0 4 * * *", () => {
+  removeStaleGyms();
+});
 
 // Enable graceful stop
 process.once("SIGINT", () => bot.stop("SIGINT"));
