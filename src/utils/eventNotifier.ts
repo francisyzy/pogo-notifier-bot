@@ -4,56 +4,22 @@ import { getEvents } from "./getMaper";
 import config from "../config";
 
 /**
- * Check events from the source & notifies if event is about to start
+ * Check events from ScrapedDuck & notifies if event is about to start
+ * @see https://github.com/bigfoott/ScrapedDuck
  */
 export async function notifyEvent(): Promise<void> {
   console.log("Checking notifyEvents");
   const rawEvents = await getEvents();
   let notifier: { link: string; title: string }[] = [];
+  const window = {
+    start: subMinutes(new Date(), config.eventBuffer),
+    end: addMinutes(new Date(), config.eventBuffer),
+  };
   rawEvents.forEach((event) => {
-    if (event.isLocaleTime) {
-      //Unused function
-      //https://stackoverflow.com/a/18330682
-      //Date.toString() returns accurate local time but is in string
-      //Set time from db to local time so excel can have local time
-      // function convertUTCDateToLocalDate(date: Date) {
-      //   var newDate = new Date(
-      //     date.getTime() + date.getTimezoneOffset() * 60 * 1000,
-      //   );
-      //   var offset = date.getTimezoneOffset() / 60;
-      //   var hours = date.getHours();
-      //   newDate.setHours(hours - offset);
-      //   return newDate;
-      // }
-
-      const eventTime = new Date(event.startTime);
-      //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/Date
-      const localEventTime = new Date(
-        eventTime.getUTCFullYear(),
-        eventTime.getUTCMonth(),
-        eventTime.getUTCDate(),
-        eventTime.getUTCHours(),
-        eventTime.getUTCMinutes(),
-        eventTime.getUTCSeconds(),
-        eventTime.getUTCMilliseconds(),
-      );
-      //https://date-fns.org/v2.28.0/docs/isWithinInterval
-      //https://github.com/date-fns/date-fns/issues/366
-      if (
-        isWithinInterval(localEventTime, {
-          start: subMinutes(new Date(), config.eventBuffer),
-          end: addMinutes(new Date(), config.eventBuffer),
-        })
-      ) {
-        notifier.push({ link: event.link, title: event.originalTitle });
-      }
-    } else if (
-      isWithinInterval(new Date(event.startTime), {
-        start: subMinutes(new Date(), config.eventBuffer),
-        end: addMinutes(new Date(), config.eventBuffer),
-      })
-    ) {
-      notifier.push({ link: event.link, title: event.originalTitle });
+    if (!event.start) return;
+    const eventStart = new Date(event.start);
+    if (isWithinInterval(eventStart, window)) {
+      notifier.push({ link: event.link, title: event.name });
     }
   });
   //Removes duplicate events

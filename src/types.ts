@@ -83,16 +83,17 @@ interface raidBoss {
 
 interface raidBosses extends Array<raidBoss> {}
 
+// ScrapedDuck format: https://github.com/bigfoott/ScrapedDuck
 interface rawEvent {
-  title: string;
-  originalTitle: string;
+  eventID: string;
+  name: string;
+  eventType: string;
+  heading: string;
   link: string;
-  type: string;
-  imageUrl: string;
-  label: string;
-  isLocaleTime: boolean;
-  startTime: string;
-  endTime: string;
+  image: string;
+  start: string;
+  end: string;
+  extraData?: Record<string, unknown>;
 }
 
 interface rawEvents extends Array<rawEvent> {}

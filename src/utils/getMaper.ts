@@ -52,12 +52,13 @@ export async function getTrio(): Promise<pokemons> {
 }
 
 /**
- * Get list of events from leek duck
+ * Get list of events from ScrapedDuck (LeekDuck data with start/end times)
+ * @see https://github.com/bigfoott/ScrapedDuck
  * @return {rawEvents} List of rawEvents
  */
 export async function getEvents(): Promise<rawEvents> {
   const events = await fetchJson<rawEvents>(
-    "https://raw.githubusercontent.com/pmgo-professor-willow/data-leekduck/gh-pages/events.min.json",
+    "https://raw.githubusercontent.com/bigfoott/ScrapedDuck/data/events.min.json",
   );
 
   return events as rawEvents;
