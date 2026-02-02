@@ -14,6 +14,7 @@ import catchAll from "./commands/catch-all";
 import checkRaid from "./commands/checkRaid";
 import subscribe from "./commands/subscribeGym";
 import manageGyms from "./commands/manageSubscribeGym";
+import manageSubscribeLocation from "./commands/manageSubscribeLocation";
 import { notifyAndUpdateUsers } from "./utils/notifier";
 import { removeStaleGyms } from "./utils/gymAdder";
 import manageRaidLevels from "./commands/manageRaidLevel";
@@ -75,6 +76,7 @@ manageGyms();
 location();
 manageRaidLevels();
 subscribeLocation();
+manageSubscribeLocation();
 checkPerfect();
 checkBoss();
 
