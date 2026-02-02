@@ -6,11 +6,10 @@
   "type": "module",
   "scripts": {
     "start": "node dist/src/index.js",
-    "build": "npm run generateProxy && tsc -p .",
+    "build": "prisma generate && tsc -p .",
     "dev": "tsx watch src/index.ts",
     "seed": "ts-node prisma/seed.ts",
     "generate": "prisma generate",
-    "generateProxy": "PRISMA_CLIENT_ENGINE_TYPE='dataproxy' prisma generate --data-proxy",
     "deploy": "prisma migrate deploy",
     "studio": "prisma studio",
     "migrate": "prisma migrate dev",
