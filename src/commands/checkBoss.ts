@@ -1,5 +1,4 @@
 import bot from "../lib/bot";
-import got from "got";
 import { raidBosses } from "../types";
 import { urlFormatter } from "../utils/messageFormatter";
 
@@ -9,9 +8,9 @@ const checkBoss = () => {
       const editMessage = await ctx.reply(
         "Retrieving latest boss information…",
       );
-      const raidBosses = (await got(
+      const raidBosses = (await fetch(
         "https://raw.githubusercontent.com/pmgo-professor-willow/data-leekduck/gh-pages/raid-bosses.min.json",
-      ).json()) as raidBosses;
+      ).then((r) => r.json())) as raidBosses;
 
       let possibleBosses = `\n\n<a href="https://www.leekduck.com/boss/">Possible raid boss</a>: \n\n`;
       //Set up double array to organise raid tiers

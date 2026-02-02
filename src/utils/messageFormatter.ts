@@ -1,6 +1,10 @@
 import { formatDistanceToNow, formatISO9075 } from "date-fns";
-import got from "got";
 import { pokemonMessage, raidBosses, raidMessage } from "../types";
+
+async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
+  const response = await fetch(url, options);
+  return response.json() as Promise<T>;
+}
 
 /**
  * Formats raid message
@@ -10,14 +14,14 @@ import { pokemonMessage, raidBosses, raidMessage } from "../types";
 export async function raidMessageFormatter(
   raidMessage: raidMessage,
 ): Promise<string> {
-  const raidBosses = (await got(
+  const bosses = (await fetchJson<raidBosses>(
     "https://raw.githubusercontent.com/pmgo-professor-willow/data-leekduck/gh-pages/raid-bosses.min.json",
-  ).json()) as raidBosses;
+  )) as raidBosses;
 
   let possibleBosses = `\n\n<a href="https://www.leekduck.com/boss/">Possible raid boss</a>: (`;
   let bossName = "";
 
-  raidBosses.forEach((raidBoss) => {
+  bosses.forEach((raidBoss) => {
     const url = urlFormatter(raidBoss.originalName, raidBoss.tier);
     //If the egg has popped, use leek duck info at the start
     if (raidMessage.pokemonId === raidBoss.no) {
@@ -36,9 +40,9 @@ export async function raidMessageFormatter(
 
   //If leek duck has no info and raid has popped
   if (bossName === "" && raidMessage.pokemonId !== 0) {
-    const { name: name } = await got(
+    const { name: name } = await fetchJson<{ name: string }>(
       `https://pokeapi.co/api/v2/pokemon/${raidMessage.pokemonId}`,
-    ).json();
+    );
     bossName = toTitleCase(
       `<a href="https://www.pokebattler.com/raids/${
         raidMessage.level === 6
@@ -80,11 +84,11 @@ export async function raidMessageFormatter(
 export async function bossCount(
   raidMessage: raidMessage,
 ): Promise<number> {
-  const raidBosses = (await got(
+  const bosses = (await fetchJson<raidBosses>(
     "https://raw.githubusercontent.com/pmgo-professor-willow/data-leekduck/gh-pages/raid-bosses.min.json",
-  ).json()) as raidBosses;
+  )) as raidBosses;
 
-  return raidBosses.filter(
+  return bosses.filter(
     (boss) => Number(boss.tier) === raidMessage.level,
   ).length;
 }
@@ -97,9 +101,9 @@ export async function bossCount(
 export async function perfectMessageFormatter(
   pokemonMessage: pokemonMessage,
 ): Promise<string> {
-  const { name: name } = await got(
+  const { name: name } = await fetchJson<{ name: string }>(
     `https://pokeapi.co/api/v2/pokemon/${pokemonMessage.pokemon_id}`,
-  ).json();
+  );
 
   const message = `Perfect pokemon ${toTitleCase(name)}(CP ${
     pokemonMessage.cp
