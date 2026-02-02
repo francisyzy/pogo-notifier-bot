@@ -84,7 +84,7 @@ export async function notifyAndUpdateUsers(): Promise<void> {
                   `Raid starting in ${raidAlertMinutes} mins${
                     numberOfBoss === 1
                       ? ""
-                      : "\n\n/checkraid_" +
+                      : "\n\n/checkRaid_" +
                         gymId +
                         " to check which raid boss spawned, after the egg popped"
                   }\n\n<i>/stopNotifyingMeToday to stop being notified about raids for the rest of the day</i>`,

@@ -45,7 +45,7 @@ const manageGyms = () => {
     });
     gymHandler.command("cancel", async (ctx) => {
       await ctx.reply(
-        "Exiting gym management. /managegyms to remove gyms",
+        "Exiting gym management. /manageGyms to remove gyms",
         { ...Markup.removeKeyboard() },
       );
       return ctx.scene.leave();
@@ -117,7 +117,7 @@ const manageGyms = () => {
     ]);
     bot.use(stage.middleware());
 
-    bot.command("mygyms", async (ctx) => {
+    bot.command("myGyms", async (ctx) => {
       const subscriptions = await prisma.gymSubscribe.findMany({
         where: { userTelegramId: ctx.from.id },
         include: { gym: true },
@@ -129,12 +129,12 @@ const manageGyms = () => {
         returnMessage += subscription.gym.gymString + "\n";
       }
       returnMessage +=
-        "\nYou can /managegyms to remove the gyms that you no longer want to follow";
+        "\nYou can /manageGyms to remove the gyms that you no longer want to follow";
 
       return ctx.reply(returnMessage);
     });
 
-    bot.command("managegyms", (ctx) => {
+    bot.command("manageGyms", (ctx) => {
       return ctx.scene.enter("gymListManage");
     });
   } catch (error) {

@@ -16,7 +16,7 @@ const prisma = new PrismaClient();
 
 const checkRaid = () => {
   try {
-    bot.command("checkraid", async (ctx) => {
+    bot.command("checkRaid", async (ctx) => {
       const editMessage = await ctx.reply("Checking raids…");
       const raids = await getRaids();
       updateGyms(raids);
@@ -44,7 +44,7 @@ const checkRaid = () => {
       }
       return;
     });
-    bot.hears(/\/checkraid_(.+)/, async (ctx) => {
+    bot.hears(/\/checkRaid_(.+)/, async (ctx) => {
       //telegram command - is not clickable whereas _ is clickable
       const gymId = ctx.match[1].replaceAll("_", "-");
       const gym = await prisma.gym.findUnique({
@@ -96,14 +96,14 @@ const checkRaid = () => {
       return;
     });
 
-    bot.command("checkraid_", async (ctx) => {
+    bot.command("checkRaid_", async (ctx) => {
       const gym = await prisma.gym.findFirst({
         select: { id: true },
       });
       if (gym && "id" in gym) {
         const gymWithId = gym as { id: string };
         return ctx.reply(
-          `You need to include a id, eg: /checkraid_${gymWithId.id.replaceAll(
+          `You need to include a id, eg: /checkRaid_${gymWithId.id.replaceAll(
             "-",
             "_",
           )}`,
@@ -182,7 +182,7 @@ const checkRaid = () => {
             `Raid starting in ${raidAlertMinutes} mins${
               numberOfBoss === 1
                 ? ""
-                : "\n\n/checkraid_" +
+                : "\n\n/checkRaid_" +
                   gymId +
                   " to check which raid boss spawned, after the egg popped"
             }`,
@@ -204,7 +204,7 @@ const checkRaid = () => {
         message = `Raid starts within ${raidAlertMinutes} minutes, you cannot set reminder${
           numberOfBoss === 1
             ? ""
-            : "\n\n/checkraid_" +
+            : "\n\n/checkRaid_" +
               gymId +
               " to check which raid boss spawned, after the egg pops"
         }`;
@@ -212,7 +212,7 @@ const checkRaid = () => {
         message = `Raid has started, you cannot set reminder${
           numberOfBoss === 1
             ? ""
-            : "\n\n/checkraid_" +
+            : "\n\n/checkRaid_" +
               gymId +
               " to check which raid boss spawned"
         }`;

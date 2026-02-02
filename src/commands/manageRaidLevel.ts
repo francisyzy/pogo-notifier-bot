@@ -47,11 +47,11 @@ const manageRaidLevels = () => {
         .then(async () => {
           if (action[1] === "a") {
             await ctx.editMessageText(
-              `You added level ${raidLevel} to be notified about. /manageraidlevel to update your preferences`,
+              `You added level ${raidLevel} to be notified about. /manageRaidLevel to update your preferences`,
             );
           } else if (action[1] === "r") {
             await ctx.editMessageText(
-              `You removed level ${raidLevel} to be notified about. /manageraidlevel to update your preferences`,
+              `You removed level ${raidLevel} to be notified about. /manageRaidLevel to update your preferences`,
             );
           }
         })
@@ -151,7 +151,7 @@ const manageRaidLevels = () => {
     ]);
     bot.use(stage.middleware());
 
-    bot.command("manageraidlevel", (ctx) => {
+    bot.command("manageRaidLevel", (ctx) => {
       return ctx.scene.enter("raidLevelManage");
     });
   } catch (error) {

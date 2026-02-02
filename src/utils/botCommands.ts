@@ -6,7 +6,7 @@ import { BotCommand } from "typegram";
 export function getBotCommands(): BotCommand[] {
   const rawBotCommands = [
     {
-      command: "sendlocation",
+      command: "sendLocation",
       description:
         "Send your current location to check for nearby perfect pokemon or raids",
     },
@@ -35,7 +35,7 @@ export function getBotCommands(): BotCommand[] {
   let botCommands: BotCommand[] = [];
   rawBotCommands.forEach((botCommand) => {
     botCommands.push({
-      command: botCommand.command.toLowerCase(),
+      command: botCommand.command,
       description: botCommand.description.substring(0, 256),
     });
   });

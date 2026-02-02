@@ -5,7 +5,7 @@ import { IMAGES } from "../constants";
 
 //location commands
 const location = () => {
-  bot.command("sendlocation", async (ctx) => {
+  bot.command("sendLocation", async (ctx) => {
     await ctx.replyWithPhoto(IMAGES.LOCATION_TUTORIAL, {
       caption:
         "Press the button below to send your location. You can use it to:\n" +
