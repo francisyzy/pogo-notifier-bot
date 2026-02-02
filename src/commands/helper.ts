@@ -15,7 +15,7 @@ const helper = () => {
         update: { name: ctx.from.first_name },
         create: {
           telegramId: ctx.from.id,
-          raidLevelNotify: [1, 3, 5, 6],
+          raidLevelNotify: "1, 3, 5, 6, 11, 13",
           name: ctx.from.first_name,
         },
       });

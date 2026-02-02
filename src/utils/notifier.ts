@@ -6,6 +6,7 @@ import { gymChecker } from "./gymChecker";
 import { sleep } from "./sleep";
 import { bossCount, raidMessageFormatter } from "./messageFormatter";
 import config from "../config";
+import { convertBackToArray } from "./legacy_converter";
 
 const prisma = new PrismaClient();
 
@@ -20,8 +21,8 @@ export async function notifyAndUpdateUsers(): Promise<void> {
     const user = await prisma.user.findUnique({
       where: { telegramId: raidMessage.userTelegramId },
     });
-    if (user?.raidLevelNotify.indexOf(raidMessage.level) === -1) {
-      console.log(user.name + " Skipped Raid " + raidMessage.level);
+    if (convertBackToArray(user?.raidLevelNotify).indexOf(raidMessage.level) === -1) {
+      console.log(user?.name + " Skipped Raid " + raidMessage.level);
       continue;
     } else if (
       user?.stopNotifyingMeToday &&

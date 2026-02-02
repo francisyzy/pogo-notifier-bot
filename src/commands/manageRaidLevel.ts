@@ -2,6 +2,10 @@ import { Scenes, session, Markup, Composer } from "telegraf";
 import bot from "../lib/bot";
 import { InlineKeyboardButton } from "typegram";
 import { PrismaClient, Prisma } from "@prisma/client";
+import {
+  convertArrayToString,
+  convertBackToArray,
+} from "../utils/legacy_converter";
 
 const prisma = new PrismaClient();
 
@@ -19,16 +23,16 @@ const manageRaidLevels = () => {
       const oldUser = await prisma.user.findUnique({
         where: { telegramId: ctx.from!.id },
       });
-      let newRaidLevel = oldUser?.raidLevelNotify;
-      if (action[1] === "a") { //add raid level to sub
+      let newRaidLevel = convertBackToArray(oldUser?.raidLevelNotify);
+      if (action[1] === "a") {
+        //add raid level to sub
         newRaidLevel?.push(raidLevel);
         newRaidLevel?.sort();
-      } else if (action[1] === "r") { // remove raid level
-        newRaidLevel = oldUser?.raidLevelNotify.filter(function (
-          value,
-          index,
-          arr,
-        ) {
+      } else if (action[1] === "r") {
+        // remove raid level
+        newRaidLevel = convertBackToArray(
+          oldUser?.raidLevelNotify,
+        ).filter(function (value, index, arr) {
           return value != raidLevel;
         });
       }
@@ -36,7 +40,9 @@ const manageRaidLevels = () => {
       await prisma.user
         .update({
           where: { telegramId: ctx.from!.id },
-          data: { raidLevelNotify: newRaidLevel },
+          data: {
+            raidLevelNotify: convertArrayToString(newRaidLevel),
+          },
         })
         .then(async () => {
           if (action[1] === "a") {
@@ -109,7 +115,9 @@ const manageRaidLevels = () => {
               //make sure user is not null. but they shouldnt be
               if (
                 user &&
-                user.raidLevelNotify.indexOf(raidLevel) !== -1
+                convertBackToArray(user.raidLevelNotify).indexOf(
+                  raidLevel,
+                ) !== -1
               ) {
                 raidLevelList.push(
                   Markup.button.callback(

@@ -2,8 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:dev.db"
 }
 
 generator client {
@@ -23,7 +23,7 @@ model User {
   lastActivity          DateTime @default(now())
 
   //notify settings
-  raidLevelNotify      Int[]
+  raidLevelNotify      String
   stopNotifyingMeToday DateTime?
   raidAlertMinutes     Int       @default(5)
 

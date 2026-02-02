@@ -98,12 +98,16 @@ const checkRaid = () => {
       const gym = await prisma.gym.findFirst({
         select: { id: true },
       });
-      return ctx.reply(
-        `You need to include a id, eg: /checkraid_${gym!.id.replaceAll(
-          "-",
-          "_",
-        )}`,
-      );
+      if (gym && "id" in gym) {
+        const gymWithId = gym as { id: string };
+        return ctx.reply(
+          `You need to include a id, eg: /checkraid_${gymWithId.id.replaceAll(
+            "-",
+            "_",
+          )}`,
+        );
+      }
+      
     });
 
     bot.action(/CG_+/, async (ctx) => {
