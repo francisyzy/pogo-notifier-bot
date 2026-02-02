@@ -73,6 +73,10 @@ web_modules/
 .env
 .env.test
 
+# SQLite database
+*.db
+dev.db
+
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache

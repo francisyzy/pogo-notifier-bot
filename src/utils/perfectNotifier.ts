@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient } from ".prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import { subDays } from "date-fns";
 import bot from "../lib/bot";
 import { getPerfect, getTrio } from "./getMaper";

@@ -1,4 +1,4 @@
-import { PrismaClient, GymSubscribe, Gym } from ".prisma/client";
+import { PrismaClient, GymSubscribe, Gym } from "@prisma/client";
 import { raids, raidMessage } from "../types";
 import { updateGyms } from "./gymAdder";
 

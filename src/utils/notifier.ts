@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient } from ".prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import { isToday, subDays } from "date-fns";
 import bot from "../lib/bot";
 import { getRaids } from "./getMaper";

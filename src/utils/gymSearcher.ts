@@ -1,4 +1,4 @@
-import { PrismaClient, Gym } from ".prisma/client";
+import { PrismaClient, Gym } from "@prisma/client";
 import { InlineKeyboardButton } from "typegram";
 import { Markup } from "telegraf";
 import config from "../config";
