@@ -22,10 +22,11 @@ export function getBotCommands(): BotCommand[] {
       command: "stats",
       description: "See how many times you have been notified",
     },
-    {
-      command: "currentboss",
-      description: "Get current raid boss list",
-    },
+    // TODO: Re-enable when raid-bosses.min.json upstream is fixed
+    // {
+    //   command: "currentboss",
+    //   description: "Get current raid boss list",
+    // },
     {
       command: "events",
       description: "Get events channel link",

@@ -87,7 +87,7 @@ const helper = () => {
   });
   bot.command("raids", (ctx) => {
     return ctx.replyWithHTML(
-      "/checkraid to check for all raids at your gyms\n\n/currentboss to get the list of raid bosses\n\n<u>Use these commands to add notification when the gym has any raids.</u>\n/gymLocation to send your location to look for nearby Gyms\n\n/gymName to search for Gyms using Gym Names\n\n<u>Options</u>\n/managegyms to remove gym notifications\n\n/manageraidlevel to select which ★ level to get notified about",
+      "/checkraid to check for all raids at your gyms\n\n<u>Use these commands to add notification when the gym has any raids.</u>\n/gymLocation to send your location to look for nearby Gyms\n\n/gymName to search for Gyms using Gym Names\n\n<u>Options</u>\n/managegyms to remove gym notifications\n\n/manageraidlevel to select which ★ level to get notified about",
     );
   });
   bot.command("events", (ctx) => {
