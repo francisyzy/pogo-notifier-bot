@@ -24,7 +24,7 @@ export const URLS = {
   POKEAPI_POKEMON: "https://pokeapi.co/api/v2/pokemon",
 
   /** LeekDuck boss list page */
-  LEEKDUCK_BOSS: "https://www.leekduck.com/boss/",
+  LEEKDUCK_BOSS: "https://leekduck.com/raid-bosses/",
 
   /** Pokebattler raids base URL */
   POKEBATTLER_RAIDS: "https://www.pokebattler.com/raids",
