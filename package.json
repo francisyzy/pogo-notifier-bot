@@ -12,7 +12,8 @@
     "deploy": "prisma migrate deploy",
     "studio": "prisma studio",
     "migrate": "prisma migrate dev",
-    "reset": "prisma migrate reset"
+    "reset": "prisma migrate reset",
+    "updateCommands": "tsx src/scripts/updateCommands.ts"
   },
   "repository": {
     "type": "git",
