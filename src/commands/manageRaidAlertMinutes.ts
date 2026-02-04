@@ -9,7 +9,49 @@ const prisma = new PrismaClient();
 
 const manageRaidAlertMinutes = () => {
   try {
+    /**
+     * Validates and updates raid alert minutes
+     */
+    const updateRaidAlertMinutes = async (
+      ctx: Scenes.WizardContext,
+      selectedMinutes: number,
+    ) => {
+      if (
+        isNaN(selectedMinutes) ||
+        !Number.isInteger(selectedMinutes) ||
+        selectedMinutes < 1 ||
+        selectedMinutes > 60
+      ) {
+        await ctx.reply(
+          `❌ Invalid input. Please enter a number between 1 and 60 minutes, or select one of the options.\n\n/cancel to exit`,
+        );
+        return false;
+      }
+
+      try {
+        await prisma.user.update({
+          where: { telegramId: ctx.from!.id },
+          data: {
+            raidAlertMinutes: selectedMinutes,
+          },
+        });
+
+        await ctx.reply(
+          `✅ Raid alert minutes set to ${selectedMinutes} minutes.\n\nYou will be notified ${selectedMinutes} minutes before raids start.\n\n/manageRaidAlertMinutes to update your preferences`,
+        );
+        return true;
+      } catch (error) {
+        console.error("Error updating raidAlertMinutes:", error);
+        await ctx.reply(
+          `❌ Error updating settings. If this persists, please contact support. /cancel to exit.`,
+        );
+        return false;
+      }
+    };
+
     const alertMinutesHandler = new Composer<Scenes.WizardContext>();
+    
+    // Handle inline keyboard button actions
     alertMinutesHandler.action(/.+/, async (ctx) => {
       const action = ctx.match[0];
       //exit condition
@@ -19,48 +61,43 @@ const manageRaidAlertMinutes = () => {
       }
 
       const selectedMinutes = parseInt(action, 10);
-      if (
-        isNaN(selectedMinutes) ||
-        !Number.isInteger(selectedMinutes) ||
-        selectedMinutes < 1 ||
-        selectedMinutes > 60
-      ) {
-        await ctx.editMessageText(
-          `Invalid selection. Please select one of the options in the list or /cancel to exit.`,
+      const success = await updateRaidAlertMinutes(ctx, selectedMinutes);
+      
+      if (success) {
+        return await ctx.scene.leave();
+      }
+    });
+
+    // Handle manual text input (numbers typed by user)
+    alertMinutesHandler.on("text", async (ctx) => {
+      const text = ctx.message.text?.trim();
+      
+      if (!text) {
+        await ctx.reply(
+          `Please enter a number between 1 and 60, select one of the options, or /cancel to exit.`,
         );
         return;
       }
 
-      await prisma.user
-        .update({
-          where: { telegramId: ctx.from!.id },
-          data: {
-            raidAlertMinutes: selectedMinutes,
-          },
-        })
-        .then(async () => {
-          await ctx.editMessageText(
-            `✅ Raid alert minutes set to ${selectedMinutes} minutes.\n\nYou will be notified ${selectedMinutes} minutes before raids start.\n\n/manageRaidAlertMinutes to update your preferences`,
-          );
-        })
-        .catch(async (error) => {
-          console.error("Error updating raidAlertMinutes:", error);
-          await ctx.editMessageText(
-            `❌ Error updating settings. If this persists, please contact support. /cancel to exit.`,
-          );
-        });
-
-      return await ctx.scene.leave();
+      const selectedMinutes = parseInt(text, 10);
+      const success = await updateRaidAlertMinutes(ctx, selectedMinutes);
+      
+      if (success) {
+        return await ctx.scene.leave();
+      }
     });
+
     alertMinutesHandler.command("cancel", async (ctx) => {
       await ctx.reply("Exit raid alert minutes management", {
         ...Markup.removeKeyboard(),
       });
       return ctx.scene.leave();
     });
+    
+    // Fallback for any other input
     alertMinutesHandler.use((ctx) =>
       ctx.reply(
-        "Please select one of the options in the list or /cancel to exit",
+        "Please enter a number between 1 and 60, select one of the options in the list, or /cancel to exit",
       ),
     );
 
@@ -95,7 +132,7 @@ const manageRaidAlertMinutes = () => {
             alertMinutesList.push(Markup.button.callback("🚫 exit", "e"));
 
             await ctx.reply(
-              `Current setting: <b>${currentMinutes} minutes</b>\n\nSelect how many minutes before a raid starts you want to be notified:\n\n<i>Example: If set to 5 minutes, you'll get a reminder 5 minutes before the raid starts.</i>`,
+              `Current setting: <b>${currentMinutes} minutes</b>\n\nSelect how many minutes before a raid starts you want to be notified:\n\n<i>Example: If set to 5 minutes, you'll get a reminder 5 minutes before the raid starts.</i>\n\n💡 <b>Tip:</b> You can also type any number between 1-60 minutes, or select from the options below.`,
               {
                 parse_mode: "HTML",
                 ...Markup.inlineKeyboard(alertMinutesList, {
