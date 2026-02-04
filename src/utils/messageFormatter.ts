@@ -84,12 +84,29 @@ export async function raidMessageFormatter(
     const { name: name } = await fetchJson<{ name: string }>(
       `${URLS.POKEAPI_POKEMON}/${raidMessage.pokemonId}`,
     );
+    let pokebattlerName: string;
+    if (isShadow) {
+      // Format shadow Pokemon as POKEMON_NAME_SHADOW_FORM
+      let pokemonName = name;
+      // Handle Alolan/Alola forms - PokeAPI might return "marowak-alola" or similar
+      // Convert to format needed: "marowak-alola" -> "MAROWAK_ALOLA_SHADOW_FORM"
+      if (pokemonName.toLowerCase().includes("alolan")) {
+        pokemonName = pokemonName.replace(/-?alolan/i, "").trim() + "-alola";
+      } else if (pokemonName.toLowerCase().includes("alola")) {
+        // Already has alola, might need reordering if format is "alola-marowak"
+        const parts = pokemonName.split("-");
+        if (parts.length === 2 && parts[0].toLowerCase() === "alola") {
+          pokemonName = parts[1] + "-alola";
+        }
+      }
+      pokebattlerName = pokemonName.toUpperCase().replace(/[-\s]/g, "_") + "_SHADOW_FORM";
+    } else if (actualTier === 6) {
+      pokebattlerName = name + "_MEGA";
+    } else {
+      pokebattlerName = name.replace(/\s/g, "_");
+    }
     bossName = toTitleCase(
-      `<a href="${URLS.POKEBATTLER_RAIDS}/${
-        actualTier === 6
-          ? name + "_MEGA"
-          : name.replace(/\s/g, "_")
-      }${name}</a>`,
+      `<a href="${URLS.POKEBATTLER_RAIDS}/${pokebattlerName}">${name}</a>`,
     );
   }
 
@@ -178,13 +195,42 @@ function toTitleCase(str: string): string {
     .join(" ");
 }
 
+/**
+ * Normalizes Alolan Pokemon names to Pokebattler format
+ * Converts "Alolan X" or "Alola X" to "X Alola"
+ * @param pokemonName The Pokemon name (may contain "Alolan" or "Alola")
+ * @returns Normalized name in "Pokemon Alola" format, or original name if not Alolan
+ */
+function normalizeAlolanName(pokemonName: string): string {
+  const lowerName = pokemonName.toLowerCase();
+  if (lowerName.includes("alolan") || lowerName.includes("alola")) {
+    // Remove "Alolan " or "Alola " prefix and reorder: "Alolan Marowak" -> "Marowak Alola"
+    return pokemonName.replace(/(Alolan|Alola)\s+/i, "").trim() + " Alola";
+  }
+  return pokemonName;
+}
+
 export function urlFormatter(
   originalName: string,
   raidTier: string,
 ): string {
   const base = URLS.POKEBATTLER_RAIDS;
   let url = `${base}/${originalName.replace(/\s/g, "_")}`;
-  if (raidTier === "mega" || raidTier === "6") {
+  
+  // Check if it's a shadow Pokemon (case-insensitive)
+  const isShadow = originalName.toLowerCase().includes("shadow");
+  if (isShadow) {
+    // Extract Pokemon name (remove "Shadow " prefix)
+    let pokemonName = originalName.replace(/^Shadow\s+/i, "").trim();
+    
+    // Normalize Alolan names if present
+    pokemonName = normalizeAlolanName(pokemonName);
+    
+    // Format as POKEMON_NAME_SHADOW_FORM (uppercase, spaces to underscores)
+    // For forms like "Marowak Alola", it becomes "MAROWAK_ALOLA_SHADOW_FORM"
+    const formattedName = pokemonName.toUpperCase().replace(/\s/g, "_") + "_SHADOW_FORM";
+    url = `${base}/${formattedName}`;
+  } else if (raidTier === "mega" || raidTier === "6") {
     //TODO check if future forms are still correct
     url = `${base}/${originalName.slice(5) + "_MEGA"}`;
   } else if (originalName.includes("Deoxys (Att")) {
@@ -209,20 +255,14 @@ export function urlFormatter(
     url = `${base}/TORNADUS_THERIAN_FORM`;
   } else if (originalName.includes("Landorus (Therian)")) {
     url = `${base}/LANDORUS_THERIAN_FORM`;
-  } else if (originalName.includes("Alolan Raichu")) {
-    url = `${base}/RAICHU_ALOLA_FORM`;
-  } else if (originalName.includes("Alolan Exegg")) {
-    url = `${base}/EXEGGUTOR_ALOLA_FORM/`;
-  } else if (originalName.includes("Alolan Sandshrew")) {
-    url = `${base}/SANDSHREW_ALOLA_FORM/`;
-  } else if (originalName.includes("Alolan Dig")) {
-    url = `${base}/DIGLETT_ALOLA_FORM/`;
-  } else if (originalName.includes("Alolan Geo")) {
-    url = `${base}/GEODUDE_ALOLA_FORM/`;
-  } else if (originalName.includes("Alolan Grimer")) {
-    url = `${base}/GRIMER_ALOLA_FORM/`;
-  } else if (originalName.includes("Alolan Graveler")) {
-    url = `${base}/GRAVELER_ALOLA_FORM/`;
+  } else if (originalName.toLowerCase().includes("alolan")) {
+    // Handle Alolan Pokemon generically
+    // Example: "Alolan Raichu" -> "RAICHU_ALOLA_FORM"
+    const pokemonName = normalizeAlolanName(originalName);
+    
+    // Format as POKEMON_NAME_ALOLA_FORM (uppercase, spaces to underscores)
+    const formattedName = pokemonName.toUpperCase().replace(/\s/g, "_") + "_ALOLA_FORM";
+    url = `${base}/${formattedName}`;
   }
 
   return url;
