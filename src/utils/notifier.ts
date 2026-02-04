@@ -78,7 +78,21 @@ export async function notifyAndUpdateUsers(): Promise<void> {
               configOffSetMs;
             //Send reminder if its more than the configured minutes
             if (offsetMs > configOffSetMs) {
-              setTimeout(() => {
+              setTimeout(async () => {
+                // Check if user still wants to be notified before sending reminder
+                const userAtReminderTime = await prisma.user.findUnique({
+                  where: { telegramId: raidMessage.userTelegramId },
+                });
+                if (
+                  userAtReminderTime?.stopNotifyingMeToday &&
+                  isToday(userAtReminderTime.stopNotifyingMeToday)
+                ) {
+                  console.log(
+                    userAtReminderTime.name +
+                      " Skipped Raid reminder - stop notify",
+                  );
+                  return;
+                }
                 bot.telegram.sendMessage(
                   raidMessage.userTelegramId,
                   `Raid starting in ${raidAlertMinutes} mins${
