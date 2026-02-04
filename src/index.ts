@@ -18,6 +18,7 @@ import manageSubscribeLocation from "./commands/manageSubscribeLocation";
 import { notifyAndUpdateUsers } from "./utils/notifier";
 import { removeStaleGyms } from "./utils/gymAdder";
 import manageRaidLevels from "./commands/manageRaidLevel";
+import manageRaidAlertMinutes from "./commands/manageRaidAlertMinutes";
 import {
   notifyLegendary,
   notifyPerfect,
@@ -75,6 +76,7 @@ subscribe();
 manageGyms();
 location();
 manageRaidLevels();
+manageRaidAlertMinutes();
 subscribeLocation();
 manageSubscribeLocation();
 checkPerfect();

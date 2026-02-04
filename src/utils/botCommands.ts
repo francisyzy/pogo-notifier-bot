@@ -22,6 +22,10 @@ export function getBotCommands(): BotCommand[] {
       command: "stats",
       description: "See how many times you have been notified",
     },
+    {
+      command: "manageRaidAlertMinutes",
+      description: "Set how many minutes before raids you want to be notified",
+    },
     // TODO: Re-enable when raid-bosses.min.json upstream is fixed
     // {
     //   command: "currentboss",
