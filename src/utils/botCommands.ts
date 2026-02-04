@@ -4,9 +4,12 @@ import { BotCommand } from "typegram";
  * @return {BotCommand[]} List of admin commands
  */
 export function getBotCommands(): BotCommand[] {
+  // NOTE: Command names MUST be lowercase. Telegram's setMyCommands API requires
+  // lowercase command names. However, handlers can be registered for both
+  // lowercase and camelCase versions to make commands case-insensitive for users.
   const rawBotCommands = [
     {
-      command: "sendLocation",
+      command: "sendlocation",
       description:
         "Send your current location to check for nearby perfect pokemon or raids",
     },
@@ -23,7 +26,7 @@ export function getBotCommands(): BotCommand[] {
       description: "See how many times you have been notified",
     },
     {
-      command: "manageRaidAlertMinutes",
+      command: "manageraidalertminutes",
       description: "Set how many minutes before raids you want to be notified",
     },
     // TODO: Re-enable when raid-bosses.min.json upstream is fixed

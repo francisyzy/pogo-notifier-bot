@@ -75,8 +75,17 @@ const helper = () => {
     let returnString =
       "Use the following commands to configure the bot to notify you about Perfect Pokemon spawns or Raids. /events to get access to upcoming events channel\n\n";
     commands.forEach((command) => {
-      returnString += "/" + command.command + "\n";
-      returnString += "<i>" + command.description + "</i>\n\n";
+      // Display camelCase for certain commands in help menu
+      let displayCommand = command.command;
+      if (command.command === "sendlocation") {
+        displayCommand = "sendLocation";
+      } else if (command.command === "manageraidalertminutes") {
+        displayCommand = "manageRaidAlertMinutes";
+      }
+      returnString += "/" + displayCommand + "\n";
+      // Remove the "(use /command)" part from description if present
+      const cleanDescription = command.description.replace(/\s*\(use \/[^)]+\)\s*/g, "");
+      returnString += "<i>" + cleanDescription + "</i>\n\n";
     });
     returnString += `<i>For bug reports, please create an issue at <a href="${LINKS.ISSUES}">Github</a></i>`;
     return ctx.replyWithHTML(returnString);

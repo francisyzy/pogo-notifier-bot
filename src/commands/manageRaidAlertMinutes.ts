@@ -116,9 +116,13 @@ const manageRaidAlertMinutes = () => {
     ]);
     bot.use(stage.middleware());
 
-    bot.command("manageRaidAlertMinutes", (ctx) => {
+    const manageRaidAlertMinutesHandler = (ctx: Scenes.WizardContext) => {
       return ctx.scene.enter("raidAlertMinutesManage");
-    });
+    };
+    
+    // Register handler for both lowercase and camelCase
+    bot.command("manageraidalertminutes", manageRaidAlertMinutesHandler);
+    bot.command("manageRaidAlertMinutes", manageRaidAlertMinutesHandler);
   } catch (error) {
     console.log(error);
   }

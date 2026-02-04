@@ -1,11 +1,11 @@
 import bot from "../lib/bot";
-import { Markup } from "telegraf";
+import { Markup, Scenes } from "telegraf";
 import { InlineKeyboardButton } from "typegram";
 import { IMAGES } from "../constants";
 
 //location commands
 const location = () => {
-  bot.command("sendLocation", async (ctx) => {
+  const sendLocationHandler = async (ctx: Scenes.WizardContext) => {
     await ctx.replyWithPhoto(IMAGES.LOCATION_TUTORIAL, {
       caption:
         "Press the button below to send your location. You can use it to:\n" +
@@ -26,7 +26,12 @@ const location = () => {
         one_time_keyboard: true,
       },
     });
-  });
+  };
+  
+  // Register handler for both lowercase and camelCase
+  bot.command("sendlocation", sendLocationHandler);
+  bot.command("sendLocation", sendLocationHandler);
+  
   bot.on("location", (ctx) => {
     const { latitude, longitude } = ctx.message.location;
     let featureList: (InlineKeyboardButton & {
