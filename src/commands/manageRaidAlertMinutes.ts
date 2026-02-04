@@ -3,6 +3,7 @@ import bot from "../lib/bot";
 import { InlineKeyboardButton } from "typegram";
 import { PrismaClient } from "@prisma/client";
 import config from "../config";
+import { RAID_ALERT_MINUTE_OPTIONS } from "../constants";
 
 const prisma = new PrismaClient();
 
@@ -17,10 +18,15 @@ const manageRaidAlertMinutes = () => {
         return await ctx.scene.leave();
       }
 
-      const selectedMinutes = Number(action);
-      if (isNaN(selectedMinutes) || selectedMinutes < 1 || selectedMinutes > 60) {
+      const selectedMinutes = parseInt(action, 10);
+      if (
+        isNaN(selectedMinutes) ||
+        !Number.isInteger(selectedMinutes) ||
+        selectedMinutes < 1 ||
+        selectedMinutes > 60
+      ) {
         await ctx.editMessageText(
-          `Invalid selection. Please try again or /cancel to exit.`,
+          `Invalid selection. Please select one of the options in the list or /cancel to exit.`,
         );
         return;
       }
@@ -40,7 +46,7 @@ const manageRaidAlertMinutes = () => {
         .catch(async (error) => {
           console.error("Error updating raidAlertMinutes:", error);
           await ctx.editMessageText(
-            `❌ Error updating settings. Please try again or /cancel to exit.`,
+            `❌ Error updating settings. If this persists, please contact support. /cancel to exit.`,
           );
         });
 
@@ -74,13 +80,11 @@ const manageRaidAlertMinutes = () => {
             const currentMinutes =
               user?.raidAlertMinutes || config.raidAlertMinutes;
 
-            // Common alert minute options
-            const alertMinuteOptions = [3, 5, 10, 15, 20, 30];
             let alertMinutesList: (InlineKeyboardButton & {
               hide?: boolean | undefined;
             })[] = [];
 
-            alertMinuteOptions.forEach((minutes) => {
+            RAID_ALERT_MINUTE_OPTIONS.forEach((minutes) => {
               const isSelected = currentMinutes === minutes;
               const label = isSelected ? `${minutes} min ✓` : `${minutes} min`;
               alertMinutesList.push(
@@ -124,7 +128,7 @@ const manageRaidAlertMinutes = () => {
     bot.command("manageraidalertminutes", manageRaidAlertMinutesHandler);
     bot.command("manageRaidAlertMinutes", manageRaidAlertMinutesHandler);
   } catch (error) {
-    console.log(error);
+    console.error("Error in manageRaidAlertMinutes:", error);
   }
 };
 

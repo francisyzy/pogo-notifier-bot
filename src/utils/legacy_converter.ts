@@ -1,7 +1,7 @@
 /**
  * Convert back to int[]
  * @param {string} str - The string the int[] encoded as string
- * @return {number[]} the int[] back to numbers
+ * @return {number[]} the int[] back to numbers, filtered to only valid positive integers
  */
 export function convertBackToArray(
   raidLevelNotify: string | undefined,
@@ -9,7 +9,8 @@ export function convertBackToArray(
   if (raidLevelNotify) {
     return raidLevelNotify
       .split(",")
-      .map((num) => parseInt(num.trim(), 10));
+      .map((num) => parseInt(num.trim(), 10))
+      .filter((num) => !isNaN(num) && num > 0);
   } else {
     return [];
   }

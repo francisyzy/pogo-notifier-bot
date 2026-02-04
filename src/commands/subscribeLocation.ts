@@ -120,7 +120,7 @@ const subscribeLocation = () => {
       }
     });
   } catch (error) {
-    console.log(error);
+    console.error("Error in subscribeLocation:", error);
   }
 };
 

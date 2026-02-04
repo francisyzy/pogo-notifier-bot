@@ -1,9 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 import { raids } from "../types";
+import { GYM_CONFIG } from "../constants";
 
 const prisma = new PrismaClient();
-
-const STALE_DAYS = 7;
 
 export async function updateGyms(raids: raids): Promise<void> {
   const now = new Date();
@@ -33,7 +32,7 @@ export async function updateGyms(raids: raids): Promise<void> {
  */
 export async function removeStaleGyms(): Promise<number> {
   const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() - STALE_DAYS);
+  cutoff.setDate(cutoff.getDate() - GYM_CONFIG.STALE_GYM_DAYS);
 
   const staleGyms = await prisma.gym.findMany({
     where: {
@@ -50,7 +49,9 @@ export async function removeStaleGyms(): Promise<number> {
     await prisma.gym.deleteMany({
       where: { id: { in: staleGyms.map((g) => g.id) } },
     });
-    console.log(`Removed ${staleGyms.length} stale gyms (no raid in ${STALE_DAYS} days, no subscriptions)`);
+    console.log(
+      `Removed ${staleGyms.length} stale gyms (no raid in ${GYM_CONFIG.STALE_GYM_DAYS} days, no subscriptions)`,
+    );
   }
 
   return staleGyms.length;

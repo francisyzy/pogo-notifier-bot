@@ -228,7 +228,7 @@ const checkRaid = () => {
       }
     });
   } catch (error) {
-    console.log(error);
+    console.error("Error in checkRaid:", error);
   }
 };
 

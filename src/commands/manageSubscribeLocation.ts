@@ -134,7 +134,7 @@ const manageSubscribeLocation = () => {
       return ctx.scene.enter("perfectLocationManage");
     });
   } catch (error) {
-    console.log(error);
+    console.error("Error in manageSubscribeLocation:", error);
   }
 };
 

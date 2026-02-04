@@ -155,7 +155,7 @@ const manageRaidLevels = () => {
       return ctx.scene.enter("raidLevelManage");
     });
   } catch (error) {
-    console.log(error);
+    console.error("Error in manageRaidLevel:", error);
   }
 };
 

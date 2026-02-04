@@ -69,7 +69,7 @@ const checkPerfect = () => {
       return;
     });
   } catch (error) {
-    console.log(error);
+    console.error("Error in checkPerfect:", error);
   }
 };
 

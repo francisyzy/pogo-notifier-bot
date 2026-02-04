@@ -138,7 +138,7 @@ const manageGyms = () => {
       return ctx.scene.enter("gymListManage");
     });
   } catch (error) {
-    console.log(error);
+    console.error("Error in manageSubscribeGym:", error);
   }
 };
 

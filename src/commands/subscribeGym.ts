@@ -259,7 +259,7 @@ const subscribe = () => {
       });
     });
   } catch (error) {
-    console.log(error);
+    console.error("Error in subscribeGym:", error);
   }
 };
 

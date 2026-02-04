@@ -10,9 +10,30 @@ const checkBoss = () => {
       const editMessage = await ctx.reply(
         "Retrieving latest boss information…",
       );
-      const raidBossesData = (await fetch(
-        URLS.RAID_BOSSES_JSON,
-      ).then((r) => r.json())) as raidBosses;
+      
+      let raidBossesData: raidBosses;
+      try {
+        const response = await fetch(URLS.RAID_BOSSES_JSON);
+        if (!response.ok) {
+          throw new Error(
+            `Failed to fetch raid bosses: ${response.status} ${response.statusText}`,
+          );
+        }
+        raidBossesData = (await response.json()) as raidBosses;
+      } catch (error) {
+        console.error("Error fetching raid bosses:", error);
+        if (!ctx.chat) {
+          return;
+        }
+        await ctx.telegram.editMessageText(
+          ctx.chat.id,
+          editMessage.message_id,
+          undefined,
+          `❌ Unable to retrieve raid boss information.\n\n<a href="${URLS.LEEKDUCK_BOSS}">View current raid bosses on LeekDuck</a>`,
+          { parse_mode: "HTML", link_preview_options: { is_disabled: true } },
+        );
+        return;
+      }
 
       let possibleBosses = `\n\n<a href="https://www.leekduck.com/boss/">Possible raid boss</a>: \n\n`;
       let results: string[][] = [];
@@ -46,7 +67,7 @@ const checkBoss = () => {
     bot.command("currentboss", currentBossHandler);
     bot.command("currentBoss", currentBossHandler);
   } catch (error) {
-    console.log(error);
+    console.error("Error in checkBoss:", error);
   }
 };
 

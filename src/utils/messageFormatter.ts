@@ -1,15 +1,49 @@
 import { formatDistanceToNow, formatISO9075 } from "date-fns";
 import { pokemonMessage, raidBosses, raidMessage } from "../types";
-import { URLS } from "../constants";
+import { URLS, RAID_CONFIG } from "../constants";
 
+/**
+ * Fetches JSON from a URL with proper error handling
+ * @param url The URL to fetch
+ * @param options Optional fetch options
+ * @returns Parsed JSON response
+ * @throws Error if fetch fails or response is not OK
+ */
 async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
-  const response = await fetch(url, options);
-  return response.json() as Promise<T>;
+  try {
+    const response = await fetch(url, options);
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch ${url}: ${response.status} ${response.statusText}`,
+      );
+    }
+    return (await response.json()) as T;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(`Network error fetching ${url}: ${error.message}`);
+    }
+    throw new Error(`Unknown error fetching ${url}`);
+  }
+}
+
+/**
+ * Checks if a boss is a shadow Pokemon
+ * @param boss Boss object with originalName and name properties
+ * @returns true if the boss is a shadow Pokemon
+ */
+function isShadowBoss(boss: {
+  originalName: string;
+  name: string;
+}): boolean {
+  return (
+    boss.originalName.toLowerCase().includes("shadow") ||
+    boss.name.toLowerCase().includes("shadow")
+  );
 }
 
 /**
  * Detects if a raid is a shadow raid and returns the actual tier
- * Shadow raids have their level increased by 10 in upstream data
+ * Shadow raids have their level increased by RAID_CONFIG.SHADOW_RAID_LEVEL_OFFSET in upstream data
  * (e.g., shadow 1* = level 11, shadow 3* = level 13, shadow 5* = level 15)
  * @param level The raid level from upstream
  * @param bosses List of all raid bosses
@@ -19,16 +53,15 @@ function getActualRaidTier(
   level: number,
   bosses: raidBosses,
 ): { tier: number; isShadow: boolean } {
-  // Shadow raids have level +10, so check if level >= 11
-  // and if there are shadow bosses at level - 10
-  if (level >= 11) {
-    const potentialTier = level - 10;
+  // Shadow raids have level +offset, so check if level >= MIN_SHADOW_RAID_LEVEL
+  // and if there are shadow bosses at level - offset
+  if (level >= RAID_CONFIG.MIN_SHADOW_RAID_LEVEL) {
+    const potentialTier = level - RAID_CONFIG.SHADOW_RAID_LEVEL_OFFSET;
     if (potentialTier > 0) {
       const shadowBossesAtTier = bosses.filter(
         (boss) =>
           Number(boss.tier === "mega" ? "6" : boss.tier) === potentialTier &&
-          (boss.originalName.toLowerCase().includes("shadow") ||
-            boss.name.toLowerCase().includes("shadow")),
+          isShadowBoss(boss),
       );
       // If we find shadow bosses at the lower tier, this is a shadow raid
       if (shadowBossesAtTier.length > 0) {
@@ -43,25 +76,35 @@ function getActualRaidTier(
  * Formats raid message
  * @param raidMessage original raidMessage information
  * @returns {Promise<string>} Message formatted to send to user
+ * @throws Error if unable to fetch raid boss data
  */
 export async function raidMessageFormatter(
   raidMessage: raidMessage,
 ): Promise<string> {
-  const bosses = (await fetchJson<raidBosses>(URLS.RAID_BOSSES_JSON)) as raidBosses;
+  let bosses: raidBosses;
+  try {
+    bosses = await fetchJson<raidBosses>(URLS.RAID_BOSSES_JSON);
+  } catch (error) {
+    console.error("Failed to fetch raid bosses:", error);
+    throw new Error(
+      "Unable to fetch raid boss data. Please try again later.",
+    );
+  }
 
   // Get actual raid tier and whether it's a shadow raid
-  const { tier: actualTier, isShadow } = getActualRaidTier(raidMessage.level, bosses);
+  const { tier: actualTier, isShadow } = getActualRaidTier(
+    raidMessage.level,
+    bosses,
+  );
 
   let possibleBosses = `\n\n<a href="${URLS.LEEKDUCK_BOSS}">Possible raid boss</a>: (`;
   let bossName = "";
 
   bosses.forEach((raidBoss) => {
     const url = urlFormatter(raidBoss.originalName, raidBoss.tier);
-    const isBossShadow = raidBoss.originalName.toLowerCase().includes("shadow") ||
-      raidBoss.name.toLowerCase().includes("shadow");
     
     // If it's not a shadow raid, exclude shadow bosses
-    if (!isShadow && isBossShadow) {
+    if (!isShadow && isShadowBoss(raidBoss)) {
       return;
     }
     
@@ -70,7 +113,11 @@ export async function raidMessageFormatter(
       bossName = `<a href="${url}">${raidBoss.originalName}</a>`;
       bossName += raidBoss.shinyAvailable ? "✨" : "";
     } else if (
-      Number(raidBoss.tier === "mega" ? "6" : raidBoss.tier) === actualTier
+      Number(
+        raidBoss.tier === "mega"
+          ? RAID_CONFIG.MEGA_RAID_TIER.toString()
+          : raidBoss.tier,
+      ) === actualTier
     ) {
       possibleBosses += `<a href="${url}">${raidBoss.originalName}</a>`;
       possibleBosses += raidBoss.shinyAvailable ? "✨, " : ", ";
@@ -81,26 +128,29 @@ export async function raidMessageFormatter(
 
   //If leek duck has no info and raid has popped
   if (bossName === "" && raidMessage.pokemonId !== 0) {
-    const { name: name } = await fetchJson<{ name: string }>(
-      `${URLS.POKEAPI_POKEMON}/${raidMessage.pokemonId}`,
-    );
+    let name: string;
+    try {
+      const pokemonData = await fetchJson<{ name: string }>(
+        `${URLS.POKEAPI_POKEMON}/${raidMessage.pokemonId}`,
+      );
+      name = pokemonData.name;
+    } catch (error) {
+      console.error(
+        `Failed to fetch Pokemon data for ID ${raidMessage.pokemonId}:`,
+        error,
+      );
+      // Fallback: use Pokemon ID if name fetch fails
+      name = `Pokemon #${raidMessage.pokemonId}`;
+    }
+
     let pokebattlerName: string;
     if (isShadow) {
       // Format shadow Pokemon as POKEMON_NAME_SHADOW_FORM
-      let pokemonName = name;
-      // Handle Alolan/Alola forms - PokeAPI might return "marowak-alola" or similar
-      // Convert to format needed: "marowak-alola" -> "MAROWAK_ALOLA_SHADOW_FORM"
-      if (pokemonName.toLowerCase().includes("alolan")) {
-        pokemonName = pokemonName.replace(/-?alolan/i, "").trim() + "-alola";
-      } else if (pokemonName.toLowerCase().includes("alola")) {
-        // Already has alola, might need reordering if format is "alola-marowak"
-        const parts = pokemonName.split("-");
-        if (parts.length === 2 && parts[0].toLowerCase() === "alola") {
-          pokemonName = parts[1] + "-alola";
-        }
-      }
-      pokebattlerName = pokemonName.toUpperCase().replace(/[-\s]/g, "_") + "_SHADOW_FORM";
-    } else if (actualTier === 6) {
+      // Normalize Alolan names using the helper function
+      let pokemonName = normalizeAlolanNameForShadow(name);
+      pokebattlerName =
+        pokemonName.toUpperCase().replace(/[-\s]/g, "_") + "_SHADOW_FORM";
+    } else if (actualTier === RAID_CONFIG.MEGA_RAID_TIER) {
       pokebattlerName = name + "_MEGA";
     } else {
       pokebattlerName = name.replace(/\s/g, "_");
@@ -138,23 +188,39 @@ export async function raidMessageFormatter(
  * Checks how many pokemon are there in each raid level
  * @param raidMessage original raidMessage information
  * @returns {Promise<number>} number of possible bosses from information given
+ * @throws Error if unable to fetch raid boss data
  */
 export async function bossCount(
   raidMessage: raidMessage,
 ): Promise<number> {
-  const bosses = (await fetchJson<raidBosses>(URLS.RAID_BOSSES_JSON)) as raidBosses;
+  let bosses: raidBosses;
+  try {
+    bosses = await fetchJson<raidBosses>(URLS.RAID_BOSSES_JSON);
+  } catch (error) {
+    console.error("Failed to fetch raid bosses:", error);
+    throw new Error(
+      "Unable to fetch raid boss data. Please try again later.",
+    );
+  }
 
   // Get actual raid tier and whether it's a shadow raid
-  const { tier: actualTier, isShadow } = getActualRaidTier(raidMessage.level, bosses);
+  const { tier: actualTier, isShadow } = getActualRaidTier(
+    raidMessage.level,
+    bosses,
+  );
 
   return bosses.filter((boss) => {
-    const isBossShadow = boss.originalName.toLowerCase().includes("shadow") ||
-      boss.name.toLowerCase().includes("shadow");
     // If it's not a shadow raid, exclude shadow bosses
-    if (!isShadow && isBossShadow) {
+    if (!isShadow && isShadowBoss(boss)) {
       return false;
     }
-    return Number(boss.tier === "mega" ? "6" : boss.tier) === actualTier;
+    return (
+      Number(
+        boss.tier === "mega"
+          ? RAID_CONFIG.MEGA_RAID_TIER.toString()
+          : boss.tier,
+      ) === actualTier
+    );
   }).length;
 }
 
@@ -162,13 +228,25 @@ export async function bossCount(
  * Formats perfect message
  * @param pokemonMessage original pokemonMessage information
  * @returns {Promise<string>} Message formatted to send to the user
+ * @throws Error if unable to fetch Pokemon data
  */
 export async function perfectMessageFormatter(
   pokemonMessage: pokemonMessage,
 ): Promise<string> {
-  const { name: name } = await fetchJson<{ name: string }>(
-    `${URLS.POKEAPI_POKEMON}/${pokemonMessage.pokemon_id}`,
-  );
+  let name: string;
+  try {
+    const pokemonData = await fetchJson<{ name: string }>(
+      `${URLS.POKEAPI_POKEMON}/${pokemonMessage.pokemon_id}`,
+    );
+    name = pokemonData.name;
+  } catch (error) {
+    console.error(
+      `Failed to fetch Pokemon data for ID ${pokemonMessage.pokemon_id}:`,
+      error,
+    );
+    // Fallback: use Pokemon ID if name fetch fails
+    name = `Pokemon #${pokemonMessage.pokemon_id}`;
+  }
 
   const message = `Perfect pokemon ${toTitleCase(name)}(CP ${
     pokemonMessage.cp
@@ -198,14 +276,46 @@ function toTitleCase(str: string): string {
 /**
  * Normalizes Alolan Pokemon names to Pokebattler format
  * Converts "Alolan X" or "Alola X" to "X Alola"
+ * Handles various formats: "Alolan Marowak", "Alola Marowak", "marowak-alola", "alola-marowak"
  * @param pokemonName The Pokemon name (may contain "Alolan" or "Alola")
  * @returns Normalized name in "Pokemon Alola" format, or original name if not Alolan
  */
 function normalizeAlolanName(pokemonName: string): string {
   const lowerName = pokemonName.toLowerCase();
   if (lowerName.includes("alolan") || lowerName.includes("alola")) {
+    // Handle "alola-marowak" format: reorder to "marowak-alola"
+    if (lowerName.includes("-")) {
+      const parts = pokemonName.split("-");
+      if (parts.length === 2 && parts[0].toLowerCase() === "alola") {
+        return parts[1] + "-alola";
+      }
+    }
+    // Handle "Alolan X" or "Alola X" prefix: remove and add " Alola" suffix
     // Remove "Alolan " or "Alola " prefix and reorder: "Alolan Marowak" -> "Marowak Alola"
     return pokemonName.replace(/(Alolan|Alola)\s+/i, "").trim() + " Alola";
+  }
+  return pokemonName;
+}
+
+/**
+ * Normalizes Alolan Pokemon names specifically for shadow Pokemon URLs
+ * Handles PokeAPI formats like "marowak-alola" or "alola-marowak"
+ * @param pokemonName The Pokemon name from PokeAPI
+ * @returns Normalized name ready for shadow form URL formatting
+ */
+function normalizeAlolanNameForShadow(pokemonName: string): string {
+  const lowerName = pokemonName.toLowerCase();
+  // Handle PokeAPI format: "marowak-alola" or "alola-marowak"
+  if (lowerName.includes("alolan")) {
+    return pokemonName.replace(/-?alolan/i, "").trim() + "-alola";
+  } else if (lowerName.includes("alola")) {
+    // Check if format is "alola-marowak" and needs reordering
+    const parts = pokemonName.split("-");
+    if (parts.length === 2 && parts[0].toLowerCase() === "alola") {
+      return parts[1] + "-alola";
+    }
+    // Already in correct format "marowak-alola"
+    return pokemonName;
   }
   return pokemonName;
 }
@@ -230,7 +340,7 @@ export function urlFormatter(
     // For forms like "Marowak Alola", it becomes "MAROWAK_ALOLA_SHADOW_FORM"
     const formattedName = pokemonName.toUpperCase().replace(/\s/g, "_") + "_SHADOW_FORM";
     url = `${base}/${formattedName}`;
-  } else if (raidTier === "mega" || raidTier === "6") {
+  } else if (raidTier === "mega" || raidTier === RAID_CONFIG.MEGA_RAID_TIER.toString()) {
     //TODO check if future forms are still correct
     url = `${base}/${originalName.slice(5) + "_MEGA"}`;
   } else if (originalName.includes("Deoxys (Att")) {

@@ -15,7 +15,7 @@ import checkRaid from "./commands/checkRaid";
 import subscribe from "./commands/subscribeGym";
 import manageGyms from "./commands/manageSubscribeGym";
 import manageSubscribeLocation from "./commands/manageSubscribeLocation";
-import { notifyAndUpdateUsers } from "./utils/notifier";
+import { notifyAndUpdateUsers, clearAllRaidReminders } from "./utils/notifier";
 import { removeStaleGyms } from "./utils/gymAdder";
 import manageRaidLevels from "./commands/manageRaidLevel";
 import manageRaidAlertMinutes from "./commands/manageRaidAlertMinutes";
@@ -88,35 +88,83 @@ catchAll();
 //https://www.serverless.com/blog/cron-jobs-on-aws/
 //Checks for event every hour
 //https://crontab.guru/#45_0-23_*_*_*
-schedule("45 0-23 * * *", () => {
-  console.log(new Date());
-  console.log(new Date().toString());
-  notifyEvent();
+schedule("45 0-23 * * *", async () => {
+  try {
+    console.log(new Date());
+    console.log(new Date().toString());
+    await notifyEvent();
+  } catch (error) {
+    console.error("Error in event notification cron:", error);
+  }
 });
-notifyAndUpdateUsers();
-notifyPerfect();
-notifyLegendary();
+
+// Initial notifications on startup
+notifyAndUpdateUsers().catch((error) => {
+  console.error("Error in initial notifyAndUpdateUsers:", error);
+});
+notifyPerfect().catch((error) => {
+  console.error("Error in initial notifyPerfect:", error);
+});
+notifyLegendary().catch((error) => {
+  console.error("Error in initial notifyLegendary:", error);
+});
+
 // Clean up stale gyms on startup (runs again daily at 4am)
-removeStaleGyms();
+removeStaleGyms().catch((error) => {
+  console.error("Error in initial removeStaleGyms:", error);
+});
+
 //Check raids every 10 mins, disable night checking
 //https://crontab.guru/#*/10_5-20_*_*_*
-schedule("*/10 5-20 * * *", () => {
-  notifyAndUpdateUsers();
+schedule("*/10 5-20 * * *", async () => {
+  try {
+    await notifyAndUpdateUsers();
+  } catch (error) {
+    console.error("Error in raid notification cron:", error);
+  }
 });
+
 //Check raids every mins when raid hour is starting
 //https://crontab.guru/#49-59_17_*_*_3
-schedule("44-59 17 * * 3", () => {
-  notifyAndUpdateUsers();
+schedule("44-59 17 * * 3", async () => {
+  try {
+    await notifyAndUpdateUsers();
+  } catch (error) {
+    console.error("Error in raid hour notification cron:", error);
+  }
 });
+
 //Check perfect pokemon every 5 mins
-setInterval(() => notifyPerfect(), 300000);
-setInterval(() => notifyLegendary(), 330000);
+setInterval(() => {
+  notifyPerfect().catch((error) => {
+    console.error("Error in notifyPerfect interval:", error);
+  });
+}, 300000);
+
+setInterval(() => {
+  notifyLegendary().catch((error) => {
+    console.error("Error in notifyLegendary interval:", error);
+  });
+}, 330000);
 
 // Remove stale gyms daily at 4am (no raid in 7 days, no subscriptions)
-schedule("0 4 * * *", () => {
-  removeStaleGyms();
+schedule("0 4 * * *", async () => {
+  try {
+    await removeStaleGyms();
+  } catch (error) {
+    console.error("Error in removeStaleGyms cron:", error);
+  }
 });
 
 // Enable graceful stop
-process.once("SIGINT", () => bot.stop("SIGINT"));
-process.once("SIGTERM", () => bot.stop("SIGTERM"));
+process.once("SIGINT", () => {
+  console.log("Received SIGINT, shutting down gracefully...");
+  clearAllRaidReminders();
+  bot.stop("SIGINT");
+});
+
+process.once("SIGTERM", () => {
+  console.log("Received SIGTERM, shutting down gracefully...");
+  clearAllRaidReminders();
+  bot.stop("SIGTERM");
+});
