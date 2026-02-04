@@ -8,6 +8,38 @@ async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
 }
 
 /**
+ * Detects if a raid is a shadow raid and returns the actual tier
+ * Shadow raids have their level increased by 10 in upstream data
+ * (e.g., shadow 1* = level 11, shadow 3* = level 13, shadow 5* = level 15)
+ * @param level The raid level from upstream
+ * @param bosses List of all raid bosses
+ * @returns Object with actual tier and whether it's a shadow raid
+ */
+function getActualRaidTier(
+  level: number,
+  bosses: raidBosses,
+): { tier: number; isShadow: boolean } {
+  // Shadow raids have level +10, so check if level >= 11
+  // and if there are shadow bosses at level - 10
+  if (level >= 11) {
+    const potentialTier = level - 10;
+    if (potentialTier > 0) {
+      const shadowBossesAtTier = bosses.filter(
+        (boss) =>
+          Number(boss.tier === "mega" ? "6" : boss.tier) === potentialTier &&
+          (boss.originalName.toLowerCase().includes("shadow") ||
+            boss.name.toLowerCase().includes("shadow")),
+      );
+      // If we find shadow bosses at the lower tier, this is a shadow raid
+      if (shadowBossesAtTier.length > 0) {
+        return { tier: potentialTier, isShadow: true };
+      }
+    }
+  }
+  return { tier: level, isShadow: false };
+}
+
+/**
  * Formats raid message
  * @param raidMessage original raidMessage information
  * @returns {Promise<string>} Message formatted to send to user
@@ -17,18 +49,28 @@ export async function raidMessageFormatter(
 ): Promise<string> {
   const bosses = (await fetchJson<raidBosses>(URLS.RAID_BOSSES_JSON)) as raidBosses;
 
+  // Get actual raid tier and whether it's a shadow raid
+  const { tier: actualTier, isShadow } = getActualRaidTier(raidMessage.level, bosses);
+
   let possibleBosses = `\n\n<a href="${URLS.LEEKDUCK_BOSS}">Possible raid boss</a>: (`;
   let bossName = "";
 
   bosses.forEach((raidBoss) => {
     const url = urlFormatter(raidBoss.originalName, raidBoss.tier);
+    const isBossShadow = raidBoss.originalName.toLowerCase().includes("shadow") ||
+      raidBoss.name.toLowerCase().includes("shadow");
+    
+    // If it's not a shadow raid, exclude shadow bosses
+    if (!isShadow && isBossShadow) {
+      return;
+    }
+    
     //If the egg has popped, use leek duck info at the start
     if (raidMessage.pokemonId === raidBoss.no) {
       bossName = `<a href="${url}">${raidBoss.originalName}</a>`;
       bossName += raidBoss.shinyAvailable ? "✨" : "";
     } else if (
-      Number(raidBoss.tier === "mega" ? "6" : raidBoss.tier) ===
-      raidMessage.level
+      Number(raidBoss.tier === "mega" ? "6" : raidBoss.tier) === actualTier
     ) {
       possibleBosses += `<a href="${url}">${raidBoss.originalName}</a>`;
       possibleBosses += raidBoss.shinyAvailable ? "✨, " : ", ";
@@ -44,14 +86,14 @@ export async function raidMessageFormatter(
     );
     bossName = toTitleCase(
       `<a href="${URLS.POKEBATTLER_RAIDS}/${
-        raidMessage.level === 6
+        actualTier === 6
           ? name + "_MEGA"
           : name.replace(/\s/g, "_")
       }${name}</a>`,
     );
   }
 
-  const message = `${raidMessage.level}★ Raid at <u>${
+  const message = `${actualTier}★ Raid at <u>${
     raidMessage.name
   }</u> ${
     raidMessage.pokemonId === 0 ? "starting" : "started"
@@ -85,9 +127,18 @@ export async function bossCount(
 ): Promise<number> {
   const bosses = (await fetchJson<raidBosses>(URLS.RAID_BOSSES_JSON)) as raidBosses;
 
-  return bosses.filter(
-    (boss) => Number(boss.tier) === raidMessage.level,
-  ).length;
+  // Get actual raid tier and whether it's a shadow raid
+  const { tier: actualTier, isShadow } = getActualRaidTier(raidMessage.level, bosses);
+
+  return bosses.filter((boss) => {
+    const isBossShadow = boss.originalName.toLowerCase().includes("shadow") ||
+      boss.name.toLowerCase().includes("shadow");
+    // If it's not a shadow raid, exclude shadow bosses
+    if (!isShadow && isBossShadow) {
+      return false;
+    }
+    return Number(boss.tier === "mega" ? "6" : boss.tier) === actualTier;
+  }).length;
 }
 
 /**
