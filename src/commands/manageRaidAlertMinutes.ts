@@ -1,7 +1,7 @@
 import { Scenes, Markup, Composer } from "telegraf";
 import bot from "../lib/bot";
 import { InlineKeyboardButton } from "typegram";
-import { PrismaClient, Prisma } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import config from "../config";
 
 const prisma = new PrismaClient();
