@@ -68,6 +68,14 @@ const manageRaidAlertMinutes = () => {
       }
     });
 
+    // Handle /cancel first (before text handler, so /cancel isn't parsed as a number)
+    alertMinutesHandler.command("cancel", async (ctx) => {
+      await ctx.reply("Exit raid alert minutes management", {
+        ...Markup.removeKeyboard(),
+      });
+      return ctx.scene.leave();
+    });
+
     // Handle manual text input (numbers typed by user)
     alertMinutesHandler.on("text", async (ctx) => {
       const text = ctx.message.text?.trim();
@@ -87,13 +95,6 @@ const manageRaidAlertMinutes = () => {
       }
     });
 
-    alertMinutesHandler.command("cancel", async (ctx) => {
-      await ctx.reply("Exit raid alert minutes management", {
-        ...Markup.removeKeyboard(),
-      });
-      return ctx.scene.leave();
-    });
-    
     // Fallback for any other input
     alertMinutesHandler.use((ctx) =>
       ctx.reply(
