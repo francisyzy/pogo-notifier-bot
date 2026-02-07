@@ -4,7 +4,11 @@ import bot from "../lib/bot";
 import { getRaids } from "./getMaper";
 import { gymChecker } from "./gymChecker";
 import { sleep } from "./sleep";
-import { bossCount, raidMessageFormatter } from "./messageFormatter";
+import {
+  bossCount,
+  getEffectiveTierForNotification,
+  raidMessageFormatter,
+} from "./messageFormatter";
 import config from "../config";
 import { convertBackToArray } from "./legacy_converter";
 
@@ -57,9 +61,9 @@ export async function notifyAndUpdateUsers(): Promise<void> {
         continue;
       }
 
+      const effectiveTier = getEffectiveTierForNotification(raidMessage.level);
       if (
-        convertBackToArray(user.raidLevelNotify).indexOf(raidMessage.level) ===
-        -1
+        convertBackToArray(user.raidLevelNotify).indexOf(effectiveTier) === -1
       ) {
         console.log(user.name + " Skipped Raid " + raidMessage.level);
         continue;

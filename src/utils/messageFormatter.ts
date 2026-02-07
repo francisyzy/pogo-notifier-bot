@@ -73,6 +73,21 @@ function getActualRaidTier(
 }
 
 /**
+ * Maps raid level to effective tier for notification matching.
+ * Shadow raids use levels 11, 13, 15 in upstream data; this maps them to 1, 3, 5
+ * so users subscribed to 1★ get both regular 1★ (level 1) and shadow 1★ (level 11).
+ * @param level The raid level from upstream
+ * @returns The effective tier for user preference matching
+ */
+export function getEffectiveTierForNotification(level: number): number {
+  if (level >= RAID_CONFIG.MIN_SHADOW_RAID_LEVEL) {
+    const potentialTier = level - RAID_CONFIG.SHADOW_RAID_LEVEL_OFFSET;
+    if ([1, 3, 5].includes(potentialTier)) return potentialTier;
+  }
+  return level;
+}
+
+/**
  * Formats raid message
  * @param raidMessage original raidMessage information
  * @returns {Promise<string>} Message formatted to send to user

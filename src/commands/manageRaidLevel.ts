@@ -134,7 +134,7 @@ const manageRaidLevels = () => {
             raidLevelList.push(Markup.button.callback("🚫", "e"));
 
             await ctx.reply(
-              "➖ to remove notification of that raid level\n➕ to get notification of that raid level\n🚫 to exit",
+              "➖ to remove notification of that raid level\n➕ to get notification of that raid level\n🚫 to exit\n\n(1★, 3★, 5★ include shadow raids of the same tier)",
               Markup.inlineKeyboard(raidLevelList),
             );
             return ctx.wizard.next();
