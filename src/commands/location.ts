@@ -53,7 +53,7 @@ const location = () => {
         "Check nearby for perfect pokemon",
         `CP_${latitude}_${longitude}`,
       ),
-      Markup.button.callback("🚫 exit", `e`),
+      Markup.button.callback("🚫 exit", "loc_e"),
     ];
 
     return ctx.reply(
@@ -66,7 +66,7 @@ const location = () => {
       }),
     );
   });
-  bot.action("e", (ctx) => {
+  bot.action("loc_e", (ctx) => {
     ctx.answerCbQuery("Exit");
     ctx.editMessageText("Exit location handler");
   });
