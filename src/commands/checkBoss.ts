@@ -1,7 +1,7 @@
 import bot from "../lib/bot";
 import { Scenes } from "telegraf";
 import { raidBosses } from "../types";
-import { urlFormatter } from "../utils/messageFormatter";
+import { urlFormatter, isShadowBoss } from "../utils/messageFormatter";
 import { URLS } from "../constants";
 
 const checkBoss = () => {
@@ -36,21 +36,50 @@ const checkBoss = () => {
       }
 
       let possibleBosses = `\n\n<a href="https://www.leekduck.com/boss/">Possible raid boss</a>: \n\n`;
-      let results: string[][] = [];
+      
+      // Structure: results[tier][isShadow] = array of boss names
+      const results: Record<number, { regular: string[]; shadow: string[] }> = {};
 
       raidBossesData.forEach((raidBoss) => {
         let url = urlFormatter(raidBoss.originalName, raidBoss.tier);
-        raidBoss.tier =
-          raidBoss.tier === "mega" ? "6" : raidBoss.tier;
+        const tier = raidBoss.tier === "mega" ? 6 : Number(raidBoss.tier);
         let bossName = `<a href="${url}">${raidBoss.originalName}</a>`;
         bossName += raidBoss.shinyAvailable ? "✨" : "";
-        while (results[Number(raidBoss.tier)] === undefined) {
-          results.push([]);
+        
+        const isShadow = isShadowBoss(raidBoss);
+        
+        if (!results[tier]) {
+          results[tier] = { regular: [], shadow: [] };
         }
-        results[Number(raidBoss.tier)].push(bossName);
+        
+        if (isShadow) {
+          results[tier].shadow.push(bossName);
+        } else {
+          results[tier].regular.push(bossName);
+        }
       });
-      results = results.filter(String);
-      possibleBosses += results.join("\n\n");
+
+      // Build the output string, grouping by tier and shadow status
+      const outputParts: string[] = [];
+      const sortedTiers = Object.keys(results)
+        .map(Number)
+        .sort((a, b) => a - b);
+      
+      for (const tier of sortedTiers) {
+        const tierData = results[tier];
+        
+        // Add regular bosses for this tier
+        if (tierData.regular.length > 0) {
+          outputParts.push(tierData.regular.join(", "));
+        }
+        
+        // Add shadow bosses for this tier
+        if (tierData.shadow.length > 0) {
+          outputParts.push(tierData.shadow.join(", "));
+        }
+      }
+      
+      possibleBosses += outputParts.join("\n\n");
       if (!ctx.chat) {
         return;
       }

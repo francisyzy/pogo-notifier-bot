@@ -31,7 +31,7 @@ async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
  * @param boss Boss object with originalName and name properties
  * @returns true if the boss is a shadow Pokemon
  */
-function isShadowBoss(boss: {
+export function isShadowBoss(boss: {
   originalName: string;
   name: string;
 }): boolean {
