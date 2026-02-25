@@ -358,6 +358,11 @@ export function urlFormatter(
   } else if (raidTier === "mega" || raidTier === RAID_CONFIG.MEGA_RAID_TIER.toString()) {
     //TODO check if future forms are still correct
     url = `${base}/${originalName.slice(5) + "_MEGA"}`;
+  } else if (originalName.toLowerCase().startsWith("primal ")) {
+    // Primal Groudon -> GROUDON_PRIMAL, Primal Kyogre -> KYOGRE_PRIMAL
+    const pokemonName = originalName.slice(7).trim(); // Remove "Primal "
+    const formattedName = pokemonName.toUpperCase().replace(/\s/g, "_") + "_PRIMAL";
+    url = `${base}/${formattedName}`;
   } else if (originalName.includes("Deoxys (Att")) {
     url = `${base}/DEOXYS_ATTACK_FORM`;
   } else if (originalName.includes("Deoxys (Def")) {
