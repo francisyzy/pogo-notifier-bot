@@ -385,6 +385,14 @@ export function urlFormatter(
     url = `${base}/TORNADUS_THERIAN_FORM`;
   } else if (originalName.includes("Landorus (Therian)")) {
     url = `${base}/LANDORUS_THERIAN_FORM`;
+  } else if (originalName.includes("Zacian (Hero)")) {
+    url = `${base}/ZACIAN_HERO_FORM`;
+  } else if (originalName.includes("Zacian (Crowned)")) {
+    url = `${base}/ZACIAN_CROWNED_SHIELD_FORM`;
+  } else if (originalName.includes("Zamazenta (Hero)")) {
+    url = `${base}/ZAMAZENTA_HERO_FORM`;
+  } else if (originalName.includes("Zamazenta (Crowned)")) {
+    url = `${base}/ZAMAZENTA_CROWNED_SHIELD_FORM`;
   } else if (originalName.toLowerCase().includes("alolan")) {
     // Handle Alolan Pokemon generically
     // Example: "Alolan Raichu" -> "RAICHU_ALOLA_FORM"
