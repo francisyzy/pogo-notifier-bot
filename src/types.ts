@@ -66,19 +66,35 @@ interface pokemonMessage extends pokemon {
   despawnDate: Date;
 }
 
+// ScrapedDuck format: https://github.com/bigfoott/ScrapedDuck
 interface raidBoss {
-  tier: string;
-  no: number;
   name: string;
-  originalName: string;
-  imageUrl: string;
-  shinyAvailable: boolean;
-  types: string[];
-  typeUrls: string[];
-  cp: { min: number; max: number };
-  boostedCp: { min: number; max: number };
-  boostedWeathers: string[];
-  boostedWeatherUrls: string[];
+  tier: string;
+  canBeShiny: boolean;
+  types: TypeInfo[];
+  combatPower: CombatPower;
+  boostedWeather: WeatherInfo[];
+  image: string;
+}
+
+interface TypeInfo {
+  name: string;
+  image: string;
+}
+
+interface WeatherInfo {
+  name: string;
+  image: string;
+}
+
+interface CombatPower {
+  normal: CpRange;
+  boosted: CpRange;
+}
+
+interface CpRange {
+  min: number;
+  max: number;
 }
 
 interface raidBosses extends Array<raidBoss> {}

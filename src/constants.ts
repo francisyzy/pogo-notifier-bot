@@ -14,7 +14,7 @@ export const IMAGES = {
 export const URLS = {
   /** Raid bosses from pmgo-professor-willow/data-leekduck (currently 404) */
   RAID_BOSSES_JSON:
-    "https://raw.githubusercontent.com/pmgo-professor-willow/data-leekduck/gh-pages/raidBosses.min.json",
+    "https://raw.githubusercontent.com/bigfoott/ScrapedDuck/refs/heads/data/raids.min.json",
 
   /** Events from ScrapedDuck (LeekDuck data with start/end times) */
   EVENTS_JSON:

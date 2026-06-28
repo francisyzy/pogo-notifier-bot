@@ -1,4 +1,5 @@
 import { formatDistanceToNow, formatISO9075 } from "date-fns";
+import { Pokedex } from 'pmgo-pokedex';
 import { pokemonMessage, raidBosses, raidMessage } from "../types";
 import { URLS, RAID_CONFIG } from "../constants";
 
@@ -28,15 +29,13 @@ async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
 
 /**
  * Checks if a boss is a shadow Pokemon
- * @param boss Boss object with originalName and name properties
+ * @param boss Boss object with name and name properties
  * @returns true if the boss is a shadow Pokemon
  */
 export function isShadowBoss(boss: {
-  originalName: string;
   name: string;
 }): boolean {
   return (
-    boss.originalName.toLowerCase().includes("shadow") ||
     boss.name.toLowerCase().includes("shadow")
   );
 }
@@ -116,7 +115,9 @@ export async function raidMessageFormatter(
   let bossName = "";
 
   bosses.forEach((raidBoss) => {
-    const url = urlFormatter(raidBoss.originalName, raidBoss.tier);
+    const url = urlFormatter(raidBoss.name, raidBoss.tier);
+    const pokedex = new Pokedex('en-US');
+    const raidBossDetail = pokedex.getPokemonByFuzzyName(raidBoss.name)
     
     // If it's not a shadow raid, exclude shadow bosses
     if (!isShadow && isShadowBoss(raidBoss)) {
@@ -124,18 +125,18 @@ export async function raidMessageFormatter(
     }
     
     //If the egg has popped, use leek duck info at the start
-    if (raidMessage.pokemonId === raidBoss.no) {
-      bossName = `<a href="${url}">${raidBoss.originalName}</a>`;
-      bossName += raidBoss.shinyAvailable ? "✨" : "";
+    if (raidMessage.pokemonId === raidBossDetail.no) {
+      bossName = `<a href="${url}">${raidBoss.name}</a>`;
+      bossName += raidBoss.canBeShiny ? "✨" : "";
     } else if (
-      Number(
-        raidBoss.tier === "mega"
+      parseInt(
+        raidBoss.tier.includes("mega")
           ? RAID_CONFIG.MEGA_RAID_TIER.toString()
           : raidBoss.tier,
       ) === actualTier
     ) {
-      possibleBosses += `<a href="${url}">${raidBoss.originalName}</a>`;
-      possibleBosses += raidBoss.shinyAvailable ? "✨, " : ", ";
+      possibleBosses += `<a href="${url}">${raidBoss.name}</a>`;
+      possibleBosses += raidBoss.canBeShiny ? "✨, " : ", ";
     }
   });
   possibleBosses = possibleBosses.slice(0, -2);
@@ -336,17 +337,17 @@ function normalizeAlolanNameForShadow(pokemonName: string): string {
 }
 
 export function urlFormatter(
-  originalName: string,
+  name: string,
   raidTier: string,
 ): string {
   const base = URLS.POKEBATTLER_RAIDS;
-  let url = `${base}/${originalName.replace(/\s/g, "_")}`;
+  let url = `${base}/${name.replace(/\s/g, "_")}`;
   
   // Check if it's a shadow Pokemon (case-insensitive)
-  const isShadow = originalName.toLowerCase().includes("shadow");
+  const isShadow = name.toLowerCase().includes("shadow");
   if (isShadow) {
     // Extract Pokemon name (remove "Shadow " prefix)
-    let pokemonName = originalName.replace(/^Shadow\s+/i, "").trim();
+    let pokemonName = name.replace(/^Shadow\s+/i, "").trim();
     
     // Normalize Alolan names if present
     pokemonName = normalizeAlolanName(pokemonName);
@@ -357,46 +358,46 @@ export function urlFormatter(
     url = `${base}/${formattedName}`;
   } else if (raidTier === "mega" || raidTier === RAID_CONFIG.MEGA_RAID_TIER.toString()) {
     //TODO check if future forms are still correct
-    url = `${base}/${originalName.slice(5) + "_MEGA"}`;
-  } else if (originalName.toLowerCase().startsWith("primal ")) {
+    url = `${base}/${name.slice(5) + "_MEGA"}`;
+  } else if (name.toLowerCase().startsWith("primal ")) {
     // Primal Groudon -> GROUDON_PRIMAL, Primal Kyogre -> KYOGRE_PRIMAL
-    const pokemonName = originalName.slice(7).trim(); // Remove "Primal "
+    const pokemonName = name.slice(7).trim(); // Remove "Primal "
     const formattedName = pokemonName.toUpperCase().replace(/\s/g, "_") + "_PRIMAL";
     url = `${base}/${formattedName}`;
-  } else if (originalName.includes("Deoxys (Att")) {
+  } else if (name.includes("Deoxys (Att")) {
     url = `${base}/DEOXYS_ATTACK_FORM`;
-  } else if (originalName.includes("Deoxys (Def")) {
+  } else if (name.includes("Deoxys (Def")) {
     url = `${base}/DEOXYS_DEFENSE_FORM`;
-  } else if (originalName.includes("Deoxys (Speed")) {
+  } else if (name.includes("Deoxys (Speed")) {
     url = `${base}/DEOXYS_SPEED_FORM`;
-  } else if (originalName.includes("Deoxys (Normal")) {
+  } else if (name.includes("Deoxys (Normal")) {
     url = `${base}/DEOXYS`;
-  } else if (originalName.includes("Genesect (Shock)")) {
+  } else if (name.includes("Genesect (Shock)")) {
     url = `${base}/GENESECT_SHOCK_FORM`;
-  } else if (originalName.includes("Genesect (Chill)")) {
+  } else if (name.includes("Genesect (Chill)")) {
     url = `${base}/GENESECT_CHILL_FORM`;
-  } else if (originalName.includes("Genesect (Burn)")) {
+  } else if (name.includes("Genesect (Burn)")) {
     url = `${base}/GENESECT_BURN_FORM`;
-  } else if (originalName.includes("Genesect (Douse)")) {
+  } else if (name.includes("Genesect (Douse)")) {
     url = `${base}/GENESECT_DOUSE_FORM`;
-  } else if (originalName.includes("Thundurus (Therian)")) {
+  } else if (name.includes("Thundurus (Therian)")) {
     url = `${base}/THUNDURUS_THERIAN_FORM`;
-  } else if (originalName.includes("Tornadus (Therian)")) {
+  } else if (name.includes("Tornadus (Therian)")) {
     url = `${base}/TORNADUS_THERIAN_FORM`;
-  } else if (originalName.includes("Landorus (Therian)")) {
+  } else if (name.includes("Landorus (Therian)")) {
     url = `${base}/LANDORUS_THERIAN_FORM`;
-  } else if (originalName.includes("Zacian (Hero)")) {
+  } else if (name.includes("Zacian (Hero)")) {
     url = `${base}/ZACIAN_HERO_FORM`;
-  } else if (originalName.includes("Zacian (Crowned)")) {
+  } else if (name.includes("Zacian (Crowned)")) {
     url = `${base}/ZACIAN_CROWNED_SHIELD_FORM`;
-  } else if (originalName.includes("Zamazenta (Hero)")) {
+  } else if (name.includes("Zamazenta (Hero)")) {
     url = `${base}/ZAMAZENTA_HERO_FORM`;
-  } else if (originalName.includes("Zamazenta (Crowned)")) {
+  } else if (name.includes("Zamazenta (Crowned)")) {
     url = `${base}/ZAMAZENTA_CROWNED_SHIELD_FORM`;
-  } else if (originalName.toLowerCase().includes("alolan")) {
+  } else if (name.toLowerCase().includes("alolan")) {
     // Handle Alolan Pokemon generically
     // Example: "Alolan Raichu" -> "RAICHU_ALOLA_FORM"
-    const pokemonName = normalizeAlolanName(originalName);
+    const pokemonName = normalizeAlolanName(name);
     
     // Format as POKEMON_NAME_ALOLA_FORM (uppercase, spaces to underscores)
     const formattedName = pokemonName.toUpperCase().replace(/\s/g, "_") + "_ALOLA_FORM";

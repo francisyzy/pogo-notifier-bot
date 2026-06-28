@@ -41,10 +41,10 @@ const checkBoss = () => {
       const results: Record<number, { regular: string[]; shadow: string[] }> = {};
 
       raidBossesData.forEach((raidBoss) => {
-        let url = urlFormatter(raidBoss.originalName, raidBoss.tier);
+        let url = urlFormatter(raidBoss.name, raidBoss.tier);
         const tier = raidBoss.tier === "mega" ? 6 : Number(raidBoss.tier);
-        let bossName = `<a href="${url}">${raidBoss.originalName}</a>`;
-        bossName += raidBoss.shinyAvailable ? "✨" : "";
+        let bossName = `<a href="${url}">${raidBoss.name}</a>`;
+        bossName += raidBoss.canBeShiny ? "✨" : "";
         
         const isShadow = isShadowBoss(raidBoss);
         
