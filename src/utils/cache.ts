@@ -44,19 +44,33 @@ interface RaidBossBackup {
   tier: string;
 }
 
-function adaptBackupRaidBoss(boss: RaidBossBackup): import("../types").raidBoss {
+// Shape written to and read from cache (subset of full raidBoss shape)
+interface RaidBossCache {
+  name: string;
+  no?: number;
+  canBeShiny: boolean;
+  tier: string;
+  types: string[];
+  typeUrls: string[];
+  originalName?: string;
+  imageUrl?: string;
+  shinyAvailable?: boolean;
+  image?: string;
+  combatPower?: { normal: { min: number; max: number }; boosted: { min: number; max: number } };
+  boostedWeather?: string[];
+}
+
+function adaptBackupRaidBoss(boss: RaidBossBackup): RaidBossCache {
   return {
     name: boss.originalName,
     canBeShiny: boss.shinyAvailable,
     tier: boss.tier,
     types: [],
-    combatPower: { normal: { min: 0, max: 0 }, boosted: { min: 0, max: 0 } },
-    boostedWeather: [],
-    image: "",
-  } as import("../types").raidBoss;
+    typeUrls: [],
+  };
 }
 
-export async function fetchRaidBosses(): Promise<raidBosses | null> {
+export async function fetchRaidBosses(): Promise<RaidBossCache[] | null> {
   const urls: (string | null)[] = [URLS.RAID_BOSSES_JSON, BACKUP_URLS.RAID_BOSSES_JSON];
 
   for (const url of urls) {
@@ -64,12 +78,12 @@ export async function fetchRaidBosses(): Promise<raidBosses | null> {
     try {
       const data = await fetchJson<RaidBossBackup[] | raidBosses>(url);
       const isBackupFormat = Array.isArray(data) && data.length > 0 && "no" in data[0];
-      let bosses: raidBosses;
+      let bosses: RaidBossCache[];
       if (isBackupFormat) {
         console.log(`[cache] Detected backup source format, adapting to current shape`);
         bosses = (data as RaidBossBackup[]).map(adaptBackupRaidBoss);
       } else {
-        bosses = data as raidBosses;
+        bosses = data as RaidBossCache[];
       }
       await writeCacheFile("raid-bosses.json", { url, fetchedAt: Date.now(), data: bosses });
       console.log(`[cache] Fetched raid bosses from ${url}`);
@@ -79,7 +93,7 @@ export async function fetchRaidBosses(): Promise<raidBosses | null> {
     }
   }
 
-  const cached = await readCacheFile<{ url: string; fetchedAt: number; data: raidBosses }>("raid-bosses.json");
+  const cached = await readCacheFile<{ url: string; fetchedAt: number; data: RaidBossCache[] }>("raid-bosses.json");
   if (cached) {
     const ageMinutes = (Date.now() - cached.fetchedAt) / 60_000;
     if (ageMinutes <= 120) {

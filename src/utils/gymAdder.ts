@@ -29,7 +29,7 @@ export async function updateGyms(raids: raids): Promise<void> {
         },
         create: {
           geoKey,
-          gymString: raid.gym_name.trim() !== "" ? raid.gym_name : null,
+          ...(raid.gym_name.trim() !== "" && { gymString: raid.gym_name }),
           lat: raid.lat,
           long: raid.lng,
           lastRaidAt: now,

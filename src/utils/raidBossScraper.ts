@@ -1,12 +1,8 @@
 import cron from "node-cron";
-import { JSDOM } from "jsdom";
 import { readCacheFile, writeCacheFile } from "./cache";
-import { CACHE_DIR, WEDNESDAY_SCRAPE_CRON, URLS } from "../constants";
+import { CACHE_DIR, WEDNESDAY_SCRAPE_CRON } from "../constants";
 import * as fs from "fs";
 import * as path from "path";
-
-// The ScrapedDuck page we scrape
-const SCRAPE_URL = "https://github.com/bigfoott/ScrapedDuck";
 
 // Minimum interval between scrapes in ms (don't re-scrape if cache is fresh)
 const MIN_SCRAPE_INTERVAL_MS = 60 * 60 * 1000; // 1 hour
@@ -17,22 +13,13 @@ const MIN_SCRAPE_INTERVAL_MS = 60 * 60 * 1000; // 1 hour
  */
 async function scrapeRaidBossesFromScrapedDuck(): Promise<unknown[] | null> {
   try {
-    const response = await fetch(SCRAPE_URL, {
-      headers: { "Accept": "text/html" }
-    });
-    if (!response.ok) {
-      console.warn(`ScrapedDuck scrape failed: ${response.status}`);
+    // We fetch the raw JSON data URL directly (not the HTML page)
+    const dataUrl = "https://raw.githubusercontent.com/bigfoott/ScrapedDuck/data/raids.min.json";
+    const dataResponse = await fetch(dataUrl);
+    if (!dataResponse.ok) {
+      console.warn(`ScrapedDuck data fetch failed: ${dataResponse.status}`);
       return null;
     }
-    const html = await response.text();
-    const dom = new JSDOM(html);
-    const document = dom.window.document;
-    // The actual JSON data URL is in a script tag or link with data.min.json
-    // ScrapedDuck serves data from raw.githubusercontent.com/bigfoott/ScrapedDuck/data/raidBosses.min.json
-    // But we can't fetch that directly from a browser, so fetch the raw JSON URL directly
-    const dataUrl = "https://raw.githubusercontent.com/bigfoott/ScrapedDuck/data/raidBosses.min.json";
-    const dataResponse = await fetch(dataUrl);
-    if (!dataResponse.ok) return null;
     const data = await dataResponse.json() as unknown[];
     return Array.isArray(data) ? data : null;
   } catch (error) {
@@ -46,15 +33,14 @@ async function scrapeRaidBossesFromScrapedDuck(): Promise<unknown[] | null> {
  * Returns true if cache was updated.
  */
 async function updateCacheIfChanged(bosses: unknown[]): Promise<boolean> {
-  const cachePath = path.join(CACHE_DIR, "raid-bosses.json");
-  const existing = readCacheFile<unknown[]>("raid-bosses.json");
+  const existing = await readCacheFile<unknown[]>("raid-bosses.json");
 
   if (existing && JSON.stringify(existing) === JSON.stringify(bosses)) {
     console.log("Raid boss cache unchanged, skipping write");
     return false;
   }
 
-  writeCacheFile("raid-bosses.json", bosses);
+  await writeCacheFile("raid-bosses.json", bosses);
   console.log(`Raid boss cache updated with ${bosses.length} bosses`);
   return true;
 }
@@ -101,7 +87,7 @@ export function registerWednesdayScraper(): void {
     return;
   }
 
-  for (const cronExpr of WEDNESDAY_SCRAPE_CRON) {
+  for (const cronExpr of Object.values(WEDNESDAY_SCRAPE_CRON)) {
     const task = cron.schedule(cronExpr, () => {
       console.log(`[Wednesday Scraper] Running scheduled scrape at ${new Date().toISOString()}`);
       runWednesdayScrape().catch((err) => {

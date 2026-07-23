@@ -1,6 +1,6 @@
 import { formatDistanceToNow, formatISO9075 } from "date-fns";
 import { Pokedex } from 'pmgo-pokedex';
-import { pokemonMessage, raidBosses, raidMessage } from "../types";
+import { pokemonMessage, raidMessage } from "../types";
 import { URLS, RAID_CONFIG } from "../constants";
 import { fetchRaidBosses } from "./cache";
 
@@ -51,7 +51,7 @@ export function isShadowBoss(boss: {
  */
 function getActualRaidTier(
   level: number,
-  bosses: raidBosses,
+  bosses: { tier: string; name: string }[],
 ): { tier: number; isShadow: boolean } {
   // Shadow raids have level +offset, so check if level >= MIN_SHADOW_RAID_LEVEL
   // and if there are shadow bosses at level - offset
@@ -96,7 +96,7 @@ export function getEffectiveTierForNotification(level: number): number {
 export async function raidMessageFormatter(
   raidMessage: raidMessage,
 ): Promise<string> {
-  let bosses: raidBosses;
+  let bosses;
   try {
     const result = await fetchRaidBosses();
     if (result === null) throw new Error("cache miss");
@@ -210,7 +210,7 @@ export async function raidMessageFormatter(
 export async function bossCount(
   raidMessage: raidMessage,
 ): Promise<number> {
-  let bosses: raidBosses;
+  let bosses;
   try {
     const result = await fetchRaidBosses();
     if (result === null) throw new Error("cache miss");
