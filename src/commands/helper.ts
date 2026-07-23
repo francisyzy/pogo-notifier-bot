@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import { toEscapeHTMLMsg } from "../utils/messageHandler";
 import { getBotCommands, getBotCommandsForDisplay } from "../utils/botCommands";
 import { LINKS } from "../constants";
+import "./nameGym";
 
 const prisma = new PrismaClient();
 //General helper commands
