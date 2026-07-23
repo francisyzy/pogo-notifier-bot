@@ -2,6 +2,7 @@ import bot from "../lib/bot";
 import { PrismaClient } from "@prisma/client";
 import { execSync } from "child_process";
 import { toEscapeHTMLMsg } from "../utils/messageHandler";
+import config from "../config";
 import { getBotCommands, getBotCommandsForDisplay } from "../utils/botCommands";
 import { LINKS } from "../constants";
 import "./nameGym";
@@ -100,6 +101,9 @@ const helper = () => {
   });
 
   bot.command("pull", async (ctx) => {
+    if (ctx.from.id !== config.OWNER_ID) {
+      return ctx.reply("Unauthorized");
+    }
     if (process.env.NODE_ENV === "production") {
       try {
         execSync("git pull && npm run build && pm2 reload all", { stdio: "inherit" });
