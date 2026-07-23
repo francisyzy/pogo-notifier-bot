@@ -2,6 +2,7 @@ import { formatDistanceToNow, formatISO9075 } from "date-fns";
 import { Pokedex } from 'pmgo-pokedex';
 import { pokemonMessage, raidBosses, raidMessage } from "../types";
 import { URLS, RAID_CONFIG } from "../constants";
+import { fetchRaidBosses } from "./cache";
 
 /**
  * Fetches JSON from a URL with proper error handling
@@ -97,12 +98,12 @@ export async function raidMessageFormatter(
 ): Promise<string> {
   let bosses: raidBosses;
   try {
-    bosses = await fetchJson<raidBosses>(URLS.RAID_BOSSES_JSON);
+    const result = await fetchRaidBosses();
+    if (result === null) throw new Error("cache miss");
+    bosses = result;
   } catch (error) {
     console.error("Failed to fetch raid bosses:", error);
-    throw new Error(
-      "Unable to fetch raid boss data. Please try again later.",
-    );
+    throw new Error("Unable to fetch raid boss data. Please try again later.");
   }
 
   // Get actual raid tier and whether it's a shadow raid
@@ -211,12 +212,12 @@ export async function bossCount(
 ): Promise<number> {
   let bosses: raidBosses;
   try {
-    bosses = await fetchJson<raidBosses>(URLS.RAID_BOSSES_JSON);
+    const result = await fetchRaidBosses();
+    if (result === null) throw new Error("cache miss");
+    bosses = result;
   } catch (error) {
     console.error("Failed to fetch raid bosses:", error);
-    throw new Error(
-      "Unable to fetch raid boss data. Please try again later.",
-    );
+    throw new Error("Unable to fetch raid boss data. Please try again later.");
   }
 
   // Get actual raid tier and whether it's a shadow raid
