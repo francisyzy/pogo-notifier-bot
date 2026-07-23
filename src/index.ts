@@ -30,6 +30,8 @@ import { schedule } from "node-cron";
 import location from "./commands/location";
 import { printBotInfo } from "./utils/consolePrintUsername";
 import checkBoss from "./commands/checkBoss";
+import { ensureCacheDir } from "./utils/cache";
+import { registerWednesdayScraper, stopWednesdayScraper } from "./utils/raidBossScraper";
 
 //Production Settings
 if (process.env.NODE_ENV === "production") {
@@ -71,6 +73,12 @@ if (process.env.NODE_ENV === "production") {
 }
 
 helper();
+
+// Ensure cache directory exists
+ensureCacheDir();
+
+// Register Wednesday raid boss scraper
+registerWednesdayScraper();
 checkRaid();
 subscribe();
 manageGyms();
@@ -159,12 +167,14 @@ schedule("0 4 * * *", async () => {
 // Enable graceful stop
 process.once("SIGINT", () => {
   console.log("Received SIGINT, shutting down gracefully...");
+  stopWednesdayScraper();
   clearAllRaidReminders();
   bot.stop("SIGINT");
 });
 
 process.once("SIGTERM", () => {
   console.log("Received SIGTERM, shutting down gracefully...");
+  stopWednesdayScraper();
   clearAllRaidReminders();
   bot.stop("SIGTERM");
 });
