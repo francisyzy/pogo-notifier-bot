@@ -4,25 +4,38 @@ import { GYM_CONFIG } from "../constants";
 
 const prisma = new PrismaClient();
 
+function roundTo(value: number, decimals: number): number {
+  const factor = Math.pow(10, decimals);
+  return Math.round(value * factor) / factor;
+}
+
+export function geoKeyFromLatLng(lat: number, lng: number): string {
+  return `${roundTo(lat, 4)}|${roundTo(lng, 4)}`;
+}
+
 export async function updateGyms(raids: raids): Promise<void> {
   const now = new Date();
   await Promise.all(
-    raids.map((raid) =>
-      prisma.gym.upsert({
-        where: { gymString: raid.gym_name },
+    raids.map((raid) => {
+      const geoKey = geoKeyFromLatLng(raid.lat, raid.lng);
+      return prisma.gym.upsert({
+        where: { geoKey },
         update: {
           lat: raid.lat,
           long: raid.lng,
           lastRaidAt: now,
+          // Only clobber gymString if the provider sent a non-empty name
+          ...(raid.gym_name.trim() !== "" && { gymString: raid.gym_name }),
         },
         create: {
-          gymString: raid.gym_name,
+          geoKey,
+          gymString: raid.gym_name.trim() !== "" ? raid.gym_name : null,
           lat: raid.lat,
           long: raid.lng,
           lastRaidAt: now,
         },
-      }),
-    ),
+      });
+    }),
   );
 }
 

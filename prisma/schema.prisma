@@ -34,7 +34,8 @@ model User {
 
 model Gym {
   id           String         @id @default(uuid())
-  gymString    String         @unique
+  geoKey       String?        @unique
+  gymString    String?
   lat          Float
   long         Float
   lastRaidAt   DateTime?      // When we last saw a raid at this gym (for staleness cleanup)

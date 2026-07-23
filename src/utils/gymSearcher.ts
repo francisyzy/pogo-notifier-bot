@@ -18,7 +18,7 @@ export async function gymSearcherBtn(
     hide?: boolean | undefined;
   })[] = [];
   gyms.forEach((gym) => {
-    gymBtnList.push(Markup.button.callback(gym.gymString, gym.id));
+    gymBtnList.push(Markup.button.callback(gym.gymString ?? gym.geoKey ?? gym.id, gym.id));
   });
   return gymBtnList;
 }

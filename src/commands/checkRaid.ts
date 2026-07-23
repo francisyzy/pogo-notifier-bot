@@ -56,7 +56,7 @@ const checkRaid = () => {
         //Exit condition early to end command
         if (raidMessages.length === 0) {
           return ctx.replyWithHTML(
-            `There is no raid happening at <u>${gym.gymString}</u>\n<i>If you think this is an error, check back in a few minutes to get updated information</i>`,
+            `There is no raid happening at <u>${gym.gymString ?? gym.geoKey ?? gym.id}</u>\n<i>If you think this is an error, check back in a few minutes to get updated information</i>`,
             {
               ...Markup.removeKeyboard(),
             },

@@ -27,7 +27,7 @@ const manageGyms = () => {
         })
         .then(async (gymSubscribe) => {
           await ctx.editMessageText(
-            `You removed ${gymSubscribe.gym.gymString} from your subscriptions`,
+            `You removed ${gymSubscribe.gym.gymString ?? gymSubscribe.gym.geoKey ?? gymSubscribe.gym.id} from your subscriptions`,
           );
         })
         .catch(async (error) => {
@@ -77,7 +77,7 @@ const manageGyms = () => {
               subscriptions.forEach((subscription) => {
                 gymBtnList.push(
                   Markup.button.callback(
-                    subscription.gym.gymString,
+                    subscription.gym.gymString ?? subscription.gym.geoKey ?? subscription.gym.id,
                     subscription.gymId,
                   ),
                 );
@@ -126,7 +126,7 @@ const manageGyms = () => {
       let returnMessage =
         "You are subscribed to the following gyms:\n";
       for (const subscription of subscriptions) {
-        returnMessage += subscription.gym.gymString + "\n";
+        returnMessage += (subscription.gym.gymString ?? subscription.gym.geoKey ?? subscription.gym.id) + "\n";
       }
       returnMessage +=
         "\nYou can /manageGyms to remove the gyms that you no longer want to follow";

@@ -74,7 +74,10 @@ const subscribe = () => {
 
       const gyms = await prisma.gym.findMany({
         where: {
-          gymString: { contains: message.text },
+          OR: [
+            { gymString: { contains: message.text } },
+            { id: { contains: message.text } },
+          ],
         },
       });
       if (gyms.length != 0) {
@@ -83,7 +86,7 @@ const subscribe = () => {
         })[] = [];
         gyms.forEach((gym) => {
           gymBtnList.push(
-            Markup.button.callback(gym.gymString, gym.id),
+            Markup.button.callback(gym.gymString ?? gym.geoKey ?? gym.id, gym.id),
           );
         });
 
@@ -122,7 +125,7 @@ const subscribe = () => {
         })
         .then(async (gymSubscribe) => {
           await ctx.editMessageText(
-            `You have subscribed to ${gymSubscribe.gym.gymString}`,
+            `You have subscribed to ${gymSubscribe.gym.gymString ?? gymSubscribe.gym.geoKey ?? gymSubscribe.gym.id}`,
           );
         })
         .catch(async (error) => {
