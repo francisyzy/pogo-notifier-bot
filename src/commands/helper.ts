@@ -1,5 +1,6 @@
 import bot from "../lib/bot";
 import { PrismaClient } from "@prisma/client";
+import { execSync } from "child_process";
 import { toEscapeHTMLMsg } from "../utils/messageHandler";
 import { getBotCommands, getBotCommandsForDisplay } from "../utils/botCommands";
 import { LINKS } from "../constants";
@@ -96,6 +97,19 @@ const helper = () => {
     return ctx.reply(
       `Subscribe to this Telegram Channel to get notified about events 15 minutes before they start!\n${LINKS.EVENTS_CHANNEL}`,
     );
+  });
+
+  bot.command("pull", async (ctx) => {
+    if (process.env.NODE_ENV === "production") {
+      try {
+        execSync("git pull && npm run build && pm2 reload all", { stdio: "inherit" });
+        return ctx.reply("Pulled, built, and reloaded.");
+      } catch {
+        return ctx.reply("Pull/build/reload failed. Check server logs.");
+      }
+    } else {
+      return ctx.reply("Not on prod");
+    }
   });
 };
 
