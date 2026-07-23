@@ -2,7 +2,14 @@ import { raids, pokemons, rawEvents } from "../types";
 import { URLS } from "../constants";
 
 async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
-  const response = await fetch(url, options);
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      ...options?.headers,
+      "User-Agent": "pogo-notifier-bot/1.0",
+    },
+  });
+  if (!response.ok) throw new Error(`HTTP ${response.status} for ${url}`);
   return response.json() as Promise<T>;
 }
 
