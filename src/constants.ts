@@ -46,6 +46,29 @@ export const LINKS = {
   EVENTS_CHANNEL: "https://t.me/SGPogoEvents",
 } as const;
 
+/** Directory for cached JSON data (git-ignored) */
+export const CACHE_DIR = ".cache" as const;
+
+/**
+ * Backup sources — tried after primary URL fails.
+ * RAID_BOSSES_JSON backup is the previous source (pmgo-professor-willow/data-leekduck).
+ */
+export const BACKUP_URLS = {
+  RAID_BOSSES_JSON:
+    "https://raw.githubusercontent.com/pmgo-professor-willow/data-leekduck/gh-pages/raidBosses.min.json",
+  EVENTS_JSON: null,
+} as const;
+
+/**
+ * Wednesday raid boss scrape cron schedule (UTC+8 local).
+ * Primary:   10:13 AM UTC+8 = "13 10 * * 3"
+ * Secondary: 11:14 AM UTC+8 = "14 11 * * 3"
+ */
+export const WEDNESDAY_SCRAPE_CRON = {
+  PRIMARY:   "13 10 * * 3",
+  SECONDARY: "14 11 * * 3",
+} as const;
+
 /** Raid configuration constants */
 export const RAID_CONFIG = {
   /** Shadow raids have their level increased by this offset in upstream data */
