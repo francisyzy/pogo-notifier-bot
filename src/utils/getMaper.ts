@@ -1,5 +1,6 @@
 import { raids, pokemons, rawEvents } from "../types";
 import { URLS } from "../constants";
+import { fetchEvents } from "./cache";
 
 async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
   const response = await fetch(url, {
@@ -65,7 +66,10 @@ export async function getTrio(): Promise<pokemons> {
  * @return {rawEvents} List of rawEvents
  */
 export async function getEvents(): Promise<rawEvents> {
-  const events = await fetchJson<rawEvents>(URLS.EVENTS_JSON);
-
+  const events = await fetchEvents();
+  if (events === null) {
+    console.warn("getEvents: all sources unavailable, returning empty list");
+    return [] as rawEvents;
+  }
   return events as rawEvents;
 }
