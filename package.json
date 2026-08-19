@@ -11,7 +11,8 @@
     "generate": "prisma generate",
     "deploy": "prisma migrate deploy",
     "studio": "prisma studio",
-    "migrate": "prisma migrate dev",
+    "migrate:dev": "prisma migrate dev",
+    "migrate:create": "prisma migrate dev --create-only",
     "reset": "prisma migrate reset",
     "updateCommands": "tsx src/scripts/updateCommands.ts"
   },
