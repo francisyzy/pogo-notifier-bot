@@ -100,6 +100,20 @@ interface CpRange {
 interface raidBosses extends Array<raidBoss> {}
 
 // ScrapedDuck format: https://github.com/bigfoott/ScrapedDuck
+interface RawEventExtraDataGeneric {
+  name: string;
+  canBeShiny: boolean;
+  image: string;
+  bonus?: string;
+}
+
+interface RawEventExtraDataSpotlight {
+  name: string;
+  canBeShiny: boolean;
+  image: string;
+  bonus?: string;
+}
+
 interface rawEvent {
   eventID: string;
   name: string;
@@ -109,7 +123,7 @@ interface rawEvent {
   image: string;
   start: string;
   end: string;
-  extraData?: Record<string, unknown>;
+  extraData?: RawEventExtraDataGeneric | RawEventExtraDataSpotlight;
 }
 
 interface rawEvents extends Array<rawEvent> {}

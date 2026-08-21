@@ -99,41 +99,41 @@ export async function notifyAndUpdateUsers(): Promise<void> {
             console.error("Error deleting old gym events:", error);
           });
 
-        await prisma.gymEvent
-          .create({
+      await prisma.gymEvent
+        .create({
+          data: {
+            eventTime: raidMessage.start,
+            gymSubscribeGymId: raidMessage.gymId,
+            gymSubscribeUserTelegramId: raidMessage.userTelegramId,
+          },
+        })
+        .then(async () => {
+          await prisma.user.update({
+            where: { telegramId: raidMessage.userTelegramId },
             data: {
-              eventTime: raidMessage.start,
-              gymSubscribeGymId: raidMessage.gymId,
-              gymSubscribeUserTelegramId: raidMessage.userTelegramId,
-            },
-          })
-          .then(async () => {
-            await prisma.user.update({
-              where: { telegramId: raidMessage.userTelegramId },
-              data: {
-                gymTimesNotified: {
-                  increment: 1,
-                },
+              gymTimesNotified: {
+                increment: 1,
               },
-            });
-            
-            let originalMessage;
-            try {
-              originalMessage = await bot.telegram.sendMessage(
-                raidMessage.userTelegramId,
-                message,
-                {
-                  parse_mode: "HTML",
-                  link_preview_options: { is_disabled: true },
-                },
-              );
-            } catch (error) {
-              console.error(
-                `Failed to send raid message to user ${user.name}:`,
-                error,
-              );
-              return;
-            }
+            },
+          });
+          
+          let originalMessage;
+          try {
+            originalMessage = await bot.telegram.sendMessage(
+              raidMessage.userTelegramId,
+              message,
+              {
+                parse_mode: "HTML",
+                link_preview_options: { is_disabled: true },
+              },
+            );
+          } catch (error) {
+            console.error(
+              `Failed to send raid message to user ${user.name} at ${new Date().toISOString()}:`,
+              error,
+            );
+            return;
+          }
 
             //If raid has not started, send reminder
             if (raidMessage.pokemonId === 0) {
@@ -208,13 +208,13 @@ export async function notifyAndUpdateUsers(): Promise<void> {
                       },
                     );
                     activeTimeouts.delete(timeoutKey);
-                  } catch (error) {
-                    console.error(
-                      `Error sending raid reminder to user ${raidMessage.userTelegramId}:`,
-                      error,
-                    );
-                    activeTimeouts.delete(timeoutKey);
-                  }
+            } catch (error) {
+              console.error(
+                `Error sending raid reminder to user ${raidMessage.userTelegramId} at ${new Date().toISOString()}:`,
+                error,
+              );
+              activeTimeouts.delete(timeoutKey);
+            }
                 }, offsetMs);
                 
                 activeTimeouts.set(timeoutKey, timeoutId);
@@ -249,6 +249,6 @@ export async function notifyAndUpdateUsers(): Promise<void> {
       }
     }
   } catch (error) {
-    console.error("Error in notifyAndUpdateUsers:", error);
+    console.error("Error in notifyAndUpdateUsers at " + new Date().toISOString() + ":", error);
   }
 }

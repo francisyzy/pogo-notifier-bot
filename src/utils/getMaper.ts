@@ -19,9 +19,11 @@ async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
  * @return {raids} List of raids
  */
 export async function getRaids(): Promise<raids> {
+  console.log("getRaids: Starting fetch at", new Date().toISOString());
   const { raids: raids } = await fetchJson<{ raids: raids }>(
     `${URLS.SGPOKEMAP.RAIDS}?time=${new Date().valueOf()}`,
   );
+  console.log("getRaids: Fetch completed at", new Date().toISOString());
 
   return raids as raids;
 }
