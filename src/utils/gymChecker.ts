@@ -4,6 +4,15 @@ import { updateGyms, geoKeyFromLatLng } from "./gymAdder";
 
 const prisma = new PrismaClient();
 
+/**
+ * Resolve a gym's geoKey, falling back to computing it from lat/long.
+ * Guards against rows whose geoKey was never backfilled (NULL) so that
+ * subscriptions to them still match incoming raids.
+ */
+function resolveGeoKey(gym: Gym): string {
+  return gym.geoKey ?? geoKeyFromLatLng(gym.lat, gym.long);
+}
+
 export async function gymChecker(
   raids: raids,
   userTelegramId?: number,
@@ -23,18 +32,21 @@ export async function gymChecker(
       include: { gym: true },
     });
   }
-  const subscribedGeoKeys = [
-    ...new Set(subscribes.map((subscribe) => subscribe.gym.geoKey).filter(Boolean)),
-  ] as string[];
+  // Group subscriptions by geoKey (computed from lat/long if the row has none)
+  const subscribersByGeoKey = new Map<string, typeof subscribes>();
+  for (const subscribe of subscribes) {
+    const key = resolveGeoKey(subscribe.gym);
+    const list = subscribersByGeoKey.get(key) ?? [];
+    list.push(subscribe);
+    subscribersByGeoKey.set(key, list);
+  }
   const subscribeGymRaids = raids.filter((raid) =>
-    subscribedGeoKeys.includes(geoKeyFromLatLng(raid.lat, raid.lng)),
+    subscribersByGeoKey.has(geoKeyFromLatLng(raid.lat, raid.lng)),
   );
   for (const raid of subscribeGymRaids) {
     const raidGeoKey = geoKeyFromLatLng(raid.lat, raid.lng);
-    const subscribers = await prisma.gymSubscribe.findMany({
-      where: { gym: { geoKey: raidGeoKey } },
-    });
-    subscribers.forEach((subscriber) => {
+    const subscribers = subscribersByGeoKey.get(raidGeoKey) ?? [];
+    subscribers.forEach(({ gym: _gym, ...subscriber }) => {
       const raidStart = new Date(
         Number(raid.raid_start.toString() + "000"),
       );
@@ -64,14 +76,14 @@ export async function gymCheckerAdHoc(
   updateGyms(raids);
   let raidInfo: raidMessage[] = [];
   const subscribedGeoKeys = [
-    ...new Set(gyms.map((gym) => gym.geoKey).filter(Boolean)),
-  ] as string[];
+    ...new Set(gyms.map((gym) => resolveGeoKey(gym))),
+  ];
   const gymRaids = raids.filter((raid) =>
     subscribedGeoKeys.includes(geoKeyFromLatLng(raid.lat, raid.lng)),
   );
   for (const raid of gymRaids) {
     const raidGeoKey = geoKeyFromLatLng(raid.lat, raid.lng);
-    const gym = gyms.filter((g) => g.geoKey === raidGeoKey);
+    const gym = gyms.filter((g) => resolveGeoKey(g) === raidGeoKey);
     const raidStart = new Date(
       Number(raid.raid_start.toString() + "000"),
     );
