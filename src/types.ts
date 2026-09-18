@@ -100,18 +100,28 @@ interface CpRange {
 interface raidBosses extends Array<raidBoss> {}
 
 // ScrapedDuck format: https://github.com/bigfoott/ScrapedDuck
-interface RawEventExtraDataGeneric {
+interface RawEventSpotlightPokemon {
   name: string;
   canBeShiny: boolean;
   image: string;
-  bonus?: string;
 }
 
-interface RawEventExtraDataSpotlight {
-  name: string;
-  canBeShiny: boolean;
-  image: string;
-  bonus?: string;
+interface RawEventExtraDataSpotlight extends RawEventSpotlightPokemon {
+  bonus: string;
+  list: RawEventSpotlightPokemon[];
+}
+
+interface RawEventExtraDataGeneric {
+  hasSpawns: boolean;
+  hasFieldResearchTasks: boolean;
+}
+
+interface RawEventExtraData {
+  generic?: RawEventExtraDataGeneric;
+  spotlight?: RawEventExtraDataSpotlight;
+  communityday?: Record<string, unknown>;
+  raidbattles?: Record<string, unknown>;
+  promocodes?: string[];
 }
 
 interface rawEvent {
@@ -121,9 +131,9 @@ interface rawEvent {
   heading: string;
   link: string;
   image: string;
-  start: string;
-  end: string;
-  extraData?: RawEventExtraDataGeneric | RawEventExtraDataSpotlight;
+  start: string | null;
+  end: string | null;
+  extraData?: RawEventExtraData;
 }
 
 interface rawEvents extends Array<rawEvent> {}
@@ -135,5 +145,6 @@ export {
   raidMessage,
   pokemonMessage,
   raidBosses,
+  rawEvent,
   rawEvents,
 };
