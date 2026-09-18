@@ -78,7 +78,7 @@ export async function runWednesdayScrape(): Promise<void> {
 let scheduledTasks: ScheduledTask[] = [];
 
 /**
- * Registers the Wednesday cron jobs (10:13am and 11:14am SGT).
+ * Registers the Wednesday cron jobs (6:13am and 7:14am SGT, shortly after the 6:00am rotation).
  * Idempotent — safe to call multiple times.
  */
 export function registerWednesdayScraper(): void {

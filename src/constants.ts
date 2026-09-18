@@ -61,12 +61,14 @@ export const BACKUP_URLS = {
 
 /**
  * Wednesday raid boss scrape cron schedule (UTC+8 local).
- * Primary:   10:13 AM UTC+8 = "13 10 * * 3"
- * Secondary: 11:14 AM UTC+8 = "14 11 * * 3"
+ * The raid boss rotation changes at 06:00 SGT on Wednesdays, so we scrape
+ * shortly after, with a secondary retry roughly an hour later.
+ * Primary:   06:13 AM UTC+8 = "13 6 * * 3"
+ * Secondary: 07:14 AM UTC+8 = "14 7 * * 3"
  */
 export const WEDNESDAY_SCRAPE_CRON = {
-  PRIMARY:   "13 10 * * 3",
-  SECONDARY: "14 11 * * 3",
+  PRIMARY:   "13 6 * * 3",
+  SECONDARY: "14 7 * * 3",
 } as const;
 
 /** Raid configuration constants */
