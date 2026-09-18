@@ -14,7 +14,8 @@
     "migrate:dev": "prisma migrate dev",
     "migrate:create": "prisma migrate dev --create-only",
     "reset": "prisma migrate reset",
-    "updateCommands": "tsx src/scripts/updateCommands.ts"
+    "updateCommands": "tsx src/scripts/updateCommands.ts",
+    "smoke": "tsx src/scripts/smokeTest.ts"
   },
   "repository": {
     "type": "git",
@@ -33,7 +34,7 @@
     "date-fns": "^3.6.0",
     "dotenv": "^16.4.5",
     "jsdom": "^26.1.0",
-    "node-cron": "^3.0.3",
+    "node-cron": "^4.2.1",
     "pmgo-pokedex": "^0.2.2",
     "qrcode-terminal": "^0.12.0",
     "telegraf": "^4.16.3"
@@ -41,7 +42,6 @@
   "devDependencies": {
     "@types/jsdom": "^28.0.3",
     "@types/node": "^18.19.42",
-    "@types/node-cron": "^3.0.0",
     "@types/qrcode-terminal": "^0.12.0",
     "prettier": "^2.5.0",
     "prisma": "^5.17.0",

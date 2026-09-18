@@ -1,4 +1,4 @@
-import cron from "node-cron";
+import cron, { ScheduledTask } from "node-cron";
 import { readCacheFile, writeCacheFile } from "./cache";
 import { CACHE_DIR, WEDNESDAY_SCRAPE_CRON } from "../constants";
 import * as fs from "fs";
@@ -75,7 +75,7 @@ export async function runWednesdayScrape(): Promise<void> {
 }
 
 // Track scheduled tasks for cleanup
-let scheduledTasks: cron.ScheduledTask[] = [];
+let scheduledTasks: ScheduledTask[] = [];
 
 /**
  * Registers the Wednesday cron jobs (10:13am and 11:14am SGT).
@@ -94,7 +94,6 @@ export function registerWednesdayScraper(): void {
         console.error("Wednesday scrape error:", err);
       });
     }, {
-      scheduled: true,
       timezone: "Asia/Singapore"
     });
     scheduledTasks.push(task);
