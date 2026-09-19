@@ -132,9 +132,13 @@ const subscribe = () => {
               `You have subscribed to ${gym.gymString}`,
             );
           } else {
-            // Gym has no name from the provider: offer to name it right away
+            // Gym has no name from the provider: show where it is and offer to name it right away
             await ctx.editMessageText(
-              `You have subscribed to an unnamed gym at ${gym.geoKey ?? gym.id}\n\nGive it a name so it is easier to recognise in notifications. You can also /renameGym later.`,
+              "You have subscribed to a gym that has no name. This is where it is:",
+            );
+            await ctx.replyWithLocation(gym.lat, gym.long);
+            await ctx.reply(
+              "Give it a name so it is easier to recognise in notifications. You can also /renameGym later.",
               Markup.inlineKeyboard([renameGymBtn(gym.id)]),
             );
           }

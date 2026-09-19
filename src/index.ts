@@ -8,6 +8,7 @@ import bot from "./lib/bot";
 // Session must be used once before any Scenes/Stage middleware
 bot.use(session());
 import { toEscapeHTMLMsg } from "./utils/messageHandler";
+import { getBotCommands } from "./utils/botCommands";
 
 import helper from "./commands/helper";
 import catchAll from "./commands/catch-all";
@@ -73,6 +74,14 @@ if (process.env.NODE_ENV === "production") {
   bot.launch();
   printBotInfo(bot);
 }
+
+// Keep Telegram's command menu in sync on every launch, so a deploy that adds
+// or renames commands needs no separate `npm run updateCommands` (which needs
+// BOT_TOKEN in the shell, unavailable on prod where envs are managed externally)
+bot.telegram
+  .setMyCommands(getBotCommands())
+  .then(() => console.log("Bot commands synced with Telegram"))
+  .catch((error) => console.error("Failed to sync bot commands:", error));
 
 helper();
 

@@ -11,6 +11,22 @@ export const RENAME_GYM_ACTION_PREFIX = "RENAME_";
 type RenameGymState = { gymId?: string };
 
 /**
+ * Drop a map pin for the gym so the user can see which one it is
+ * (coordinates in a button label can't be copied or opened in a map).
+ */
+async function sendGymPin(ctx: Scenes.WizardContext, gymId: string) {
+  const gym = await prisma.gym.findUnique({ where: { id: gymId } });
+  if (!gym) return false;
+  await ctx.reply(
+    gym.gymString
+      ? `Renaming ${gym.gymString}, this is where it is:`
+      : "This gym has no name yet, this is where it is:",
+  );
+  await ctx.replyWithLocation(gym.lat, gym.long);
+  return true;
+}
+
+/**
  * Inline button that jumps straight into the rename wizard for a gym.
  * Shown after subscribing to a gym that has no name.
  */
@@ -41,6 +57,12 @@ const renameGym = () => {
       await ctx.answerCbQuery("Gym selected");
       (ctx.scene.state as RenameGymState).gymId = selectedGymId;
       await ctx.editMessageText("Gym selected");
+      if (!(await sendGymPin(ctx, selectedGymId))) {
+        await ctx.reply(
+          "Gym not found. It may have been removed, try again with /renameGym",
+        );
+        return ctx.scene.leave();
+      }
       await askForName(ctx);
       return ctx.wizard.next();
     });
@@ -112,7 +134,14 @@ const renameGym = () => {
         }
 
         // Entered from the "Name this gym" button: gym already chosen
-        if ((ctx.scene.state as RenameGymState).gymId) {
+        const presetGymId = (ctx.scene.state as RenameGymState).gymId;
+        if (presetGymId) {
+          if (!(await sendGymPin(ctx, presetGymId))) {
+            await ctx.reply(
+              "Gym not found. It may have been removed, try again with /renameGym",
+            );
+            return ctx.scene.leave();
+          }
           await askForName(ctx);
           return ctx.wizard.selectStep(2);
         }
@@ -134,8 +163,10 @@ const renameGym = () => {
         subscriptions.forEach((subscription) => {
           gymBtnList.push(
             Markup.button.callback(
+              // No "(unnamed)" prefix: long labels get truncated in the button
               subscription.gym.gymString ??
-                `(unnamed) ${subscription.gym.geoKey ?? subscription.gym.id}`,
+                subscription.gym.geoKey ??
+                subscription.gym.id,
               subscription.gymId,
             ),
           );
