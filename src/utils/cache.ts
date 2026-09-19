@@ -2,7 +2,12 @@ import { readFile, writeFile, mkdir } from "fs/promises";
 import { existsSync } from "fs";
 import { CACHE_DIR } from "../constants";
 import { URLS, BACKUP_URLS } from "../constants";
-import type { raidBosses } from "../types";
+import type {
+  raidBosses,
+  TypeInfo,
+  WeatherInfo,
+  CombatPower,
+} from "../types";
 
 export async function ensureCacheDir(): Promise<void> {
   if (!existsSync(CACHE_DIR)) {
@@ -44,20 +49,20 @@ interface RaidBossBackup {
   tier: string;
 }
 
-// Shape written to and read from cache (subset of full raidBoss shape)
-interface RaidBossCache {
+// Shape written to and read from cache: the ScrapedDuck raidBoss shape,
+// with the fields the backup source lacks made optional.
+export interface RaidBossCache {
   name: string;
   no?: number;
   canBeShiny: boolean;
   tier: string;
-  types: string[];
-  typeUrls: string[];
+  types: TypeInfo[];
   originalName?: string;
   imageUrl?: string;
   shinyAvailable?: boolean;
   image?: string;
-  combatPower?: { normal: { min: number; max: number }; boosted: { min: number; max: number } };
-  boostedWeather?: string[];
+  combatPower?: CombatPower;
+  boostedWeather: WeatherInfo[];
 }
 
 function adaptBackupRaidBoss(boss: RaidBossBackup): RaidBossCache {
@@ -66,7 +71,7 @@ function adaptBackupRaidBoss(boss: RaidBossBackup): RaidBossCache {
     canBeShiny: boss.shinyAvailable,
     tier: boss.tier,
     types: [],
-    typeUrls: [],
+    boostedWeather: [],
   };
 }
 

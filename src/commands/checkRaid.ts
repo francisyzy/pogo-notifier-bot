@@ -180,7 +180,7 @@ const checkRaid = () => {
           bot.telegram.sendMessage(
             ctx.from!.id,
             `Raid starting in ${raidAlertMinutes} mins${
-              numberOfBoss === 1
+              numberOfBoss <= 1
                 ? ""
                 : "\n\n/checkRaid_" +
                   gymId +
@@ -202,7 +202,7 @@ const checkRaid = () => {
         raidAlertMinutes * 60000
       ) {
         message = `Raid starts within ${raidAlertMinutes} minutes, you cannot set reminder${
-          numberOfBoss === 1
+          numberOfBoss <= 1
             ? ""
             : "\n\n/checkRaid_" +
               gymId +
@@ -210,7 +210,7 @@ const checkRaid = () => {
         }`;
       } else {
         message = `Raid has started, you cannot set reminder${
-          numberOfBoss === 1
+          numberOfBoss <= 1
             ? ""
             : "\n\n/checkRaid_" +
               gymId +

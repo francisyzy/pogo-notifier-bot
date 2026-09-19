@@ -1,7 +1,11 @@
 import bot from "../lib/bot";
 import { Scenes } from "telegraf";
 import { raidBosses } from "../types";
-import { urlFormatter, isShadowBoss } from "../utils/messageFormatter";
+import {
+  urlFormatter,
+  isShadowBoss,
+  raidBossTier,
+} from "../utils/messageFormatter";
 import { URLS } from "../constants";
 
 const checkBoss = () => {
@@ -42,7 +46,7 @@ const checkBoss = () => {
 
       raidBossesData.forEach((raidBoss) => {
         let url = urlFormatter(raidBoss.name, raidBoss.tier);
-        const tier = raidBoss.tier === "mega" ? 6 : Number(raidBoss.tier);
+        const tier = raidBossTier(raidBoss);
         let bossName = `<a href="${url}">${raidBoss.name}</a>`;
         bossName += raidBoss.canBeShiny ? "✨" : "";
         

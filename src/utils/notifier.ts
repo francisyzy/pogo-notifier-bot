@@ -223,7 +223,7 @@ export async function notifyAndUpdateUsers(): Promise<void> {
                     await bot.telegram.sendMessage(
                       raidMessage.userTelegramId,
                       `Raid starting in ${raidAlertMinutes} mins${
-                        numberOfBoss === 1
+                        numberOfBoss <= 1
                           ? ""
                           : "\n\n/checkRaid_" +
                             gymId +

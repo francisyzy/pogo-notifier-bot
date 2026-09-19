@@ -147,6 +147,9 @@ export {
   raidMessage,
   pokemonMessage,
   raidBosses,
+  TypeInfo,
+  WeatherInfo,
+  CombatPower,
   rawEvent,
   rawEvents,
 };

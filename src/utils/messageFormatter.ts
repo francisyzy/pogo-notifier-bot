@@ -44,6 +44,19 @@ export function isShadowBoss(boss: {
 }
 
 /**
+ * Normalises a raid boss tier string to the upstream numeric tier.
+ * ScrapedDuck uses "1-Star Raids" / "5-Star Raids" / "Mega Raids";
+ * the backup source uses "1" / "5" / "mega".
+ * @param boss Boss object with a tier string
+ * @returns 1/3/5 for star tiers, RAID_CONFIG.MEGA_RAID_TIER for mega, 0 if unknown
+ */
+export function raidBossTier(boss: { tier: string }): number {
+  if (/mega/i.test(boss.tier)) return RAID_CONFIG.MEGA_RAID_TIER;
+  const tier = parseInt(boss.tier, 10);
+  return Number.isNaN(tier) ? 0 : tier;
+}
+
+/**
  * Detects if a raid is a shadow raid and returns the actual tier
  * Shadow raids have their level increased by RAID_CONFIG.SHADOW_RAID_LEVEL_OFFSET in upstream data
  * (e.g., shadow 1* = level 11, shadow 3* = level 13, shadow 5* = level 15)
@@ -51,7 +64,7 @@ export function isShadowBoss(boss: {
  * @param bosses List of all raid bosses
  * @returns Object with actual tier and whether it's a shadow raid
  */
-function getActualRaidTier(
+export function getActualRaidTier(
   level: number,
   bosses: { tier: string; name: string }[],
 ): { tier: number; isShadow: boolean } {
@@ -62,8 +75,7 @@ function getActualRaidTier(
     if (potentialTier > 0) {
       const shadowBossesAtTier = bosses.filter(
         (boss) =>
-          Number(boss.tier === "mega" ? "6" : boss.tier) === potentialTier &&
-          isShadowBoss(boss),
+          raidBossTier(boss) === potentialTier && isShadowBoss(boss),
       );
       // If we find shadow bosses at the lower tier, this is a shadow raid
       if (shadowBossesAtTier.length > 0) {
@@ -122,8 +134,8 @@ export async function raidMessageFormatter(
     const pokedex = new Pokedex('en-US');
     const raidBossDetail = pokedex.getPokemonByFuzzyName(raidBoss.name)
     
-    // If it's not a shadow raid, exclude shadow bosses
-    if (!isShadow && isShadowBoss(raidBoss)) {
+    // A shadow raid only hatches shadow bosses, and vice versa
+    if (isShadow !== isShadowBoss(raidBoss)) {
       return;
     }
     
@@ -131,13 +143,7 @@ export async function raidMessageFormatter(
     if (raidMessage.pokemonId === raidBossDetail.no) {
       bossName = `<a href="${url}">${raidBoss.name}</a>`;
       bossName += raidBoss.canBeShiny ? "✨" : "";
-    } else if (
-      parseInt(
-        raidBoss.tier.includes("mega")
-          ? RAID_CONFIG.MEGA_RAID_TIER.toString()
-          : raidBoss.tier,
-      ) === actualTier
-    ) {
+    } else if (raidBossTier(raidBoss) === actualTier) {
       possibleBosses += `<a href="${url}">${raidBoss.name}</a>`;
       possibleBosses += raidBoss.canBeShiny ? "✨, " : ", ";
     }
@@ -229,17 +235,11 @@ export async function bossCount(
   );
 
   return bosses.filter((boss) => {
-    // If it's not a shadow raid, exclude shadow bosses
-    if (!isShadow && isShadowBoss(boss)) {
+    // A shadow raid only hatches shadow bosses, and vice versa
+    if (isShadow !== isShadowBoss(boss)) {
       return false;
     }
-    return (
-      Number(
-        boss.tier === "mega"
-          ? RAID_CONFIG.MEGA_RAID_TIER.toString()
-          : boss.tier,
-      ) === actualTier
-    );
+    return raidBossTier(boss) === actualTier;
   }).length;
 }
 
@@ -364,9 +364,16 @@ export function urlFormatter(
     // For forms like "Marowak Alola", it becomes "MAROWAK_ALOLA_SHADOW_FORM"
     const formattedName = pokemonName.toUpperCase().replace(/\s/g, "_") + "_SHADOW_FORM";
     url = `${base}/${formattedName}`;
-  } else if (raidTier === "mega" || raidTier === RAID_CONFIG.MEGA_RAID_TIER.toString()) {
-    //TODO check if future forms are still correct
-    url = `${base}/${name.slice(5) + "_MEGA"}`;
+  } else if (
+    raidBossTier({ tier: raidTier }) === RAID_CONFIG.MEGA_RAID_TIER
+  ) {
+    // Pokebattler: "Mega Venusaur" -> VENUSAUR_MEGA, "Mega Charizard X" -> CHARIZARD_MEGA_X
+    const match = name.match(/^Mega\s+(.+?)(?:\s+([XY]))?$/i);
+    const pokemonName = (match ? match[1] : name)
+      .toUpperCase()
+      .replace(/\s/g, "_");
+    const suffix = match?.[2] ? `_${match[2].toUpperCase()}` : "";
+    url = `${base}/${pokemonName}_MEGA${suffix}`;
   } else if (name.toLowerCase().startsWith("primal ")) {
     // Primal Groudon -> GROUDON_PRIMAL, Primal Kyogre -> KYOGRE_PRIMAL
     const pokemonName = name.slice(7).trim(); // Remove "Primal "
