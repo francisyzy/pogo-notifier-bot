@@ -13,6 +13,18 @@ function resolveGeoKey(gym: Gym): string {
   return gym.geoKey ?? geoKeyFromLatLng(gym.lat, gym.long);
 }
 
+/**
+ * Display name for a raid at a gym. Prefer the stored name (which is what
+ * the user set via /renameGym) over the provider's, which is often empty.
+ */
+function resolveGymName(gym: Gym | undefined, providerName: string): string {
+  return (
+    gym?.gymString ||
+    providerName.trim() ||
+    (gym ? resolveGeoKey(gym) : "unknown gym")
+  );
+}
+
 export async function gymChecker(
   raids: raids,
   userTelegramId?: number,
@@ -46,7 +58,7 @@ export async function gymChecker(
   for (const raid of subscribeGymRaids) {
     const raidGeoKey = geoKeyFromLatLng(raid.lat, raid.lng);
     const subscribers = subscribersByGeoKey.get(raidGeoKey) ?? [];
-    subscribers.forEach(({ gym: _gym, ...subscriber }) => {
+    subscribers.forEach(({ gym, ...subscriber }) => {
       const raidStart = new Date(
         Number(raid.raid_start.toString() + "000"),
       );
@@ -56,7 +68,7 @@ export async function gymChecker(
       if (raidStart > new Date() || raid.pokemon_id != 0) {
         raidMessages.push({
           ...subscriber,
-          name: raid.gym_name,
+          name: resolveGymName(gym, raid.gym_name),
           level: raid.level,
           start: raidStart,
           end: raidEnd,
@@ -94,7 +106,7 @@ export async function gymCheckerAdHoc(
       raidInfo.push({
         userTelegramId: 0,
         gymId: gym[0]?.id ?? "",
-        name: raid.gym_name,
+        name: resolveGymName(gym[0], raid.gym_name),
         level: raid.level,
         start: raidStart,
         end: raidEnd,

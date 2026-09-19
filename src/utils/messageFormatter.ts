@@ -3,6 +3,7 @@ import { Pokedex } from 'pmgo-pokedex';
 import { pokemonMessage, raidMessage } from "../types";
 import { URLS, RAID_CONFIG } from "../constants";
 import { fetchRaidBosses } from "./cache";
+import { toEscapeHTMLMsg } from "./messageHandler";
 
 /**
  * Fetches JSON from a URL with proper error handling
@@ -178,7 +179,7 @@ export async function raidMessageFormatter(
   }
 
   const message = `${actualTier}★ Raid at <u>${
-    raidMessage.name
+    toEscapeHTMLMsg(raidMessage.name) // user-set names may contain & or <
   }</u> ${
     raidMessage.pokemonId === 0 ? "starting" : "started"
   } at ${formatISO9075(raidMessage.start, {

@@ -20,19 +20,15 @@ export function toEscapeMsg(str: string): string {
 }
 
 /**
- * Escape HTML Characters
- * For some reason the < and the > dont wanna escape properly. Prob due to &
+ * Escape HTML Characters for Telegram's HTML parse mode.
+ * `&` must be escaped first, otherwise the `&` in `&lt;`/`&gt;` gets
+ * escaped again.
  * @param {string} str - The string with characters to escape
  * @return {string} Escaped strings
  */
 export function toEscapeHTMLMsg(str: string): string {
-  return (
-    str
-      // .replace(/\</g, "&gt;")
-      // .replace(/\>/g, "&lt;")
-      // .replace(/\&/g, "&amp;");
-      .replace("<", "&gt;")
-      .replace(">", "&lt;")
-      .replace("&", "&amp;")
-  );
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }
