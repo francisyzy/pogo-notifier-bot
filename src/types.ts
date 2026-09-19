@@ -2,7 +2,8 @@ import { GymSubscribe } from "@prisma/client";
 
 interface raid {
   gym_name: string;
-  cell_id: string;
+  /** S2 level-10 cell id (decimal string); null for some raids */
+  cell_id: string | null;
   ex_raid_eligible: number;
   sponsor: number;
   lat: number;
@@ -58,6 +59,12 @@ interface raidMessage extends GymSubscribe {
   start: Date;
   end: Date;
   pokemonId: number;
+  lat: number;
+  long: number;
+  /** Feed's S2 weather cell for the gym; null when the feed omits it */
+  cellId: string | null;
+  /** In-game weather at the gym (GAME_WEATHER id); absent if unknown */
+  weatherId?: number;
 }
 
 interface pokemonMessage extends pokemon {

@@ -115,9 +115,22 @@ private chats (`ctx.chat?.type !== "private"`) at the start of any wizard.
 
 - `getMaper.ts`: fetches raids/pokemon from SGPokeMap and events/bosses
   from ScrapedDuck. URLs in `src/constants.ts`; `BACKUP_URLS` holds a
-  fallback for raid bosses (events have none).
+  fallback for raid bosses (events have none). `getRaidFeed` returns
+  `{ raids, weathers }` from one `raids.php` call; `getRaids` is a
+  wrapper that drops `weathers`. Fetch once and pass `weathers` down.
 - `gymChecker.ts`: matches active raids to subscribed gyms by geoKey;
-  `gymCheckerAdHoc` for ad-hoc gym lists. Owns `resolveGymName`.
+  `gymCheckerAdHoc` for ad-hoc gym lists. Owns `resolveGymName`. Both
+  take the feed's `weathers` as an optional last argument and fill
+  `raidMessage.lat/long/cellId/weatherId` (weather is `undefined`
+  without it).
+- `s2.ts`: `latLngToS2CellId(lat, lng, level = 10)`, a dependency-free
+  port of Google S2's lat/lng → cell id (BigInt, decimal string as the
+  feed uses). Only ever needed at level 10 (weather cells).
+- `weather.ts`: `GAME_WEATHER` (in-game weather ids 1–7 → name/emoji),
+  `weatherIdFromName` (ScrapedDuck `boostedWeather[].name` → id),
+  `buildWeatherCells`/`weatherAt` (feed `weathers` → weather at a
+  point, via the raid's `cell_id` or a locally computed cell when the
+  feed sends `cell_id: null`).
 - `gymAdder.ts`: `geoKeyFromLatLng`; `updateGyms` upserts every gym seen
   in a raid feed (sets `lastRaidAt`); `removeStaleGyms`.
 - `notifier.ts`: `notifyAndUpdateUsers` main raid loop; schedules reminder

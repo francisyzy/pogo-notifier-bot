@@ -1,4 +1,4 @@
-import { raids, pokemons, rawEvents } from "../types";
+import { raids, pokemons, rawEvents, weathers } from "../types";
 import { URLS } from "../constants";
 import { fetchEvents } from "./cache";
 
@@ -15,17 +15,34 @@ async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
 }
 
 /**
+ * Get the raid feed: raids plus the current weather per S2 cell, which
+ * the same response carries, so one fetch serves both.
+ * @return {{ raids: raids; weathers: weathers }} Raids and weather cells
+ */
+export async function getRaidFeed(): Promise<{
+  raids: raids;
+  weathers: weathers;
+}> {
+  console.log("getRaids: Starting fetch at", new Date().toISOString());
+  const { raids, weathers } = await fetchJson<{
+    raids: raids;
+    weathers?: weathers;
+  }>(`${URLS.SGPOKEMAP.RAIDS}?time=${new Date().valueOf()}`, {
+    headers: {
+      referer: URLS.SGPOKEMAP.REFERER,
+    },
+  });
+  console.log("getRaids: Fetch completed at", new Date().toISOString());
+
+  return { raids: raids as raids, weathers: weathers ?? [] };
+}
+
+/**
  * Get list of raids happening
  * @return {raids} List of raids
  */
 export async function getRaids(): Promise<raids> {
-  console.log("getRaids: Starting fetch at", new Date().toISOString());
-  const { raids: raids } = await fetchJson<{ raids: raids }>(
-    `${URLS.SGPOKEMAP.RAIDS}?time=${new Date().valueOf()}`,
-  );
-  console.log("getRaids: Fetch completed at", new Date().toISOString());
-
-  return raids as raids;
+  return (await getRaidFeed()).raids;
 }
 
 /**

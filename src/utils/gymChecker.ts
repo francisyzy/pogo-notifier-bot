@@ -1,6 +1,11 @@
 import { PrismaClient, GymSubscribe, Gym } from "@prisma/client";
-import { raids, raidMessage } from "../types";
+import { raids, raidMessage, weathers } from "../types";
 import { updateGyms, geoKeyFromLatLng } from "./gymAdder";
+import {
+  buildWeatherCells,
+  weatherAt,
+  WeatherCells,
+} from "./weather";
 
 const prisma = new PrismaClient();
 
@@ -26,11 +31,33 @@ function resolveGymName(gym: Gym | undefined, providerName: string): string {
   );
 }
 
+/**
+ * Location, feed cell and in-game weather of a raid, for the message.
+ * `cells` comes from the raid feed's `weathers`; without it (callers
+ * that only have raids) the weather is simply unknown.
+ */
+function raidPlace(
+  raid: raids[number],
+  cells?: WeatherCells,
+): Pick<raidMessage, "lat" | "long" | "cellId" | "weatherId"> {
+  const cellId = raid.cell_id ? String(raid.cell_id) : null;
+  return {
+    lat: raid.lat,
+    long: raid.lng,
+    cellId,
+    weatherId: cells
+      ? weatherAt(cells, raid.lat, raid.lng, cellId)
+      : undefined,
+  };
+}
+
 export async function gymChecker(
   raids: raids,
   userTelegramId?: number,
+  weathers?: weathers,
 ): Promise<raidMessage[]> {
   updateGyms(raids);
+  const cells = weathers && buildWeatherCells(weathers);
   let raidMessages: raidMessage[] = [];
   let subscribes: (GymSubscribe & {
     gym: Gym;
@@ -74,6 +101,7 @@ export async function gymChecker(
           start: raidStart,
           end: raidEnd,
           pokemonId: raid.pokemon_id,
+          ...raidPlace(raid, cells),
         });
       }
     });
@@ -85,8 +113,10 @@ export async function gymChecker(
 export async function gymCheckerAdHoc(
   raids: raids,
   gyms: Gym[],
+  weathers?: weathers,
 ): Promise<raidMessage[]> {
   updateGyms(raids);
+  const cells = weathers && buildWeatherCells(weathers);
   let raidInfo: raidMessage[] = [];
   const subscribedGeoKeys = [
     ...new Set(gyms.map((gym) => resolveGeoKey(gym))),
@@ -112,6 +142,7 @@ export async function gymCheckerAdHoc(
         start: raidStart,
         end: raidEnd,
         pokemonId: raid.pokemon_id,
+        ...raidPlace(raid, cells),
       });
     }
   }

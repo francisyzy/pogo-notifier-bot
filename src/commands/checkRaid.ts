@@ -1,5 +1,5 @@
 import bot from "../lib/bot";
-import { getRaids } from "../utils/getMaper";
+import { getRaidFeed } from "../utils/getMaper";
 import { updateGyms } from "../utils/gymAdder";
 import { gymChecker, gymCheckerAdHoc } from "../utils/gymChecker";
 import { gymSearcher } from "../utils/gymSearcher";
@@ -13,16 +13,12 @@ import config from "../config";
 import { PrismaClient } from "@prisma/client";
 import { raidMessage } from "../types";
 import { formatDistance } from "../utils/geo";
-import {
-  hasLastLocation,
-  sortByDistance,
-} from "../utils/lastLocation";
+import { sortByDistance } from "../utils/lastLocation";
 
 const prisma = new PrismaClient();
 
 /**
  * Nearest-first when the user has ever sent a pin, else feed order.
- * Distances come from the gym rows since raidMessage carries no lat/long.
  */
 async function sortRaidsByDistance(
   raidMessages: raidMessage[],
@@ -32,31 +28,17 @@ async function sortRaidsByDistance(
     where: { telegramId: userTelegramId },
     select: { lastLat: true, lastLong: true },
   });
-  if (!hasLastLocation(user)) return raidMessages;
-  const gyms = await prisma.gym.findMany({
-    where: { id: { in: [...new Set(raidMessages.map((m) => m.gymId))] } },
-    select: { id: true, lat: true, long: true },
-  });
-  const gymById = new Map(gyms.map((gym) => [gym.id, gym]));
-  if (!raidMessages.every((m) => gymById.has(m.gymId))) return raidMessages;
-  return sortByDistance(
-    raidMessages.map((m) => ({
-      ...m,
-      lat: gymById.get(m.gymId)!.lat,
-      long: gymById.get(m.gymId)!.long,
-    })),
-    user,
-  );
+  return sortByDistance(raidMessages, user);
 }
 
 const checkRaid = () => {
   try {
     bot.command("checkRaid", async (ctx) => {
       const editMessage = await ctx.reply("Checking raids…");
-      const raids = await getRaids();
+      const { raids, weathers } = await getRaidFeed();
       updateGyms(raids);
       const raidMessages = await sortRaidsByDistance(
-        await gymChecker(raids, ctx.from.id),
+        await gymChecker(raids, ctx.from.id, weathers),
         ctx.from.id,
       );
       //Exit condition early to end command
@@ -101,8 +83,12 @@ const checkRaid = () => {
         where: { id: gymId },
       });
       if (gym) {
-        const raids = await getRaids();
-        const raidMessages = await gymCheckerAdHoc(raids, [gym]);
+        const { raids, weathers } = await getRaidFeed();
+        const raidMessages = await gymCheckerAdHoc(
+          raids,
+          [gym],
+          weathers,
+        );
         //Exit condition early to end command
         if (raidMessages.length === 0) {
           return ctx.replyWithHTML(
@@ -170,8 +156,8 @@ const checkRaid = () => {
         Number(input[1]),
         Number(input[2]),
       );
-      const raids = await getRaids();
-      const raidMessages = await gymCheckerAdHoc(raids, gyms);
+      const { raids, weathers } = await getRaidFeed();
+      const raidMessages = await gymCheckerAdHoc(raids, gyms, weathers);
       //Exit condition early to end command
       if (raidMessages.length === 0) {
         return ctx.reply("You have no raids nearby", {

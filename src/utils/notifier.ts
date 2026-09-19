@@ -1,7 +1,7 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import { isToday, subDays } from "date-fns";
 import bot from "../lib/bot";
-import { getRaids } from "./getMaper";
+import { getRaidFeed } from "./getMaper";
 import { gymChecker } from "./gymChecker";
 import { sleep } from "./sleep";
 import {
@@ -41,9 +41,9 @@ export function clearAllRaidReminders(): void {
 export async function notifyAndUpdateUsers(): Promise<void> {
   console.log("Checking raids");
   try {
-    const raids = await getRaids();
+    const { raids, weathers } = await getRaidFeed();
     updateGyms(raids);
-    const raidMessages = await gymChecker(raids);
+    const raidMessages = await gymChecker(raids, undefined, weathers);
     
     // Batch fetch all users to avoid N+1 query problem
     const userIds = [
