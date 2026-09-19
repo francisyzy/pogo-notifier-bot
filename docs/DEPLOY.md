@@ -109,7 +109,7 @@ This runs `prisma generate` + `tsc` and outputs to `dist/`.
 npx tsx src/scripts/updateCommands.ts
 ```
 
-This updates the bot's command menu in Telegram so users see the full command list including `/namegym`, `/checkPerfect`, `/checkBoss`, and `/events`.
+This updates the bot's command menu in Telegram so users see the full command list including `/checkPerfect`, `/checkBoss`, and `/events`.
 
 ---
 

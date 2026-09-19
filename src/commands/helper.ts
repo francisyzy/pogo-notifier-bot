@@ -5,7 +5,6 @@ import { toEscapeHTMLMsg } from "../utils/messageHandler";
 import config from "../config";
 import { getBotCommands, getBotCommandsForDisplay } from "../utils/botCommands";
 import { LINKS } from "../constants";
-import "./nameGym";
 
 const prisma = new PrismaClient();
 //General helper commands
@@ -91,7 +90,7 @@ const helper = () => {
   });
   bot.command("raids", (ctx) => {
     return ctx.replyWithHTML(
-      "/checkRaid to check for all raids at your gyms\n\n<u>Use these commands to add notification when the gym has any raids.</u>\n/gymLocation to send your location to look for nearby Gyms\n\n/gymName to search for Gyms using Gym Names\n\n<u>Options</u>\n/manageGyms to remove gym notifications\n\n/manageRaidLevel to select which ★ level to get notified about\n\n/manageRaidAlertMinutes to set how many minutes before raids you want to be notified",
+      "/checkRaid to check for all raids at your gyms\n\n<u>Use these commands to add notification when the gym has any raids.</u>\n/gymLocation to send your location to look for nearby Gyms\n\n/gymName to search for Gyms using Gym Names\n\n<u>Options</u>\n/manageGyms to remove gym notifications\n\n/renameGym to name a gym that has no name (or fix a wrong one)\n\n/manageRaidLevel to select which ★ level to get notified about\n\n/manageRaidAlertMinutes to set how many minutes before raids you want to be notified",
     );
   });
   bot.command("events", (ctx) => {

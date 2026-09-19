@@ -4,6 +4,7 @@ import { Message, InlineKeyboardButton } from "typegram";
 import { PrismaClient, Prisma } from "@prisma/client";
 import { gymSearcherBtn } from "../utils/gymSearcher";
 import { IMAGES } from "../constants";
+import { renameGymBtn } from "./nameGym";
 
 const prisma = new PrismaClient();
 
@@ -76,6 +77,7 @@ const subscribe = () => {
         where: {
           OR: [
             { gymString: { contains: message.text } },
+            { geoKey: { contains: message.text } },
             { id: { contains: message.text } },
           ],
         },
@@ -124,9 +126,18 @@ const subscribe = () => {
           include: { gym: true },
         })
         .then(async (gymSubscribe) => {
-          await ctx.editMessageText(
-            `You have subscribed to ${gymSubscribe.gym.gymString ?? gymSubscribe.gym.geoKey ?? gymSubscribe.gym.id}`,
-          );
+          const { gym } = gymSubscribe;
+          if (gym.gymString) {
+            await ctx.editMessageText(
+              `You have subscribed to ${gym.gymString}`,
+            );
+          } else {
+            // Gym has no name from the provider: offer to name it right away
+            await ctx.editMessageText(
+              `You have subscribed to an unnamed gym at ${gym.geoKey ?? gym.id}\n\nGive it a name so it is easier to recognise in notifications. You can also /renameGym later.`,
+              Markup.inlineKeyboard([renameGymBtn(gym.id)]),
+            );
+          }
         })
         .catch(async (error) => {
           if (error instanceof Prisma.PrismaClientKnownRequestError) {
