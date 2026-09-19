@@ -125,10 +125,15 @@ interface RawEventExtraDataGeneric {
   hasFieldResearchTasks: boolean;
 }
 
+interface RawEventExtraDataCommunityDay {
+  spawns: { name: string; image: string }[];
+  bonuses: { text: string; image: string }[];
+}
+
 interface RawEventExtraData {
   generic?: RawEventExtraDataGeneric;
   spotlight?: RawEventExtraDataSpotlight;
-  communityday?: Record<string, unknown>;
+  communityday?: RawEventExtraDataCommunityDay;
   raidbattles?: Record<string, unknown>;
   promocodes?: string[];
 }

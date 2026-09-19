@@ -3,25 +3,27 @@ import bot from "../lib/bot";
 import { getEvents } from "./getMaper";
 import config from "../config";
 import { rawEvent } from "../types";
-
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-}
+import { toEscapeHTMLMsg } from "./messageHandler";
 
 /**
  * Builds the Telegram HTML message for an event that is about to start
  */
 export function formatEventMessage(event: rawEvent): string {
-  let message = `<a href="${event.link}">${escapeHtml(event.name)}</a> is starting soon!`;
+  let message = `<a href="${event.link}">${toEscapeHTMLMsg(event.name)}</a> is starting soon!`;
   const spotlight = event.extraData?.spotlight;
   if (event.eventType === "pokemon-spotlight-hour" && spotlight) {
     const details: string[] = [];
-    if (spotlight.name) details.push(`Featured: ${escapeHtml(spotlight.name)}`);
-    if (spotlight.bonus) details.push(`Bonus: ${escapeHtml(spotlight.bonus)}`);
+    if (spotlight.name) details.push(`Featured: ${toEscapeHTMLMsg(spotlight.name)}`);
+    if (spotlight.bonus) details.push(`Bonus: ${toEscapeHTMLMsg(spotlight.bonus)}`);
     if (details.length) message += `\n${details.join(" — ")}`;
+  }
+  // The featured Pokémon is already in the event name; only the bonuses
+  // are worth repeating.
+  const bonuses = event.extraData?.communityday?.bonuses;
+  if (event.eventType === "community-day" && bonuses?.length) {
+    message += `\nBonuses:\n${bonuses
+      .map((bonus) => `• ${toEscapeHTMLMsg(bonus.text)}`)
+      .join("\n")}`;
   }
   return message;
 }
