@@ -78,7 +78,7 @@ instance.
 | `manageSubscribeGym.ts` | `/manageGyms`, `/myGyms` |
 | `nameGym.ts` | `/renameGym` (+ "Name this gym" button after subscribing) |
 | `subscribeLocation.ts` | `/addLocation` |
-| `manageSubscribeLocation.ts` | `/managePerfect`, `/myLocations` |
+| `manageSubscribeLocation.ts` | `/managePerfect` (change radius / remove), `/myLocations` (list + map cards) |
 | `manageRaidLevel.ts` | `/manageRaidLevel` |
 | `manageRaidAlertMinutes.ts` | `/manageRaidAlertMinutes` |
 | `manageNotifyWindows.ts` | `/quietHours` |
@@ -123,6 +123,11 @@ private chats (`ctx.chat?.type !== "private"`) at the start of any wizard.
 - `notifier.ts`: `notifyAndUpdateUsers` main raid loop; schedules reminder
   `setTimeout`s, `clearAllRaidReminders` clears them on shutdown.
 - `perfectNotifier.ts`: `notifyPerfect`, `notifyLegendary`.
+- `perfectChecker.ts`: matches spawns to `LocationSubscribe` rows using
+  each row's `radiusMeters`; `perfectCheckerAdHoc` for `/sendLocation`.
+- `geo.ts`: `distanceMeters` (haversine), `formatDistance` ("250 m" /
+  "1.5 km"), radius presets/limits, `mapsLink`.
+- `lastActivity.ts`: `trackLastActivity` middleware (see Data model).
 - `eventNotifier.ts`: `notifyEvent`.
 - `notifyWindows.ts`: `/quietHours` evaluation, always in `Asia/Singapore`.
 - `messageFormatter.ts`: HTML message building; `raidMessageFormatter`,
@@ -139,15 +144,19 @@ private chats (`ctx.chat?.type !== "private"`) at the start of any wizard.
 
 - **User**: `telegramId` PK, `raidLevelNotify` (comma-separated string,
   e.g. `"1, 3, 5"`; convert with `convertBackToArray`), `raidAlertMinutes`,
-  `stopNotifyingMeToday`, stats counters. `silentStartTime`/`silentEndTime`
-  are legacy and unused; quiet hours live in `NotifyWindow`.
+  `stopNotifyingMeToday`, stats counters. `lastActivity` is bumped by the
+  `trackLastActivity` middleware (`src/utils/lastActivity.ts`, registered
+  in `index.ts` right after `session()`, throttled to one write per user
+  per minute). Quiet hours live in `NotifyWindow`.
 - **Gym**: `id` UUID, `geoKey` (`lat|lng` rounded to 4 dp, unique,
   nullable for pre-backfill rows), `gymString` (nullable), `lat`/`long`,
   `lastRaidAt`.
 - **GymSubscribe**: composite PK `[userTelegramId, gymId]`.
 - **GymEvent**: composite PK `[eventTime, gymSubscribeGymId,
   gymSubscribeUserTelegramId]`; dedup for raid notifications.
-- **LocationSubscribe**: `locationId` UUID, `lat`/`long`, `Radius`.
+- **LocationSubscribe**: `locationId` UUID, `lat`/`long`, `radiusMeters`
+  (user-chosen, 50–5000 m, default 100). Matching is great-circle
+  distance via `distanceMeters` in `src/utils/geo.ts`, not a lat/long box.
 - **LocationEvent**: composite PK `[locationSubscribeLocationId,
   eventTime]`; dedup for spawn notifications.
 - **NotifyWindow**: per-user (optionally per-gym, per-kind) ALLOW/BLOCK
@@ -234,8 +243,10 @@ production, every non-owner incoming message is mirrored there),
 `DATABASE_URL`, `PORT`, `URL`.
 
 Hardcoded tunables in `config.ts`: `eventBuffer`, `raidAlertMinutes`,
-`gymRange: 0.003`, `perfectRange: 0.001`, `perfectAdHocRange: 0.003`.
-**The radii are lat/long deltas in degrees, not metres.**
+`gymRange: 0.003`, `perfectAdHocRange: 0.003`. **These radii are lat/long
+deltas in degrees, not metres** (~111 m per 0.001°). Perfect-spawn
+subscriptions don't use them: each `LocationSubscribe` has its own
+`radiusMeters`.
 
 Production has **no `.env` file**: env vars are injected externally. Don't
 add scripts or docs that assume `.env` exists on the server; anything
