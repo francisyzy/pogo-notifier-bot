@@ -73,7 +73,7 @@ instance.
 
 | File | Commands |
 |---|---|
-| `helper.ts` | `/start`, `/help`, `/stats`, `/stopNotifyingMeToday`, `/undoStopNotifyingMeToday`, `/perfect`, `/raids`, `/events`, `/pull` (owner only: git pull + build + pm2 reload) |
+| `helper.ts` | `/start`, `/help`, `/stats` (owner sees usage totals), `/stopNotifyingMeToday`, `/undoStopNotifyingMeToday`, `/perfect`, `/raids`, `/events`, `/pull` (owner only: git pull + build + pm2 reload) |
 | `subscribeGym.ts` | `/gymLocation`, `/gymName` |
 | `manageSubscribeGym.ts` | `/manageGyms`, `/myGyms` |
 | `nameGym.ts` | `/renameGym` (+ "Name this gym" button after subscribing) |

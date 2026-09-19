@@ -5,8 +5,60 @@ import { toEscapeHTMLMsg } from "../utils/messageHandler";
 import config from "../config";
 import { getBotCommands, getBotCommandsForDisplay } from "../utils/botCommands";
 import { LINKS } from "../constants";
+import {
+  formatDistanceToNow,
+  formatISO9075,
+  subDays,
+  subHours,
+} from "date-fns";
 
 const prisma = new PrismaClient();
+
+// "2026-09-19 14:03 (about 2 hours ago)" in the bot's (Singapore) clock
+const formatWhen = (date: Date) => {
+  const stamp = formatISO9075(date).slice(0, 16); // drop the seconds
+  return `${stamp} (${formatDistanceToNow(date, { addSuffix: true })})`;
+};
+
+// Owner-only pulse of how the bot is being used, without opening the DB
+const botUsageStats = async () => {
+  const now = new Date();
+  const activeSince = (since: Date) =>
+    prisma.user.count({ where: { lastActivity: { gte: since } } });
+  const [
+    users,
+    active24h,
+    active7d,
+    active30d,
+    gymSubscriptions,
+    locationSubscriptions,
+    gyms,
+    quietHourUsers,
+  ] = await Promise.all([
+    prisma.user.count(),
+    activeSince(subHours(now, 24)),
+    activeSince(subDays(now, 7)),
+    activeSince(subDays(now, 30)),
+    prisma.gymSubscribe.count(),
+    prisma.locationSubscribe.count(),
+    prisma.gym.count(),
+    prisma.notifyWindow
+      .findMany({
+        distinct: ["userTelegramId"],
+        select: { userTelegramId: true },
+      })
+      .then((rows) => rows.length),
+  ]);
+  return (
+    `<b>Bot usage</b>\n` +
+    `Users: ${users}\n` +
+    `Active in last 24 h / 7 d / 30 d: ${active24h} / ${active7d} / ${active30d}\n` +
+    `Gym subscriptions: ${gymSubscriptions}\n` +
+    `Perfect location subscriptions: ${locationSubscriptions}\n` +
+    `Gyms in DB: ${gyms}\n` +
+    `Users with quiet hours: ${quietHourUsers}`
+  );
+};
 //General helper commands
 const helper = () => {
   //All bots start with /start
@@ -52,24 +104,33 @@ const helper = () => {
   });
 
   bot.command("stats", async (ctx) => {
+    const telegramId = ctx.from.id;
     const user = await prisma.user.findUnique({
-      where: { telegramId: ctx.from.id },
+      where: { telegramId },
     });
-    if (user) {
-      return ctx.replyWithHTML(
-        `<b>Name</b>: ${toEscapeHTMLMsg(
-          user.name,
-        )} \n<b>Joined at</b>: ${
-          user.createdAt
-        }\n<b>Number of Raids notified about</b>: ${
-          user.gymTimesNotified
-        }\n<b>Number of Perfect pokemon notified about</b>: ${
-          user.locationTimesNotified
-        }`,
-      );
-    } else {
+    if (!user) {
       return ctx.reply("Please /start to create an account");
     }
+    const [gymsSubscribed, locationsSubscribed] = await Promise.all([
+      prisma.gymSubscribe.count({
+        where: { userTelegramId: telegramId },
+      }),
+      prisma.locationSubscribe.count({
+        where: { userTelegramId: telegramId },
+      }),
+    ]);
+    let message =
+      `<b>Name</b>: ${toEscapeHTMLMsg(user.name)}\n` +
+      `<b>Joined</b>: ${formatWhen(user.createdAt)}\n` +
+      `<b>Last active</b>: ${formatWhen(user.lastActivity)}\n` +
+      `<b>Gyms subscribed</b>: ${gymsSubscribed}\n` +
+      `<b>Perfect locations</b>: ${locationsSubscribed}\n` +
+      `<b>Number of Raids notified about</b>: ${user.gymTimesNotified}\n` +
+      `<b>Number of Perfect pokemon notified about</b>: ${user.locationTimesNotified}`;
+    if (telegramId === config.OWNER_ID) {
+      message += "\n\n" + (await botUsageStats());
+    }
+    return ctx.replyWithHTML(message);
   });
 
   bot.help(async (ctx) => {
