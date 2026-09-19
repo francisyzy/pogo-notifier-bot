@@ -38,7 +38,7 @@ const helper = () => {
       data: { stopNotifyingMeToday: new Date() },
     });
     return ctx.replyWithHTML(
-      "Will stop notifying you about raids today!\n\n<i>/undoStopNotifyingMeToday</i>",
+      "Will stop notifying you about raids for the rest of today. Perfect/legendary spawn alerts are unaffected; use /quietHours for those.\n\n<i>/undoStopNotifyingMeToday</i>",
     );
   });
   bot.command("undoStopNotifyingMeToday", async (ctx) => {
@@ -47,7 +47,7 @@ const helper = () => {
       data: { stopNotifyingMeToday: null },
     });
     return ctx.replyWithHTML(
-      "Will notify you about raids today!\n\n<i>/stopNotifyingMeToday</i>",
+      "Will notify you about raids again today. (This only affects raids; spawn alerts follow /quietHours.)\n\n<i>/stopNotifyingMeToday</i>",
     );
   });
 
@@ -90,7 +90,7 @@ const helper = () => {
   });
   bot.command("raids", (ctx) => {
     return ctx.replyWithHTML(
-      "/checkRaid to check for all raids at your gyms\n\n<u>Use these commands to add notification when the gym has any raids.</u>\n/gymLocation to send your location to look for nearby Gyms\n\n/gymName to search for Gyms using Gym Names\n\n<u>Options</u>\n/manageGyms to remove gym notifications\n\n/renameGym to name a gym that has no name (or fix a wrong one)\n\n/manageRaidLevel to select which ★ level to get notified about\n\n/manageRaidAlertMinutes to set how many minutes before raids you want to be notified\n\n/quietHours to set the days and hours you want to be notified, per gym if you like",
+      "/checkRaid to check for all raids at your gyms\n\n<u>Use these commands to add notification when the gym has any raids.</u>\n/gymLocation to send your location to look for nearby Gyms\n\n/gymName to search for Gyms using Gym Names\n\n<u>Options</u>\n/manageGyms to remove gym notifications\n\n/renameGym to name a gym that has no name (or fix a wrong one)\n\n/manageRaidLevel to select which ★ level to get notified about\n\n/manageRaidAlertMinutes to set how many minutes before raids you want to be notified\n\n/stopNotifyingMeToday to mute raid alerts (only) for the rest of today\n\n/quietHours to set the days and hours you want to be notified, per gym if you like",
     );
   });
   bot.command("events", (ctx) => {

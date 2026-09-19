@@ -228,7 +228,7 @@ export async function notifyAndUpdateUsers(): Promise<void> {
                           : "\n\n/checkRaid_" +
                             gymId +
                             " to check which raid boss spawned, after the egg popped"
-                      }\n\n<i>/stopNotifyingMeToday to stop being notified about raids for the rest of the day\n/quietHours to set when you want to be notified</i>`,
+                      }\n\n<i>/stopNotifyingMeToday to stop being notified about raids (only) for the rest of the day\n/quietHours to set when you want to be notified, including spawn alerts</i>`,
                       {
                         reply_parameters: {
                           message_id: originalMessage.message_id,
