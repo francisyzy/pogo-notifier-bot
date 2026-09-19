@@ -30,8 +30,8 @@ export async function notifyPerfect(): Promise<void> {
     const message = await perfectMessageFormatter(pokemonMessage);
     await sleep(0.5);
     try {
-      //Delete not working
-      prisma.locationEvent.deleteMany({
+      // PrismaPromise is lazy: without await this never ran
+      await prisma.locationEvent.deleteMany({
         where: { eventTime: { lt: subDays(new Date(), 1) } },
       });
       await prisma.locationEvent
@@ -97,8 +97,8 @@ export async function notifyLegendary(): Promise<void> {
     const message = await perfectMessageFormatter(pokemonMessage);
     await sleep(0.5);
     try {
-      //Delete not working
-      prisma.locationEvent.deleteMany({
+      // PrismaPromise is lazy: without await this never ran
+      await prisma.locationEvent.deleteMany({
         where: { eventTime: { lt: subDays(new Date(), 1) } },
       });
       await prisma.locationEvent
