@@ -7,6 +7,9 @@ import bot from "./lib/bot";
 
 // Session must be used once before any Scenes/Stage middleware
 bot.use(session());
+import { trackLastActivity } from "./utils/lastActivity";
+// Before every handler so wizard steps and button taps count as activity too
+bot.use(trackLastActivity);
 import { toEscapeHTMLMsg } from "./utils/messageHandler";
 import { getBotCommands } from "./utils/botCommands";
 
