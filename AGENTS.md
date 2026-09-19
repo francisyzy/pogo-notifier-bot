@@ -79,9 +79,11 @@ start of any wizard.
   `gymAdder.ts`) and is the identity used to match upstream raids to
   subscriptions. Never match on `gymString`.
 - `Gym.gymString` is nullable: the provider often sends an empty name.
-  Users can set it via `/renameGym`. Anything that displays a gym must
-  handle `gymString` being null (fall back to `geoKey`, then `id`) and must
-  read the name from the DB row, not from the upstream raid payload.
+  Users can set it via `/renameGym`, but that is only a stand-in. The
+  provider's name is the source of truth: when a raid payload carries a
+  non-empty `gym_name`, display that and let `updateGyms` overwrite
+  `gymString` with it. Only fall back to `gymString`, then `geoKey`, then
+  `id` when the provider sends none.
 - `updateGyms` upserts every gym seen in a raid feed, updating
   `lastRaidAt`; `removeStaleGyms` deletes gyms with no raid in
   `GYM_CONFIG.STALE_GYM_DAYS` and no subscribers.

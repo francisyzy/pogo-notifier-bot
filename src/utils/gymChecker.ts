@@ -14,13 +14,14 @@ function resolveGeoKey(gym: Gym): string {
 }
 
 /**
- * Display name for a raid at a gym. Prefer the stored name (which is what
- * the user set via /renameGym) over the provider's, which is often empty.
+ * Display name for a raid at a gym. The provider's name is the source of
+ * truth; the stored name is only a user-supplied stand-in (/renameGym)
+ * for when the provider sends none.
  */
 function resolveGymName(gym: Gym | undefined, providerName: string): string {
   return (
-    gym?.gymString ||
     providerName.trim() ||
+    gym?.gymString ||
     (gym ? resolveGeoKey(gym) : "unknown gym")
   );
 }
