@@ -14,20 +14,26 @@ function geoKeyFromLatLng(lat: number, lng: number): string {
 async function main() {
   const data = readFileSync("./prisma/gym_data.json", "utf8");
   const gymData = JSON.parse(data) as Array<{
-    gymString: string;
+    gymString: string | null;
     lat: number;
     long: number;
   }>;
+  // Seeded gyms count as "seen now" so removeStaleGyms gives them the
+  // usual grace period instead of deleting them on the first 4am run
+  const now = new Date();
   for (const gym of gymData) {
     const geoKey = geoKeyFromLatLng(gym.lat, gym.long);
+    // Don't clobber an existing name with null from the seed file
+    const name = gym.gymString ? { gymString: gym.gymString } : {};
     await prisma.gym.upsert({
       where: { geoKey },
-      update: { gymString: gym.gymString, lat: gym.lat, long: gym.long },
+      update: { ...name, lat: gym.lat, long: gym.long },
       create: {
         geoKey,
-        gymString: gym.gymString,
+        ...name,
         lat: gym.lat,
         long: gym.long,
+        lastRaidAt: now,
       },
     });
   }
