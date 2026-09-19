@@ -91,6 +91,20 @@ The backfill:
 - Is **idempotent** — safe to run multiple times
 - Skips gyms whose geoKey would collide with an existing gym (duplicate location — manual merge may be needed)
 
+#### Notification windows (`/quietHours`)
+
+A new `NotifyWindow` table stores per-user allow/block hours. It is purely additive
+(no existing columns change, no backfill needed):
+
+```bash
+# Either, if the DB tracks migrations:
+npm run deploy
+# Or, matching the db-push approach above:
+./node_modules/.bin/prisma db push
+```
+
+Then re-run step 6 so `/quietHours` appears in the command menu.
+
 ---
 
 ## 5. Build
@@ -109,7 +123,7 @@ This runs `prisma generate` + `tsc` and outputs to `dist/`.
 npx tsx src/scripts/updateCommands.ts
 ```
 
-This updates the bot's command menu in Telegram so users see the full command list including `/checkPerfect`, `/checkBoss`, and `/events`.
+This updates the bot's command menu in Telegram so users see the full command list including `/quietHours`, `/checkPerfect`, `/checkBoss`, and `/events`.
 
 ---
 

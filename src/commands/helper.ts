@@ -85,12 +85,12 @@ const helper = () => {
   });
   bot.command("perfect", (ctx) => {
     return ctx.replyWithHTML(
-      "/checkPerfect to get the list of perfect Pokemons currently spawned\n\n<u>Use this commands to add notification</u>\n/addLocation to send your location to get notified when a perfect Pokemon spawns\n\n<u>Options</u>\n/managePerfect to remove a perfect location",
+      "/checkPerfect to get the list of perfect Pokemons currently spawned\n\n<u>Use this commands to add notification</u>\n/addLocation to send your location to get notified when a perfect Pokemon spawns\n\n<u>Options</u>\n/managePerfect to remove a perfect location\n\n/quietHours to set the days and hours you want to be notified",
     );
   });
   bot.command("raids", (ctx) => {
     return ctx.replyWithHTML(
-      "/checkRaid to check for all raids at your gyms\n\n<u>Use these commands to add notification when the gym has any raids.</u>\n/gymLocation to send your location to look for nearby Gyms\n\n/gymName to search for Gyms using Gym Names\n\n<u>Options</u>\n/manageGyms to remove gym notifications\n\n/renameGym to name a gym that has no name (or fix a wrong one)\n\n/manageRaidLevel to select which ★ level to get notified about\n\n/manageRaidAlertMinutes to set how many minutes before raids you want to be notified",
+      "/checkRaid to check for all raids at your gyms\n\n<u>Use these commands to add notification when the gym has any raids.</u>\n/gymLocation to send your location to look for nearby Gyms\n\n/gymName to search for Gyms using Gym Names\n\n<u>Options</u>\n/manageGyms to remove gym notifications\n\n/renameGym to name a gym that has no name (or fix a wrong one)\n\n/manageRaidLevel to select which ★ level to get notified about\n\n/manageRaidAlertMinutes to set how many minutes before raids you want to be notified\n\n/quietHours to set the days and hours you want to be notified, per gym if you like",
     );
   });
   bot.command("events", (ctx) => {

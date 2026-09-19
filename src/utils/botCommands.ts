@@ -31,6 +31,11 @@ const rawBotCommands: RawBotCommand[] = [
     description: "Set how many minutes before raids you want to be notified",
   },
   {
+    command: "quietHours",
+    description:
+      "Set the days and hours you want (or don't want) to be notified",
+  },
+  {
     command: "currentBoss",
     description: "Get current raid boss list",
   },

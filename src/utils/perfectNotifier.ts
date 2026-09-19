@@ -5,6 +5,7 @@ import { getPerfect, getTrio } from "./getMaper";
 import { perfectChecker } from "./perfectChecker";
 import { sleep } from "./sleep";
 import { perfectMessageFormatter } from "./messageFormatter";
+import { isNotifyAllowed, loadNotifyWindows } from "./notifyWindows";
 
 const prisma = new PrismaClient();
 
@@ -15,7 +16,17 @@ export async function notifyPerfect(): Promise<void> {
   console.log("Checking pokemons");
   const pokemons = await getPerfect();
   const pokemonMessages = await perfectChecker(pokemons);
+  const windowsByUser = await loadNotifyWindows([
+    ...new Set(pokemonMessages.map((m) => m.userTelegramId)),
+  ]);
   for (const pokemonMessage of pokemonMessages) {
+    if (
+      !isNotifyAllowed(windowsByUser.get(pokemonMessage.userTelegramId) ?? [], {
+        kind: "PERFECT",
+      })
+    ) {
+      continue;
+    }
     const message = await perfectMessageFormatter(pokemonMessage);
     await sleep(0.5);
     try {
@@ -72,7 +83,17 @@ export async function notifyLegendary(): Promise<void> {
   console.log("Checking legendary pokemons");
   const pokemons = await getTrio();
   const pokemonMessages = await perfectChecker(pokemons);
+  const windowsByUser = await loadNotifyWindows([
+    ...new Set(pokemonMessages.map((m) => m.userTelegramId)),
+  ]);
   for (const pokemonMessage of pokemonMessages) {
+    if (
+      !isNotifyAllowed(windowsByUser.get(pokemonMessage.userTelegramId) ?? [], {
+        kind: "PERFECT",
+      })
+    ) {
+      continue;
+    }
     const message = await perfectMessageFormatter(pokemonMessage);
     await sleep(0.5);
     try {

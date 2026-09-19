@@ -30,6 +30,7 @@ model User {
   //f keys
   GymSubscribe      GymSubscribe[]
   LocationSubscribe LocationSubscribe[]
+  NotifyWindow      NotifyWindow[]
 }
 
 model Gym {
@@ -40,6 +41,32 @@ model Gym {
   long         Float
   lastRaidAt   DateTime?      // When we last saw a raid at this gym (for staleness cleanup)
   GymSubscribe GymSubscribe[]
+  NotifyWindow NotifyWindow[]
+}
+
+/// A recurring notification window for one user.
+/// Each row says: on these weekdays, between these clock times (Singapore time),
+/// either ALLOW or BLOCK notifications — optionally only for one gym and/or one kind.
+/// A user with no windows is notified at any time. Evaluation: src/utils/notifyWindows.ts
+model NotifyWindow {
+  id             String   @id @default(uuid())
+  user           User     @relation(fields: [userTelegramId], references: [telegramId], onDelete: Cascade)
+  userTelegramId Int
+
+  /// "ALLOW": notify only inside this window.  "BLOCK": never notify inside this window.
+  mode           String
+  /// Which notifications it affects: "ALL", "RAID" (gym raids) or "PERFECT" (perfect/legendary spawns)
+  notifyKind     String   @default("ALL")
+  /// Only apply to this gym. NULL = every gym. A gym with its own windows ignores the user's global windows.
+  gym            Gym?     @relation(fields: [gymId], references: [id], onDelete: Cascade)
+  gymId          String?
+  /// ISO weekdays the window is active on, comma-separated: 1=Mon … 7=Sun. "1,2,3,4,5" = weekdays
+  weekdays       String
+  /// Clock time the window starts, 24h "HH:MM" in Singapore time, inclusive
+  startTime      String
+  /// Clock time the window ends, "HH:MM", exclusive. If endTime <= startTime the window wraps past midnight ("22:00"–"06:00")
+  endTime        String
+  createdAt      DateTime @default(now())
 }
 
 model GymSubscribe {

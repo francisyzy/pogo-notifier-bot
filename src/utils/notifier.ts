@@ -12,6 +12,7 @@ import {
 import config from "../config";
 import { convertBackToArray } from "./legacy_converter";
 import { updateGyms } from "./gymAdder";
+import { isNotifyAllowed, loadNotifyWindows } from "./notifyWindows";
 
 const prisma = new PrismaClient();
 
@@ -52,6 +53,7 @@ export async function notifyAndUpdateUsers(): Promise<void> {
       where: { telegramId: { in: userIds } },
     });
     const userMap = new Map(users.map((u) => [u.telegramId, u]));
+    const windowsByUser = await loadNotifyWindows(userIds);
 
     for (const raidMessage of raidMessages) {
       const user = userMap.get(raidMessage.userTelegramId);
@@ -74,6 +76,16 @@ export async function notifyAndUpdateUsers(): Promise<void> {
         isToday(user.stopNotifyingMeToday)
       ) {
         console.log(user.name + " Skipped Raid stop notify");
+        continue;
+      } else if (
+        !isNotifyAllowed(windowsByUser.get(user.telegramId) ?? [], {
+          kind: "RAID",
+          gymId: raidMessage.gymId,
+        })
+      ) {
+        // Outside the user's notification windows; not recorded as notified,
+        // so it is re-evaluated on the next check if the raid is still on
+        console.log(user.name + " Skipped Raid outside notify window");
         continue;
       }
 
@@ -190,6 +202,23 @@ export async function notifyAndUpdateUsers(): Promise<void> {
                       activeTimeouts.delete(timeoutKey);
                       return;
                     }
+
+                    const windowsAtReminderTime = await loadNotifyWindows([
+                      raidMessage.userTelegramId,
+                    ]);
+                    if (
+                      !isNotifyAllowed(
+                        windowsAtReminderTime.get(raidMessage.userTelegramId) ?? [],
+                        { kind: "RAID", gymId: raidMessage.gymId },
+                      )
+                    ) {
+                      console.log(
+                        userAtReminderTime.name +
+                          " Skipped Raid reminder - outside notify window",
+                      );
+                      activeTimeouts.delete(timeoutKey);
+                      return;
+                    }
                     
                     await bot.telegram.sendMessage(
                       raidMessage.userTelegramId,
@@ -199,7 +228,7 @@ export async function notifyAndUpdateUsers(): Promise<void> {
                           : "\n\n/checkRaid_" +
                             gymId +
                             " to check which raid boss spawned, after the egg popped"
-                      }\n\n<i>/stopNotifyingMeToday to stop being notified about raids for the rest of the day</i>`,
+                      }\n\n<i>/stopNotifyingMeToday to stop being notified about raids for the rest of the day\n/quietHours to set when you want to be notified</i>`,
                       {
                         reply_parameters: {
                           message_id: originalMessage.message_id,

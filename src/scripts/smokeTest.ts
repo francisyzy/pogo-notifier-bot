@@ -31,6 +31,7 @@ import {
   stopWednesdayScraper,
 } from "../utils/raidBossScraper";
 import { ensureCacheDir } from "../utils/cache";
+import { isNotifyAllowed, localWeekdayAndMinutes } from "../utils/notifyWindows";
 import { raids } from "../types";
 type raid = raids[number];
 
@@ -191,6 +192,46 @@ async function main() {
       await new Promise((r) => setTimeout(r, 500));
       await prisma.gym.deleteMany({ where: { geoKey: savedKey, id: { not: subscribedGymId } } });
       await prisma.gym.update({ where: { id: subscribedGymId }, data: { geoKey: savedKey } });
+    }
+  });
+
+  await step("notifyWindows: evaluator handles block/allow/gym/wrap windows", async () => {
+    const base = { id: "w", userTelegramId: 0, notifyKind: "ALL", gymId: null as string | null, createdAt: new Date() };
+    const w = (o: Partial<typeof base> & { mode: string; weekdays: string; startTime: string; endTime: string }) => ({ ...base, ...o });
+    const sgt = (local: string) => new Date(local + "+08:00"); // 2026-09-21 is a Monday
+    const work = [
+      w({ mode: "BLOCK", weekdays: "1,2,3,4,5", startTime: "09:00", endTime: "12:00" }),
+      w({ mode: "BLOCK", weekdays: "1,2,3,4,5", startTime: "13:00", endTime: "18:00" }),
+    ];
+    assert(localWeekdayAndMinutes(sgt("2026-09-21T10:30")).weekday === 1, "SGT weekday wrong");
+    assert(!isNotifyAllowed(work, { kind: "RAID", at: sgt("2026-09-21T10:00") }), "work hours should block");
+    assert(isNotifyAllowed(work, { kind: "RAID", at: sgt("2026-09-21T12:30") }), "lunch should allow");
+    assert(isNotifyAllowed(work, { kind: "RAID", at: sgt("2026-09-26T10:00") }), "saturday should allow");
+    const gymTue = [...work, w({ mode: "ALLOW", gymId: "G1", weekdays: "2", startTime: "00:00", endTime: "23:59" })];
+    assert(isNotifyAllowed(gymTue, { kind: "RAID", gymId: "G1", at: sgt("2026-09-22T10:00") }), "gym window should override global block");
+    assert(!isNotifyAllowed(gymTue, { kind: "RAID", gymId: "G1", at: sgt("2026-09-21T20:00") }), "gym allow-only should block other days");
+    assert(!isNotifyAllowed(gymTue, { kind: "RAID", gymId: "G2", at: sgt("2026-09-21T10:00") }), "other gym should follow global");
+    const night = [w({ mode: "BLOCK", notifyKind: "PERFECT", weekdays: "1,2,3,4,5,6,7", startTime: "23:00", endTime: "07:00" })];
+    assert(!isNotifyAllowed(night, { kind: "PERFECT", at: sgt("2026-09-22T03:00") }), "wrapped window should block after midnight");
+    assert(isNotifyAllowed(night, { kind: "RAID", at: sgt("2026-09-22T03:00") }), "PERFECT window should not affect raids");
+    assert(isNotifyAllowed([], { kind: "RAID" }), "no windows should allow");
+  });
+
+  await step("notifyAndUpdateUsers() skips the raid while a BLOCK window is active", async () => {
+    const block = await prisma.notifyWindow.create({
+      data: { userTelegramId: subscribedUserId, mode: "BLOCK", weekdays: "1,2,3,4,5,6,7", startTime: "00:00", endTime: "23:59" },
+    });
+    try {
+      const before = sentTo(subscribedUserId).length;
+      await notifyAndUpdateUsers();
+      await new Promise((r) => setTimeout(r, 1500));
+      assert(sentTo(subscribedUserId).length === before, "raid was sent despite BLOCK window");
+      const ev = await prisma.gymEvent.findFirst({
+        where: { gymSubscribeGymId: subscribedGymId, eventTime: new Date(syntheticRaid!.raid_start * 1000) },
+      });
+      assert(!ev, "skipped raid must not be recorded as notified");
+    } finally {
+      await prisma.notifyWindow.delete({ where: { id: block.id } });
     }
   });
 
