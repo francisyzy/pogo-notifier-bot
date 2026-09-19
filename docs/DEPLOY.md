@@ -42,7 +42,8 @@ git checkout new-features
 npm install
 ```
 
-This installs all packages including `jsdom` and `@types/jsdom` required by the Wednesday scraper.
+This installs all packages. (`jsdom` is still listed in `package.json` but nothing
+imports it; the Wednesday scraper reads JSON. It can be dropped in a later cleanup.)
 
 ---
 
@@ -161,7 +162,7 @@ npx tsc --noEmit
 | Feature | Description |
 |---|---|
 | `geoKey` | Gyms identified by lat/lng rounded to 4dp, not name. Run backfill script on existing DB. |
-| Wednesday scraper | Requires `jsdom` — run `npm install` to get it. |
+| Wednesday scraper | Fetches ScrapedDuck JSON; no extra packages needed. |
 | Disk cache | `.cache/` directory created automatically on first run. |
 | `/pull` command | Owner only (`OWNER_ID`). Executes `git pull && npm run build && pm2 reload all`. |
 
