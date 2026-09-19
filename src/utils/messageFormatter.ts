@@ -4,6 +4,7 @@ import { pokemonMessage, raidMessage } from "../types";
 import { URLS, RAID_CONFIG } from "../constants";
 import { fetchRaidBosses } from "./cache";
 import { toEscapeHTMLMsg } from "./messageHandler";
+import { formatDistance } from "./geo";
 
 /**
  * Fetches JSON from a URL with proper error handling
@@ -266,13 +267,18 @@ export async function perfectMessageFormatter(
     name = `Pokemon #${pokemonMessage.pokemon_id}`;
   }
 
-  const message = `Perfect pokemon ${toTitleCase(name)}(CP ${
+  let message = `Perfect pokemon ${toTitleCase(name)}(CP ${
     pokemonMessage.cp
   }) despawns at ${formatISO9075(pokemonMessage.despawnDate, {
     representation: "time",
   })}(${formatDistanceToNow(pokemonMessage.despawnDate, {
     addSuffix: true,
   })})`;
+  if (pokemonMessage.distanceMeters !== undefined) {
+    message += `\n📏 ${formatDistance(
+      pokemonMessage.distanceMeters,
+    )} from your saved location`;
+  }
   return message;
 }
 

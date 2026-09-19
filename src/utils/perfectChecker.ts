@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { pokemonMessage, pokemons } from "../types";
 import config from "../config";
+import { distanceMeters } from "./geo";
 
 const prisma = new PrismaClient();
 
@@ -9,21 +10,26 @@ export async function perfectChecker(
 ): Promise<pokemonMessage[]> {
   let pokemonMessages: pokemonMessage[] = [];
   const subscribes = await prisma.locationSubscribe.findMany({});
-  const range = config.perfectRange;
   console.log(perfectList.length);
   subscribes.forEach((subscribe) => {
     perfectList.forEach((perfect) => {
-      if (withinRange(subscribe.lat, perfect.lat, range)) {
-        if (withinRange(subscribe.long, perfect.lng, range)) {
-          pokemonMessages.push({
-            despawnDate: new Date(
-              Number(perfect.despawn.toString() + "000"),
-            ),
-            userTelegramId: subscribe.userTelegramId,
-            locationId: subscribe.locationId,
-            ...perfect,
-          });
-        }
+      // Each subscription carries its own radius (metres, set by the user)
+      const distance = distanceMeters(
+        subscribe.lat,
+        subscribe.long,
+        perfect.lat,
+        perfect.lng,
+      );
+      if (distance <= subscribe.radiusMeters) {
+        pokemonMessages.push({
+          despawnDate: new Date(
+            Number(perfect.despawn.toString() + "000"),
+          ),
+          userTelegramId: subscribe.userTelegramId,
+          locationId: subscribe.locationId,
+          distanceMeters: distance,
+          ...perfect,
+        });
       }
     });
   });

@@ -64,6 +64,8 @@ interface pokemonMessage extends pokemon {
   userTelegramId: number;
   locationId: string;
   despawnDate: Date;
+  /** Distance from the user's saved pin; absent for ad-hoc checks */
+  distanceMeters?: number;
 }
 
 // ScrapedDuck format: https://github.com/bigfoott/ScrapedDuck

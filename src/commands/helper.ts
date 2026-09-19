@@ -85,7 +85,7 @@ const helper = () => {
   });
   bot.command("perfect", (ctx) => {
     return ctx.replyWithHTML(
-      "/checkPerfect to get the list of perfect Pokemons currently spawned\n\n<u>Use this commands to add notification</u>\n/addLocation to send your location to get notified when a perfect Pokemon spawns\n\n<u>Options</u>\n/managePerfect to remove a perfect location\n\n/quietHours to set the days and hours you want to be notified",
+      "/checkPerfect to get the list of perfect Pokemons currently spawned\n\n<u>Use this commands to add notification</u>\n/addLocation to send your location and pick a radius to get notified when a perfect Pokemon spawns nearby\n\n<u>Options</u>\n/myLocations to see your perfect locations on a map\n/managePerfect to change the radius of or remove a perfect location\n\n/quietHours to set the days and hours you want to be notified",
     );
   });
   bot.command("raids", (ctx) => {

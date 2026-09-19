@@ -93,7 +93,8 @@ model LocationSubscribe {
   userTelegramId Int
   lat            Float
   long           Float
-  Radius         Float
+  /// Notify radius around the pin in metres (great-circle distance, see src/utils/geo.ts)
+  radiusMeters   Float           @default(100)
   LocationEvent  LocationEvent[]
 }
 
