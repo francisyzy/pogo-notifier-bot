@@ -361,6 +361,12 @@ export async function perfectMessageFormatter(
   })}(${formatDistanceToNow(pokemonMessage.despawnDate, {
     addSuffix: true,
   })})`;
+  // The spawn's own `weather` is its WeatherBoostedCondition: 0 means
+  // not boosted, 1..7 the boosting weather (higher level/CP).
+  const boost = GAME_WEATHER[pokemonMessage.weather];
+  if (boost) {
+    message += `\n⚡ weather boosted (${boost.emoji} ${boost.name})`;
+  }
   if (pokemonMessage.distanceMeters !== undefined) {
     message += `\n📏 ${formatDistance(
       pokemonMessage.distanceMeters,
