@@ -1,12 +1,55 @@
 import bot from "../lib/bot";
 import { Scenes } from "telegraf";
+import { PrismaClient } from "@prisma/client";
 import { raidBosses } from "../types";
 import {
   urlFormatter,
   isShadowBoss,
   raidBossTier,
+  bossCpRange,
+  isBossBoosted,
 } from "../utils/messageFormatter";
-import { URLS } from "../constants";
+import { URLS, RAID_CONFIG } from "../constants";
+import { getRaidFeed } from "../utils/getMaper";
+import {
+  GAME_WEATHER,
+  buildWeatherCells,
+  weatherAt,
+} from "../utils/weather";
+import { hasLastLocation } from "../utils/lastLocation";
+
+const prisma = new PrismaClient();
+
+/**
+ * In-game weather at the user's last-sent pin, from the raid feed's
+ * weather cells. Undefined when the user has never sent a pin, the
+ * feed is down, or the pin is outside the covered cells: the command
+ * then just shows normal CP ranges.
+ */
+async function weatherAtLastPin(
+  telegramId: number,
+): Promise<{ hasPin: boolean; weatherId?: number }> {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { telegramId },
+      select: { lastLat: true, lastLong: true },
+    });
+    if (!hasLastLocation(user)) return { hasPin: false };
+    const { weathers } = await getRaidFeed();
+    const cells = buildWeatherCells(weathers);
+    return {
+      hasPin: true,
+      weatherId: weatherAt(cells, user.lastLat, user.lastLong),
+    };
+  } catch (error) {
+    console.error("Failed to resolve weather at last pin:", error);
+    return { hasPin: false };
+  }
+}
+
+function tierHeading(tier: number): string {
+  return tier === RAID_CONFIG.MEGA_RAID_TIER ? "Mega raids" : `${tier}★ raids`;
+}
 
 const checkBoss = () => {
   try {
@@ -39,7 +82,20 @@ const checkBoss = () => {
         return;
       }
 
-      let possibleBosses = `\n\n<a href="https://www.leekduck.com/boss/">Possible raid boss</a>: \n\n`;
+      const { hasPin, weatherId } = ctx.from
+        ? await weatherAtLastPin(ctx.from.id)
+        : { hasPin: false, weatherId: undefined };
+      const weather =
+        weatherId === undefined ? undefined : GAME_WEATHER[weatherId];
+
+      let header = `<a href="${URLS.LEEKDUCK_BOSS}">Current raid bosses</a> with 100% IV catch CP\n`;
+      if (weather) {
+        header += `Weather at your last pin: ${weather.emoji} ${weather.name} — boosted CP ranges marked ⚡`;
+      } else if (hasPin) {
+        header += "Weather at your last pin unknown — showing normal CP ranges";
+      } else {
+        header += "Send /sendLocation to see weather-boosted CP ranges";
+      }
       
       // Structure: results[tier][isShadow] = array of boss names
       const results: Record<number, { regular: string[]; shadow: string[] }> = {};
@@ -49,6 +105,13 @@ const checkBoss = () => {
         const tier = raidBossTier(raidBoss);
         let bossName = `<a href="${url}">${raidBoss.name}</a>`;
         bossName += raidBoss.canBeShiny ? "✨" : "";
+        // One range only: the one that applies in the weather at the pin
+        const range = bossCpRange(raidBoss, weatherId);
+        if (range) {
+          bossName += ` <i>${range}${
+            isBossBoosted(raidBoss, weatherId) ? " ⚡" : ""
+          }</i>`;
+        }
         
         const isShadow = isShadowBoss(raidBoss);
         
@@ -63,37 +126,42 @@ const checkBoss = () => {
         }
       });
 
-      // Build the output string, grouping by tier and shadow status
-      const outputParts: string[] = [];
+      // One message per tier so the 4096-char limit is never hit
       const sortedTiers = Object.keys(results)
         .map(Number)
         .sort((a, b) => a - b);
-      
-      for (const tier of sortedTiers) {
+      const messages = sortedTiers.map((tier) => {
         const tierData = results[tier];
-        
-        // Add regular bosses for this tier
+        const parts = [`<b>${tierHeading(tier)}</b>`];
         if (tierData.regular.length > 0) {
-          outputParts.push(tierData.regular.join(", "));
+          parts.push(tierData.regular.join(", "));
         }
-        
-        // Add shadow bosses for this tier
         if (tierData.shadow.length > 0) {
-          outputParts.push(tierData.shadow.join(", "));
+          parts.push(tierData.shadow.join(", "));
         }
+        return parts.join("\n\n");
+      });
+      if (messages.length === 0) {
+        messages.push("No raid bosses listed right now.");
       }
-      
-      possibleBosses += outputParts.join("\n\n");
+
       if (!ctx.chat) {
         return;
       }
-      return ctx.telegram.editMessageText(
+      const options = {
+        parse_mode: "HTML" as const,
+        link_preview_options: { is_disabled: true },
+      };
+      await ctx.telegram.editMessageText(
         ctx.chat.id,
         editMessage.message_id,
         undefined,
-        possibleBosses,
-        { parse_mode: "HTML", link_preview_options: { is_disabled: true } },
+        `${header}\n\n${messages[0]}`,
+        options,
       );
+      for (const message of messages.slice(1)) {
+        await ctx.reply(message, options);
+      }
     };
 
     // Register handler for both lowercase and camelCase

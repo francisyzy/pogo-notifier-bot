@@ -2,9 +2,10 @@ import { formatDistanceToNow, formatISO9075 } from "date-fns";
 import { Pokedex } from 'pmgo-pokedex';
 import { pokemonMessage, raidMessage } from "../types";
 import { URLS, RAID_CONFIG } from "../constants";
-import { fetchRaidBosses } from "./cache";
+import { fetchRaidBosses, RaidBossCache } from "./cache";
 import { toEscapeHTMLMsg } from "./messageHandler";
 import { formatDistance } from "./geo";
+import { GAME_WEATHER, weatherIdFromName } from "./weather";
 
 /**
  * Fetches JSON from a URL with proper error handling
@@ -54,6 +55,71 @@ export function raidBossTier(boss: { tier: string }): number {
   if (/mega/i.test(boss.tier)) return RAID_CONFIG.MEGA_RAID_TIER;
   const tier = parseInt(boss.tier, 10);
   return Number.isNaN(tier) ? 0 : tier;
+}
+
+/**
+ * Whether the in-game weather at a gym boosts this boss
+ * @param boss Boss with its ScrapedDuck boostedWeather list
+ * @param weatherId GAME_WEATHER id at the gym; undefined when unknown
+ */
+export function isBossBoosted(
+  boss: Pick<RaidBossCache, "boostedWeather">,
+  weatherId?: number,
+): boolean {
+  return (
+    weatherId !== undefined &&
+    (boss.boostedWeather ?? []).some(
+      (weather) => weatherIdFromName(weather.name) === weatherId,
+    )
+  );
+}
+
+/**
+ * The 100% IV catch CP range that applies in the given weather, as
+ * "min–max". Only one range is ever returned: boosted when the weather
+ * boosts the boss, normal otherwise (or when the weather is unknown).
+ * @returns "" when the cache entry has no CP data (backup source)
+ */
+export function bossCpRange(
+  boss: Pick<RaidBossCache, "combatPower" | "boostedWeather">,
+  weatherId?: number,
+): string {
+  if (!boss.combatPower) return "";
+  const range = isBossBoosted(boss, weatherId)
+    ? boss.combatPower.boosted
+    : boss.combatPower.normal;
+  return `${range.min}–${range.max}`;
+}
+
+/**
+ * One-line boss detail for HTML messages, e.g.
+ * "CP 2735–2848 ⚡ boosted (🌧 rainy) · fighting/steel" or
+ * "CP 2188–2278 · fighting/steel". Parts the entry lacks are omitted.
+ * @param boss Cached raid boss
+ * @param weatherId GAME_WEATHER id at the gym; undefined when unknown
+ * @returns "" when there is neither CP data nor types
+ */
+export function bossCpLine(
+  boss: Pick<RaidBossCache, "combatPower" | "boostedWeather" | "types">,
+  weatherId?: number,
+): string {
+  const parts: string[] = [];
+  const range = bossCpRange(boss, weatherId);
+  if (range) {
+    let cp = `CP ${range}`;
+    const weather =
+      weatherId === undefined ? undefined : GAME_WEATHER[weatherId];
+    if (weather && isBossBoosted(boss, weatherId)) {
+      cp += ` ⚡ boosted (${weather.emoji} ${weather.name})`;
+    }
+    parts.push(cp);
+  }
+  const types = (boss.types ?? []).map((type) => type.name);
+  if (types.length > 0) {
+    // Type names come from the provider
+    parts.push(toEscapeHTMLMsg(types.join("/")));
+  }
+  return parts.join(" · ");
 }
 
 /**
@@ -126,8 +192,10 @@ export async function raidMessageFormatter(
     bosses,
   );
 
-  let possibleBosses = `\n\n<a href="${URLS.LEEKDUCK_BOSS}">Possible raid boss</a>: (`;
+  const candidates: string[] = [];
+  let anyBoosted = false;
   let bossName = "";
+  let bossDetail = "";
 
   bosses.forEach((raidBoss) => {
     const url = urlFormatter(raidBoss.name, raidBoss.tier);
@@ -143,13 +211,32 @@ export async function raidMessageFormatter(
     if (raidMessage.pokemonId === raidBossDetail.no) {
       bossName = `<a href="${url}">${raidBoss.name}</a>`;
       bossName += raidBoss.canBeShiny ? "✨" : "";
+      bossDetail = bossCpLine(raidBoss, raidMessage.weatherId);
     } else if (raidBossTier(raidBoss) === actualTier) {
-      possibleBosses += `<a href="${url}">${raidBoss.name}</a>`;
-      possibleBosses += raidBoss.canBeShiny ? "✨, " : ", ";
+      let candidate = `<a href="${url}">${raidBoss.name}</a>`;
+      candidate += raidBoss.canBeShiny ? "✨" : "";
+      if (isBossBoosted(raidBoss, raidMessage.weatherId)) {
+        candidate += " ⚡";
+        anyBoosted = true;
+      }
+      candidates.push(candidate);
     }
   });
-  possibleBosses = possibleBosses.slice(0, -2);
-  possibleBosses += ")";
+
+  // Egg stage: say what the weather is at this gym so the ⚡ marks make sense
+  const gymWeather =
+    raidMessage.weatherId === undefined
+      ? undefined
+      : GAME_WEATHER[raidMessage.weatherId];
+  let possibleBosses = "\n\n";
+  if (gymWeather) {
+    possibleBosses += `${gymWeather.emoji} ${gymWeather.name} at this gym${
+      anyBoosted ? " — ⚡ marks boosted bosses" : ""
+    }\n`;
+  }
+  possibleBosses += `<a href="${URLS.LEEKDUCK_BOSS}">Possible raid boss</a>: (${candidates.join(
+    ", ",
+  )})`;
 
   //If leek duck has no info and raid has popped
   if (bossName === "" && raidMessage.pokemonId !== 0) {
@@ -205,7 +292,7 @@ export async function raidMessageFormatter(
     raidMessage.pokemonId === 0
       ? possibleBosses
       : ` with boss ${bossName}`
-  }`;
+  }${bossDetail ? `\n${bossDetail}` : ""}`;
   return message;
 }
 

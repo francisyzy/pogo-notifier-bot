@@ -147,7 +147,10 @@ private chats (`ctx.chat?.type !== "private"`) at the start of any wizard.
 - `eventNotifier.ts`: `notifyEvent`.
 - `notifyWindows.ts`: `/quietHours` evaluation, always in `Asia/Singapore`.
 - `messageFormatter.ts`: HTML message building; `raidMessageFormatter`,
-  `bossCount`, shadow/mega tier helpers.
+  `bossCount`, shadow/mega tier helpers, `bossCpLine`/`bossCpRange`/
+  `isBossBoosted` (the one 100% IV CP range that applies given the
+  weather at the gym, tagged `⚡ boosted (🌧 rainy)` when boosted; never
+  both ranges).
 - `messageHandler.ts`: `toEscapeHTMLMsg` (HTML) and `toEscapeMsg`
   (MarkdownV2).
 - `botCommands.ts`: source of truth for the Telegram command menu.
