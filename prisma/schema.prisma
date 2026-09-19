@@ -14,8 +14,6 @@ model User {
   telegramId      Int       @id
   name            String
   createdAt       DateTime  @default(now())
-  silentStartTime DateTime?
-  silentEndTime   DateTime?
 
   //stats
   gymTimesNotified      Int      @default(0)
