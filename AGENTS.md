@@ -128,6 +128,9 @@ private chats (`ctx.chat?.type !== "private"`) at the start of any wizard.
 - `geo.ts`: `distanceMeters` (haversine), `formatDistance` ("250 m" /
   "1.5 km"), radius presets/limits, `mapsLink`.
 - `lastActivity.ts`: `trackLastActivity` middleware (see Data model).
+- `lastLocation.ts`: `rememberLastLocation` (fire-and-forget, called from
+  every `on("location")` handler), `sortByDistance`/`distanceSuffix` and
+  `subscribedGymsByDistance` for nearest-first gym/location lists.
 - `eventNotifier.ts`: `notifyEvent`.
 - `notifyWindows.ts`: `/quietHours` evaluation, always in `Asia/Singapore`.
 - `messageFormatter.ts`: HTML message building; `raidMessageFormatter`,
@@ -147,7 +150,13 @@ private chats (`ctx.chat?.type !== "private"`) at the start of any wizard.
   `stopNotifyingMeToday`, stats counters. `lastActivity` is bumped by the
   `trackLastActivity` middleware (`src/utils/lastActivity.ts`, registered
   in `index.ts` right after `session()`, throttled to one write per user
-  per minute). Quiet hours live in `NotifyWindow`.
+  per minute). `lastLat`/`lastLong`/`lastLocationAt` are the last pin the
+  user sent (any location message; set by `rememberLastLocation` in
+  `src/utils/lastLocation.ts`) and drive the nearest-first ordering and
+  ` · 350 m` suffixes in `/myGyms`, `/manageGyms`, `/renameGym`,
+  `/checkRaid`, `/myLocations` and `/managePerfect`; all three are NULL
+  until the user sends a location, and lists then keep insertion order
+  with no distance. Quiet hours live in `NotifyWindow`.
 - **Gym**: `id` UUID, `geoKey` (`lat|lng` rounded to 4 dp, unique,
   nullable for pre-backfill rows), `gymString` (nullable), `lat`/`long`,
   `lastRaidAt`.

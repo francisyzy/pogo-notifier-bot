@@ -5,6 +5,7 @@ import { PrismaClient, Prisma } from "@prisma/client";
 import { gymSearcherBtn } from "../utils/gymSearcher";
 import { IMAGES } from "../constants";
 import { renameGymBtn } from "./nameGym";
+import { rememberLastLocation } from "../utils/lastLocation";
 
 const prisma = new PrismaClient();
 
@@ -17,6 +18,7 @@ const subscribe = () => {
       });
 
       const { latitude, longitude } = ctx.message.location;
+      rememberLastLocation(ctx.from.id, latitude, longitude);
 
       const gymBtnList = await gymSearcherBtn(latitude, longitude);
       if (gymBtnList.length !== 0) {

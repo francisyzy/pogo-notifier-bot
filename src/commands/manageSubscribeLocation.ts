@@ -13,8 +13,34 @@ import {
   radiusKeyboard,
   radiusPrompt,
 } from "./subscribeLocation";
+import { hasLastLocation, sortByDistance } from "../utils/lastLocation";
 
 const prisma = new PrismaClient();
+
+/**
+ * A user's perfect-spawn locations, nearest-first with a distance when
+ * they have ever sent the bot a pin, else in insertion order without one.
+ */
+async function subscribedLocationsByDistance(userTelegramId: number) {
+  const [user, subscriptions] = await Promise.all([
+    prisma.user.findUnique({
+      where: { telegramId: userTelegramId },
+      select: { lastLat: true, lastLong: true },
+    }),
+    prisma.locationSubscribe.findMany({ where: { userTelegramId } }),
+  ]);
+  return {
+    sorted: hasLastLocation(user),
+    locations: sortByDistance(subscriptions, user),
+  };
+}
+
+/** " · 1.2 km away" when a distance is known, else "" */
+function awaySuffix(item: { distanceMeters?: number }): string {
+  return item.distanceMeters === undefined
+    ? ""
+    : ` · ${formatDistance(item.distanceMeters)} away`;
+}
 
 const RADIUS_ACTION_PREFIX = "MR_";
 const REMOVE_ACTION = "MD";
@@ -214,10 +240,10 @@ const manageSubscribeLocation = () => {
             await ctx.reply("Please use the bot in a private chat");
             return ctx.scene.leave();
           }
-          const subscriptions = await prisma.locationSubscribe.findMany({
-            where: { userTelegramId: ctx.from.id },
-          });
-          if (subscriptions.length === 0) {
+          const { locations } = await subscribedLocationsByDistance(
+            ctx.from.id,
+          );
+          if (locations.length === 0) {
             await ctx.reply(
               "You have yet to subscribe to any perfect Pokemon locations. /addLocation to add one",
             );
@@ -226,13 +252,15 @@ const manageSubscribeLocation = () => {
           let locationBtnList: (InlineKeyboardButton & {
             hide?: boolean | undefined;
           })[] = [];
-          subscriptions.forEach((subscription, i) => {
+          locations.forEach((subscription, i) => {
             locationBtnList.push(
               Markup.button.callback(
                 `${i + 1}. ${formatLocation(
                   subscription.lat,
                   subscription.long,
-                )} · ${formatDistance(subscription.radiusMeters)}`,
+                )} · ${formatDistance(subscription.radiusMeters)}${awaySuffix(
+                  subscription,
+                )}`,
                 subscription.locationId,
               ),
             );
@@ -255,10 +283,10 @@ const manageSubscribeLocation = () => {
     bot.use(stage.middleware());
 
     bot.command(["myLocations", "mylocations"], async (ctx) => {
-      const subscriptions = await prisma.locationSubscribe.findMany({
-        where: { userTelegramId: ctx.from.id },
-      });
-      if (subscriptions.length === 0) {
+      const { locations, sorted } = await subscribedLocationsByDistance(
+        ctx.from.id,
+      );
+      if (locations.length === 0) {
         return ctx.reply(
           "You have yet to subscribe to any perfect Pokemon locations. /addLocation to add one",
         );
@@ -266,15 +294,21 @@ const manageSubscribeLocation = () => {
 
       let returnMessage =
         "You are subscribed to the following perfect Pokemon locations:\n\n";
-      subscriptions.forEach((subscription, i) => {
+      locations.forEach((subscription, i) => {
         returnMessage += `${i + 1}. <a href="${mapsLink(
           subscription.lat,
           subscription.long,
         )}">${formatLocation(
           subscription.lat,
           subscription.long,
-        )}</a> · ${formatDistance(subscription.radiusMeters)} radius\n`;
+        )}</a> · ${formatDistance(subscription.radiusMeters)} radius${awaySuffix(
+          subscription,
+        )}\n`;
       });
+      if (sorted) {
+        returnMessage +=
+          "\nSorted by distance from the last location you sent\n";
+      }
       returnMessage +=
         "\n/managePerfect to change a radius or remove a location, /addLocation to add one";
       await ctx.reply(returnMessage, {
@@ -282,7 +316,7 @@ const manageSubscribeLocation = () => {
         link_preview_options: { is_disabled: true },
       });
       // One map card per location so they can see exactly where each pin is
-      for (const [i, subscription] of subscriptions.entries()) {
+      for (const [i, subscription] of locations.entries()) {
         await ctx.replyWithVenue(
           subscription.lat,
           subscription.long,

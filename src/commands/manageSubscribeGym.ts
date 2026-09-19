@@ -2,6 +2,10 @@ import { Scenes, Markup, Composer } from "telegraf";
 import bot from "../lib/bot";
 import { InlineKeyboardButton } from "typegram";
 import { PrismaClient, Prisma } from "@prisma/client";
+import {
+  distanceSuffix,
+  subscribedGymsByDistance,
+} from "../utils/lastLocation";
 
 const prisma = new PrismaClient();
 
@@ -65,20 +69,17 @@ const manageGyms = () => {
             ctx.message &&
             ctx.message.chat.type === "private"
           ) {
-            const subscriptions = await prisma.gymSubscribe.findMany({
-              where: { userTelegramId: ctx.from.id },
-              include: { gym: true },
-            });
-            if (subscriptions.length != 0) {
-              //TODO add mapper to sort the gyms by the location thats closest to the user's current location
+            const { gyms } = await subscribedGymsByDistance(ctx.from.id);
+            if (gyms.length != 0) {
               let gymBtnList: (InlineKeyboardButton & {
                 hide?: boolean | undefined;
               })[] = [];
-              subscriptions.forEach((subscription) => {
+              gyms.forEach((gym) => {
                 gymBtnList.push(
                   Markup.button.callback(
-                    subscription.gym.gymString ?? subscription.gym.geoKey ?? subscription.gym.id,
-                    subscription.gymId,
+                    (gym.gymString ?? gym.geoKey ?? gym.id) +
+                      distanceSuffix(gym),
+                    gym.id,
                   ),
                 );
               });
@@ -118,15 +119,21 @@ const manageGyms = () => {
     bot.use(stage.middleware());
 
     bot.command("myGyms", async (ctx) => {
-      const subscriptions = await prisma.gymSubscribe.findMany({
-        where: { userTelegramId: ctx.from.id },
-        include: { gym: true },
-      });
+      const { gyms, sorted } = await subscribedGymsByDistance(
+        ctx.from.id,
+      );
 
       let returnMessage =
         "You are subscribed to the following gyms:\n";
-      for (const subscription of subscriptions) {
-        returnMessage += (subscription.gym.gymString ?? subscription.gym.geoKey ?? subscription.gym.id) + "\n";
+      for (const gym of gyms) {
+        returnMessage +=
+          (gym.gymString ?? gym.geoKey ?? gym.id) +
+          distanceSuffix(gym) +
+          "\n";
+      }
+      if (sorted) {
+        returnMessage +=
+          "\nSorted by distance from the last location you sent";
       }
       returnMessage +=
         "\nYou can /manageGyms to remove the gyms that you no longer want to follow";

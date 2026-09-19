@@ -2,6 +2,7 @@ import bot from "../lib/bot";
 import { Markup, Scenes } from "telegraf";
 import { InlineKeyboardButton } from "typegram";
 import { IMAGES } from "../constants";
+import { rememberLastLocation } from "../utils/lastLocation";
 
 //location commands
 const location = () => {
@@ -34,6 +35,7 @@ const location = () => {
   
   bot.on("location", (ctx) => {
     const { latitude, longitude } = ctx.message.location;
+    rememberLastLocation(ctx.from.id, latitude, longitude);
     let featureList: (InlineKeyboardButton & {
       hide?: boolean | undefined;
     })[] = [

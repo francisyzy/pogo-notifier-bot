@@ -2,6 +2,10 @@ import { Scenes, Markup, Composer } from "telegraf";
 import bot from "../lib/bot";
 import { Message, InlineKeyboardButton } from "typegram";
 import { PrismaClient } from "@prisma/client";
+import {
+  distanceSuffix,
+  subscribedGymsByDistance,
+} from "../utils/lastLocation";
 
 const prisma = new PrismaClient();
 
@@ -146,11 +150,8 @@ const renameGym = () => {
           return ctx.wizard.selectStep(2);
         }
 
-        const subscriptions = await prisma.gymSubscribe.findMany({
-          where: { userTelegramId: ctx.from.id },
-          include: { gym: true },
-        });
-        if (subscriptions.length === 0) {
+        const { gyms } = await subscribedGymsByDistance(ctx.from.id);
+        if (gyms.length === 0) {
           await ctx.reply(
             "You have yet to subscribe to any gyms. Use /gymLocation or /gymName to find gyms first",
           );
@@ -160,14 +161,12 @@ const renameGym = () => {
         let gymBtnList: (InlineKeyboardButton & {
           hide?: boolean | undefined;
         })[] = [];
-        subscriptions.forEach((subscription) => {
+        gyms.forEach((gym) => {
           gymBtnList.push(
             Markup.button.callback(
               // No "(unnamed)" prefix: long labels get truncated in the button
-              subscription.gym.gymString ??
-                subscription.gym.geoKey ??
-                subscription.gym.id,
-              subscription.gymId,
+              (gym.gymString ?? gym.geoKey ?? gym.id) + distanceSuffix(gym),
+              gym.id,
             ),
           );
         });

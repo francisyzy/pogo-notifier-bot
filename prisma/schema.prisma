@@ -20,6 +20,10 @@ model User {
   locationTimesNotified Int      @default(0)
   /// Last time the user sent the bot anything; bumped by trackLastActivity in src/utils/lastActivity.ts
   lastActivity          DateTime @default(now())
+  /// Last pin the user sent (any location message); used to sort gym/location lists by distance
+  lastLat               Float?
+  lastLong              Float?
+  lastLocationAt        DateTime?
 
   //notify settings
   raidLevelNotify      String

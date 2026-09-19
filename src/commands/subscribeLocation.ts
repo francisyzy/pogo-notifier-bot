@@ -9,6 +9,7 @@ import {
   MIN_RADIUS_M,
   RADIUS_CHOICES_M,
 } from "../utils/geo";
+import { rememberLastLocation } from "../utils/lastLocation";
 
 const prisma = new PrismaClient();
 
@@ -108,6 +109,7 @@ const subscribeLocation = () => {
     const locationHandler = new Composer<Scenes.WizardContext>();
     locationHandler.on("location", async (ctx) => {
       const { latitude, longitude } = ctx.message.location;
+      rememberLastLocation(ctx.from.id, latitude, longitude);
       await askRadius(ctx, latitude, longitude);
       return ctx.wizard.next();
     });

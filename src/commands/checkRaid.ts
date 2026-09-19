@@ -11,8 +11,43 @@ import { Markup } from "telegraf";
 import { InlineKeyboardButton, Message } from "typegram";
 import config from "../config";
 import { PrismaClient } from "@prisma/client";
+import { raidMessage } from "../types";
+import { formatDistance } from "../utils/geo";
+import {
+  hasLastLocation,
+  sortByDistance,
+} from "../utils/lastLocation";
 
 const prisma = new PrismaClient();
+
+/**
+ * Nearest-first when the user has ever sent a pin, else feed order.
+ * Distances come from the gym rows since raidMessage carries no lat/long.
+ */
+async function sortRaidsByDistance(
+  raidMessages: raidMessage[],
+  userTelegramId: number,
+): Promise<(raidMessage & { distanceMeters?: number })[]> {
+  const user = await prisma.user.findUnique({
+    where: { telegramId: userTelegramId },
+    select: { lastLat: true, lastLong: true },
+  });
+  if (!hasLastLocation(user)) return raidMessages;
+  const gyms = await prisma.gym.findMany({
+    where: { id: { in: [...new Set(raidMessages.map((m) => m.gymId))] } },
+    select: { id: true, lat: true, long: true },
+  });
+  const gymById = new Map(gyms.map((gym) => [gym.id, gym]));
+  if (!raidMessages.every((m) => gymById.has(m.gymId))) return raidMessages;
+  return sortByDistance(
+    raidMessages.map((m) => ({
+      ...m,
+      lat: gymById.get(m.gymId)!.lat,
+      long: gymById.get(m.gymId)!.long,
+    })),
+    user,
+  );
+}
 
 const checkRaid = () => {
   try {
@@ -20,7 +55,10 @@ const checkRaid = () => {
       const editMessage = await ctx.reply("Checking raids…");
       const raids = await getRaids();
       updateGyms(raids);
-      const raidMessages = await gymChecker(raids, ctx.from.id);
+      const raidMessages = await sortRaidsByDistance(
+        await gymChecker(raids, ctx.from.id),
+        ctx.from.id,
+      );
       //Exit condition early to end command
       if (raidMessages.length === 0) {
         return ctx.telegram.editMessageText(
@@ -30,17 +68,29 @@ const checkRaid = () => {
           "You have no raids at your subscriptions",
         );
       } else {
+        const sorted = raidMessages[0].distanceMeters !== undefined;
         await ctx.telegram.editMessageText(
           ctx.message.chat.id,
           editMessage.message_id,
           undefined,
-          `You have ${raidMessages.length} raids at your subscriptions:`,
+          `You have ${raidMessages.length} raids at your subscriptions${
+            sorted ? " (nearest to your last location first)" : ""
+          }:`,
         );
       }
       for (const raidMessage of raidMessages) {
-        await ctx.replyWithHTML(await raidMessageFormatter(raidMessage), {
-          link_preview_options: { is_disabled: true },
-        });
+        const distance =
+          raidMessage.distanceMeters === undefined
+            ? ""
+            : `\n<i>📍 ${formatDistance(
+                raidMessage.distanceMeters,
+              )} from your last location</i>`;
+        await ctx.replyWithHTML(
+          (await raidMessageFormatter(raidMessage)) + distance,
+          {
+            link_preview_options: { is_disabled: true },
+          },
+        );
       }
       return;
     });
