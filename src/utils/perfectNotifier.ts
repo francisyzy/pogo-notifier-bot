@@ -39,8 +39,6 @@ export async function notifyPerfect(): Promise<void> {
           data: {
             eventTime: pokemonMessage.despawnDate,
             locationSubscribeLocationId: pokemonMessage.locationId,
-            lat: pokemonMessage.lat, //not sure why double storage of data
-            long: pokemonMessage.lng,
           },
         })
         .then(async () => {
@@ -106,8 +104,6 @@ export async function notifyLegendary(): Promise<void> {
           data: {
             eventTime: pokemonMessage.despawnDate,
             locationSubscribeLocationId: pokemonMessage.locationId,
-            lat: pokemonMessage.lat, //not sure why double storage of data
-            long: pokemonMessage.lng,
           },
         })
         .then(async () => {

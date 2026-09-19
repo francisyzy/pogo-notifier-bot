@@ -1,6 +1,5 @@
 import bot from "../lib/bot";
 import { getRaidFeed } from "../utils/getMaper";
-import { updateGyms } from "../utils/gymAdder";
 import { gymChecker, gymCheckerAdHoc } from "../utils/gymChecker";
 import { gymSearcher } from "../utils/gymSearcher";
 import {
@@ -36,7 +35,6 @@ const checkRaid = () => {
     bot.command("checkRaid", async (ctx) => {
       const editMessage = await ctx.reply("Checking raids…");
       const { raids, weathers } = await getRaidFeed();
-      updateGyms(raids);
       const raidMessages = await sortRaidsByDistance(
         await gymChecker(raids, ctx.from.id, weathers),
         ctx.from.id,

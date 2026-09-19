@@ -11,7 +11,6 @@ import {
 } from "./messageFormatter";
 import config from "../config";
 import { convertBackToArray } from "./legacy_converter";
-import { updateGyms } from "./gymAdder";
 import { isNotifyAllowed, loadNotifyWindows } from "./notifyWindows";
 
 const prisma = new PrismaClient();
@@ -42,7 +41,6 @@ export async function notifyAndUpdateUsers(): Promise<void> {
   console.log("Checking raids");
   try {
     const { raids, weathers } = await getRaidFeed();
-    updateGyms(raids);
     const raidMessages = await gymChecker(raids, undefined, weathers);
     
     // Batch fetch all users to avoid N+1 query problem

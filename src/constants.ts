@@ -50,13 +50,13 @@ export const LINKS = {
 export const CACHE_DIR = ".cache" as const;
 
 /**
- * Backup sources — tried after primary URL fails.
- * RAID_BOSSES_JSON backup is the previous source (pmgo-professor-willow/data-leekduck).
+ * Backup sources — tried after primary URL fails. Only raid bosses have
+ * one (the previous source, pmgo-professor-willow/data-leekduck); events
+ * fall back to the on-disk cache.
  */
 export const BACKUP_URLS = {
   RAID_BOSSES_JSON:
     "https://raw.githubusercontent.com/pmgo-professor-willow/data-leekduck/gh-pages/raidBosses.min.json",
-  EVENTS_JSON: null,
 } as const;
 
 /**

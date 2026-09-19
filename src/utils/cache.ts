@@ -76,10 +76,9 @@ function adaptBackupRaidBoss(boss: RaidBossBackup): RaidBossCache {
 }
 
 export async function fetchRaidBosses(): Promise<RaidBossCache[] | null> {
-  const urls: (string | null)[] = [URLS.RAID_BOSSES_JSON, BACKUP_URLS.RAID_BOSSES_JSON];
+  const urls: string[] = [URLS.RAID_BOSSES_JSON, BACKUP_URLS.RAID_BOSSES_JSON];
 
   for (const url of urls) {
-    if (!url) continue;
     try {
       const data = await fetchJson<RaidBossBackup[] | raidBosses>(url);
       const isBackupFormat = Array.isArray(data) && data.length > 0 && "no" in data[0];

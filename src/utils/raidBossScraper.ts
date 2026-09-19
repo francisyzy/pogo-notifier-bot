@@ -49,14 +49,6 @@ async function updateCacheIfChanged(bosses: unknown[]): Promise<boolean> {
  * Run the Wednesday scrape: fetch from ScrapedDuck and update cache.
  */
 export async function runWednesdayScrape(): Promise<void> {
-  // Check jsdom is available
-  try {
-    require("jsdom");
-  } catch {
-    console.warn("jsdom not installed, skipping Wednesday scrape. Run: npm install jsdom && npm install --save-dev @types/jsdom");
-    return;
-  }
-
   // Check minimum interval
   const cachePath = path.join(CACHE_DIR, "raid-bosses.json");
   if (fs.existsSync(cachePath)) {

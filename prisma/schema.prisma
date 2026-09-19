@@ -105,8 +105,6 @@ model LocationSubscribe {
 model LocationEvent {
   locationSubscribe           LocationSubscribe @relation(fields: [locationSubscribeLocationId], references: [locationId], onDelete: Cascade)
   locationSubscribeLocationId String
-  lat                         Float
-  long                        Float
   eventTime                   DateTime
 
   @@id([locationSubscribeLocationId, eventTime])

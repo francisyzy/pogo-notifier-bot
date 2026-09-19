@@ -115,7 +115,8 @@ private chats (`ctx.chat?.type !== "private"`) at the start of any wizard.
 
 - `getMaper.ts`: fetches raids/pokemon from SGPokeMap and events/bosses
   from ScrapedDuck. URLs in `src/constants.ts`; `BACKUP_URLS` holds a
-  fallback for raid bosses (events have none). `getRaidFeed` returns
+  fallback URL for raid bosses only (events fall back to the `.cache/`
+  copy). `getRaidFeed` returns
   `{ raids, weathers }` from one `raids.php` call; `getRaids` is a
   wrapper that drops `weathers`. Fetch once and pass `weathers` down.
 - `gymChecker.ts`: matches active raids to subscribed gyms by geoKey;
@@ -152,8 +153,8 @@ private chats (`ctx.chat?.type !== "private"`) at the start of any wizard.
   weather at the gym, tagged `⚡ boosted (🌧 rainy)` when boosted; never
   both ranges). `perfectMessageFormatter` tags a spawn whose own
   `weather` (WeatherBoostedCondition, 0 = none) is a `GAME_WEATHER` id.
-- `messageHandler.ts`: `toEscapeHTMLMsg` (HTML) and `toEscapeMsg`
-  (MarkdownV2).
+- `messageHandler.ts`: `toEscapeHTMLMsg`, the only escaper (all messages
+  use HTML parse mode; there is no MarkdownV2 path).
 - `botCommands.ts`: source of truth for the Telegram command menu.
 - `legacy_converter.ts`: `convertBackToArray` for the comma-separated
   `User.raidLevelNotify` string.
@@ -184,7 +185,7 @@ private chats (`ctx.chat?.type !== "private"`) at the start of any wizard.
   (user-chosen, 50–5000 m, default 100). Matching is great-circle
   distance via `distanceMeters` in `src/utils/geo.ts`, not a lat/long box.
 - **LocationEvent**: composite PK `[locationSubscribeLocationId,
-  eventTime]`; dedup for spawn notifications.
+  eventTime]`, and nothing else; dedup for spawn notifications only.
 - **NotifyWindow**: per-user (optionally per-gym, per-kind) ALLOW/BLOCK
   windows for `/quietHours`.
 
