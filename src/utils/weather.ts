@@ -50,10 +50,11 @@ export function buildWeatherCells(list: weathers): WeatherCells {
 }
 
 /**
- * Weather at a point. The feed's `cell_id` is used when the raid has one
- * and it is in the map; otherwise the cell is computed locally, since
- * about a quarter of raids arrive with `cell_id: null` while the
- * `weathers` list still covers the whole island.
+ * Weather at a point. The cell is always computed from lat/lng: about a
+ * quarter of raids arrive with `cell_id: null`, and the feed's own
+ * `cell_id` is occasionally wrong (2 of ~1700 checked on 2026-09-20
+ * pointed at a cell 15 km away). The feed id is only a fallback for the
+ * unlikely case the computed cell is missing from `weathers`.
  */
 export function weatherAt(
   cells: WeatherCells,
@@ -61,6 +62,7 @@ export function weatherAt(
   lng: number,
   cellId?: string | null,
 ): number | undefined {
-  if (cellId && cells.has(cellId)) return cells.get(cellId);
-  return cells.get(latLngToS2CellId(lat, lng));
+  const computed = cells.get(latLngToS2CellId(lat, lng));
+  if (computed !== undefined) return computed;
+  return cellId ? cells.get(cellId) : undefined;
 }
