@@ -8,6 +8,7 @@ import type {
   WeatherInfo,
   CombatPower,
 } from "../types";
+import { scrapeLeekDuckRaidBosses } from "./leekduckScraper";
 
 export async function ensureCacheDir(): Promise<void> {
   if (!existsSync(CACHE_DIR)) {
@@ -75,20 +76,22 @@ function adaptBackupRaidBoss(boss: RaidBossBackup): RaidBossCache {
   };
 }
 
+/**
+ * Raid bosses, trying in order: ScrapedDuck JSON, the backup JSON (both on
+ * GitHub), LeekDuck's HTML page, then the on-disk cache. The cache is
+ * served no matter how old it is: boss rotations change roughly weekly,
+ * so a stale list beats dropping raid notifications during an outage.
+ */
 export async function fetchRaidBosses(): Promise<RaidBossCache[] | null> {
-  const urls: string[] = [URLS.RAID_BOSSES_JSON, BACKUP_URLS.RAID_BOSSES_JSON];
+  const sources: [string, () => Promise<RaidBossCache[]>][] = [
+    [URLS.RAID_BOSSES_JSON, () => fetchRaidBossesJson(URLS.RAID_BOSSES_JSON)],
+    [BACKUP_URLS.RAID_BOSSES_JSON, () => fetchRaidBossesJson(BACKUP_URLS.RAID_BOSSES_JSON)],
+    [URLS.LEEKDUCK_BOSS, scrapeLeekDuckRaidBosses],
+  ];
 
-  for (const url of urls) {
+  for (const [url, load] of sources) {
     try {
-      const data = await fetchJson<RaidBossBackup[] | raidBosses>(url);
-      const isBackupFormat = Array.isArray(data) && data.length > 0 && "no" in data[0];
-      let bosses: RaidBossCache[];
-      if (isBackupFormat) {
-        console.log(`[cache] Detected backup source format, adapting to current shape`);
-        bosses = (data as RaidBossBackup[]).map(adaptBackupRaidBoss);
-      } else {
-        bosses = data as RaidBossCache[];
-      }
+      const bosses = await load();
       await writeCacheFile("raid-bosses.json", { url, fetchedAt: Date.now(), data: bosses });
       console.log(`[cache] Fetched raid bosses from ${url}`);
       return bosses;
@@ -102,11 +105,22 @@ export async function fetchRaidBosses(): Promise<RaidBossCache[] | null> {
     const ageMinutes = (Date.now() - cached.fetchedAt) / 60_000;
     if (ageMinutes <= 120) {
       console.log(`[cache] Using cached raid bosses (${ageMinutes.toFixed(1)} min old)`);
-      return cached.data;
+    } else {
+      console.warn(`[cache] Every raid boss source failed; using stale cache from ${cached.url} (${(ageMinutes / 60).toFixed(1)} h old)`);
     }
-    console.warn(`[cache] Cached raid bosses too stale (${ageMinutes.toFixed(1)} min old)`);
+    return cached.data;
   }
   return null;
+}
+
+async function fetchRaidBossesJson(url: string): Promise<RaidBossCache[]> {
+  const data = await fetchJson<RaidBossBackup[] | raidBosses>(url);
+  const isBackupFormat = Array.isArray(data) && data.length > 0 && "no" in data[0];
+  if (isBackupFormat) {
+    console.log(`[cache] Detected backup source format, adapting to current shape`);
+    return (data as RaidBossBackup[]).map(adaptBackupRaidBoss);
+  }
+  return data as RaidBossCache[];
 }
 
 export async function fetchEvents(): Promise<import("../types").rawEvents | null> {

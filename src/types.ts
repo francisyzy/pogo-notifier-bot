@@ -162,6 +162,7 @@ export {
   TypeInfo,
   WeatherInfo,
   CombatPower,
+  CpRange,
   rawEvent,
   rawEvents,
 };

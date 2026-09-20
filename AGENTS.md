@@ -159,7 +159,14 @@ private chats (`ctx.chat?.type !== "private"`) at the start of any wizard.
 - `legacy_converter.ts`: `convertBackToArray` for the comma-separated
   `User.raidLevelNotify` string.
 - `raidBossScraper.ts`, `cache.ts`: Wednesday raid-boss scrape and the
-  on-disk cache under `.cache/`.
+  on-disk cache under `.cache/`. `fetchRaidBosses` tries ScrapedDuck
+  JSON → backup JSON (both on GitHub) → LeekDuck's HTML page
+  (`leekduckScraper.ts`, `node-html-parser`) → the `.cache/` copy at any
+  age (a warning is logged when it is older than 2 h). Boss rotations
+  change weekly, so a stale list beats dropping raid notifications.
+- `leekduckScraper.ts`: `parseLeekDuckRaidBosses(html)` for the
+  `.raid-bosses` / `.shadow-raid-bosses` cards; the only HTML parsing in
+  the bot, so if LeekDuck changes markup this is the file to fix.
 
 ## Data model (`prisma/schema.prisma`)
 
