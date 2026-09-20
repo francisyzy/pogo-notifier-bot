@@ -64,7 +64,7 @@ const sentTo = (chatId: number) =>
 const fetched: string[] = [];
 let syntheticRaid: raid | null = null;
 const realFetch = globalThis.fetch;
-globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+globalThis.fetch = (async (input: Parameters<typeof fetch>[0], init?: RequestInit) => {
   const url = typeof input === "string" ? input : input.toString();
   fetched.push(url.split("?")[0]);
   const res = await realFetch(input, init);

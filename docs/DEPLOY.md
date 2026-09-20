@@ -42,8 +42,7 @@ git checkout new-features
 npm install
 ```
 
-This installs all packages. (`jsdom` is still listed in `package.json` but nothing
-imports it; the Wednesday scraper reads JSON. It can be dropped in a later cleanup.)
+This installs all packages.
 
 ---
 
