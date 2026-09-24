@@ -1,69 +1,54 @@
 import cron, { ScheduledTask } from "node-cron";
-import { readCacheFile, writeCacheFile } from "./cache";
-import { CACHE_DIR, WEDNESDAY_SCRAPE_CRON } from "../constants";
-import * as fs from "fs";
-import * as path from "path";
-
-// Minimum interval between scrapes in ms (don't re-scrape if cache is fresh)
-const MIN_SCRAPE_INTERVAL_MS = 60 * 60 * 1000; // 1 hour
-
-/**
- * Fetches and parses raid bosses from ScrapedDuck GitHub data page.
- * Returns the raw boss data array, or null if scraping fails.
- */
-async function scrapeRaidBossesFromScrapedDuck(): Promise<unknown[] | null> {
-  try {
-    // We fetch the raw JSON data URL directly (not the HTML page)
-    const dataUrl = "https://raw.githubusercontent.com/bigfoott/ScrapedDuck/data/raids.min.json";
-    const dataResponse = await fetch(dataUrl);
-    if (!dataResponse.ok) {
-      console.warn(`ScrapedDuck data fetch failed: ${dataResponse.status}`);
-      return null;
-    }
-    const data = await dataResponse.json() as unknown[];
-    return Array.isArray(data) ? data : null;
-  } catch (error) {
-    console.warn("Failed to scrape raid bosses from ScrapedDuck:", error);
-    return null;
-  }
-}
+import { rm } from "fs/promises";
+import {
+  fetchEvents,
+  writeCacheFile,
+  RaidBossCache,
+  ROTATION_CACHE_FILE,
+} from "./cache";
+import { CACHE_DIR, URLS, WEDNESDAY_SCRAPE_CRON } from "../constants";
+import { scrapeLeekDuckRaidBosses } from "./leekduckScraper";
+import { buildRotation } from "./raidRotation";
 
 /**
- * Writes raid boss data to cache if it differs from current cache.
- * Returns true if cache was updated.
- */
-async function updateCacheIfChanged(bosses: unknown[]): Promise<boolean> {
-  const existing = await readCacheFile<unknown[]>("raid-bosses.json");
-
-  if (existing && JSON.stringify(existing) === JSON.stringify(bosses)) {
-    console.log("Raid boss cache unchanged, skipping write");
-    return false;
-  }
-
-  await writeCacheFile("raid-bosses.json", bosses);
-  console.log(`Raid boss cache updated with ${bosses.length} bosses`);
-  return true;
-}
-
-/**
- * Run the Wednesday scrape: fetch from ScrapedDuck and update cache.
+ * The Wednesday run: builds this week's 5★/Mega/shadow 5★ rotation from
+ * ScrapedDuck's events feed and writes `.cache/raid-rotation.json`,
+ * which fetchRaidBosses overlays on the (often hours-late) boss list.
+ * LeekDuck's page is scraped too, as a CP/types/shiny source for
+ * bosses the list doesn't have yet. Removes the file when no raid
+ * event is active; leaves it alone if the events feed is unavailable.
  */
 export async function runWednesdayScrape(): Promise<void> {
-  // Check minimum interval
-  const cachePath = path.join(CACHE_DIR, "raid-bosses.json");
-  if (fs.existsSync(cachePath)) {
-    const stat = fs.statSync(cachePath);
-    const age = Date.now() - stat.mtime.getTime();
-    if (age < MIN_SCRAPE_INTERVAL_MS) {
-      console.log(`Cache still fresh (${Math.round(age / 60000)}min old), skipping scrape`);
-      return;
-    }
+  const events = await fetchEvents();
+  if (!events) {
+    console.warn("[rotation] No events feed; keeping existing rotation");
+    return;
   }
 
-  const bosses = await scrapeRaidBossesFromScrapedDuck();
-  if (bosses && bosses.length > 0) {
-    await updateCacheIfChanged(bosses);
+  let known: RaidBossCache[] = [];
+  try {
+    known = await scrapeLeekDuckRaidBosses();
+  } catch (error) {
+    console.warn(
+      "[rotation] LeekDuck scrape failed; override bosses may lack CP:",
+      error instanceof Error ? error.message : error,
+    );
   }
+
+  const rotation = buildRotation(events, known, Date.now());
+  if (!rotation) {
+    await rm(`${CACHE_DIR}/${ROTATION_CACHE_FILE}`, { force: true });
+    console.log("[rotation] No active raid-battles events; override cleared");
+    return;
+  }
+  await writeCacheFile(ROTATION_CACHE_FILE, {
+    url: URLS.EVENTS_JSON,
+    fetchedAt: Date.now(),
+    data: rotation,
+  });
+  console.log(
+    `[rotation] ${rotation.bosses.map((b) => b.name).join(", ")} until ${new Date(rotation.validUntil).toISOString()}`,
+  );
 }
 
 // Track scheduled tasks for cleanup
@@ -71,6 +56,7 @@ let scheduledTasks: ScheduledTask[] = [];
 
 /**
  * Registers the Wednesday cron jobs (6:13am and 7:14am SGT, shortly after the 6:00am rotation).
+ * index.ts also runs runWednesdayScrape once at startup, on any weekday.
  * Idempotent — safe to call multiple times.
  */
 export function registerWednesdayScraper(): void {

@@ -9,6 +9,10 @@ import type {
   CombatPower,
 } from "../types";
 import { scrapeLeekDuckRaidBosses } from "./leekduckScraper";
+import { applyRotationOverride, RaidRotation } from "./raidRotation";
+
+/** Written by the Wednesday run (raidBossScraper.ts) */
+export const ROTATION_CACHE_FILE = "raid-rotation.json";
 
 export async function ensureCacheDir(): Promise<void> {
   if (!existsSync(CACHE_DIR)) {
@@ -77,12 +81,34 @@ function adaptBackupRaidBoss(boss: RaidBossBackup): RaidBossCache {
 }
 
 /**
+ * Raid bosses: the source list (see fetchRaidBossList) with this week's
+ * rotation from `.cache/raid-rotation.json` overlaid, so a list that
+ * still shows last week's 5★/Mega/shadow 5★ bosses is corrected as soon
+ * as the rotation starts. The merged result is never cached;
+ * raid-bosses.json stays a plain copy of the source.
+ */
+export async function fetchRaidBosses(): Promise<RaidBossCache[] | null> {
+  const list = await fetchRaidBossList();
+  const rotation = await readCacheFile<{
+    url: string;
+    fetchedAt: number;
+    data: RaidRotation;
+  }>(ROTATION_CACHE_FILE);
+  const merged = applyRotationOverride(
+    list ?? [],
+    rotation?.data,
+    Date.now(),
+  );
+  return list === null && merged.length === 0 ? null : merged;
+}
+
+/**
  * Raid bosses, trying in order: ScrapedDuck JSON, the backup JSON (both on
  * GitHub), LeekDuck's HTML page, then the on-disk cache. The cache is
  * served no matter how old it is: boss rotations change roughly weekly,
  * so a stale list beats dropping raid notifications during an outage.
  */
-export async function fetchRaidBosses(): Promise<RaidBossCache[] | null> {
+async function fetchRaidBossList(): Promise<RaidBossCache[] | null> {
   const sources: [string, () => Promise<RaidBossCache[]>][] = [
     [URLS.RAID_BOSSES_JSON, () => fetchRaidBossesJson(URLS.RAID_BOSSES_JSON)],
     [BACKUP_URLS.RAID_BOSSES_JSON, () => fetchRaidBossesJson(BACKUP_URLS.RAID_BOSSES_JSON)],

@@ -37,7 +37,11 @@ import location from "./commands/location";
 import { printBotInfo } from "./utils/consolePrintUsername";
 import checkBoss from "./commands/checkBoss";
 import { ensureCacheDir } from "./utils/cache";
-import { registerWednesdayScraper, stopWednesdayScraper } from "./utils/raidBossScraper";
+import {
+  registerWednesdayScraper,
+  runWednesdayScrape,
+  stopWednesdayScraper,
+} from "./utils/raidBossScraper";
 
 //Production Settings
 if (process.env.NODE_ENV === "production") {
@@ -91,8 +95,12 @@ helper();
 // Ensure cache directory exists
 ensureCacheDir();
 
-// Register Wednesday raid boss scraper
+// Register Wednesday raid boss scraper; also run it now, whatever the
+// weekday, so a restart mid-week still has this week's rotation
 registerWednesdayScraper();
+runWednesdayScrape().catch((error) =>
+  console.error("Startup raid rotation run failed:", error),
+);
 checkRaid();
 subscribe();
 manageGyms();

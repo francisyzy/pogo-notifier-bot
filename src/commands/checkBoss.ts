@@ -1,7 +1,6 @@
 import bot from "../lib/bot";
 import { Scenes } from "telegraf";
 import { PrismaClient } from "@prisma/client";
-import { raidBosses } from "../types";
 import {
   isShadowBoss,
   raidBossTier,
@@ -15,6 +14,7 @@ import {
   weatherAt,
 } from "../utils/weather";
 import { hasLastLocation } from "../utils/lastLocation";
+import { fetchRaidBosses, RaidBossCache } from "../utils/cache";
 
 const prisma = new PrismaClient();
 
@@ -56,15 +56,14 @@ const checkBoss = () => {
         "Retrieving latest boss information…",
       );
       
-      let raidBossesData: raidBosses;
+      // Same source as raid notifications, rotation override included
+      let raidBossesData: RaidBossCache[];
       try {
-        const response = await fetch(URLS.RAID_BOSSES_JSON);
-        if (!response.ok) {
-          throw new Error(
-            `Failed to fetch raid bosses: ${response.status} ${response.statusText}`,
-          );
+        const bosses = await fetchRaidBosses();
+        if (bosses === null) {
+          throw new Error("No raid boss source available");
         }
-        raidBossesData = (await response.json()) as raidBosses;
+        raidBossesData = bosses;
       } catch (error) {
         console.error("Error fetching raid bosses:", error);
         if (!ctx.chat) {

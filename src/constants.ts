@@ -60,9 +60,12 @@ export const BACKUP_URLS = {
 } as const;
 
 /**
- * Wednesday raid boss scrape cron schedule (UTC+8 local).
- * The raid boss rotation changes at 06:00 SGT on Wednesdays, so we scrape
- * shortly after, with a secondary retry roughly an hour later.
+ * Wednesday raid rotation run (UTC+8 local). The 5★/Mega/shadow 5★
+ * rotation changes at 06:00 SGT on Wednesdays, but ScrapedDuck's
+ * raids.min.json can lag it by hours. These runs (and one at startup)
+ * build the new rotation from ScrapedDuck's dated raid-battles events
+ * into .cache/raid-rotation.json, which fetchRaidBosses overlays until
+ * the boss list catches up. Retry roughly an hour after the first.
  * Primary:   06:13 AM UTC+8 = "13 6 * * 3"
  * Secondary: 07:14 AM UTC+8 = "14 7 * * 3"
  */

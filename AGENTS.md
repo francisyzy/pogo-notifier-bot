@@ -158,12 +158,25 @@ private chats (`ctx.chat?.type !== "private"`) at the start of any wizard.
 - `botCommands.ts`: source of truth for the Telegram command menu.
 - `legacy_converter.ts`: `convertBackToArray` for the comma-separated
   `User.raidLevelNotify` string.
-- `raidBossScraper.ts`, `cache.ts`: Wednesday raid-boss scrape and the
-  on-disk cache under `.cache/`. `fetchRaidBosses` tries ScrapedDuck
-  JSON → backup JSON (both on GitHub) → LeekDuck's HTML page
-  (`leekduckScraper.ts`, `node-html-parser`) → the `.cache/` copy at any
-  age (a warning is logged when it is older than 2 h). Boss rotations
-  change weekly, so a stale list beats dropping raid notifications.
+- `cache.ts`: on-disk cache under `.cache/`. `fetchRaidBosses` gets
+  the list from ScrapedDuck JSON → backup JSON (both on GitHub) →
+  LeekDuck's HTML page (`leekduckScraper.ts`, `node-html-parser`) → the
+  `.cache/raid-bosses.json` copy at any age (warning when older than
+  2 h), then overlays `.cache/raid-rotation.json`. Boss rotations change
+  weekly, so a stale list beats dropping raid notifications. Use it for
+  anything that shows bosses (`/currentBoss` does).
+- `raidBossScraper.ts`, `raidRotation.ts`: `raids.min.json` lags the
+  Wednesday 06:00 rotation by hours, but ScrapedDuck's events feed has
+  dated `raid-battles` events weeks ahead (5★/Mega/shadow 5★ only;
+  times are SGT without a zone). `runWednesdayScrape` builds the active
+  rotation (`buildRotation`, enriched from a LeekDuck scrape, else
+  pokedex types + type→weather table and no CP) into
+  `raid-rotation.json` (`validUntil` = earliest event end).
+  `applyRotationOverride` (pure) replaces a tier group only when the list
+  lacks an override boss, matching by pokedex no + form + shadow
+  (`raidBossKey`), so it is a no-op once ScrapedDuck catches up.
+  `raidTier.ts` holds `raidBossTier`/`isShadowBoss` (re-exported by
+  `messageFormatter.ts`) to avoid a require cycle.
 - `leekduckScraper.ts`: `parseLeekDuckRaidBosses(html)` for the
   `.raid-bosses` / `.shadow-raid-bosses` cards; the only HTML parsing in
   the bot, so if LeekDuck changes markup this is the file to fix.
@@ -259,7 +272,7 @@ explicitly. Do the same for any new job whose timing matters.
 | `notifyLegendary` | `setInterval` 5.5 min | |
 | `notifyEvent` | `45 0-23 * * *` | hourly at :45 |
 | `removeStaleGyms` | `0 4 * * *` | daily 04:00 |
-| Wednesday boss scrape | `13 6 * * 3`, `14 7 * * 3` SGT | `WEDNESDAY_SCRAPE_CRON` in `constants.ts`; rotation is 06:00 |
+| Wednesday rotation run | `13 6 * * 3`, `14 7 * * 3` SGT | `WEDNESDAY_SCRAPE_CRON`; rotation is 06:00; startup run on any weekday |
 
 All of these also run once at startup. Wrap every cron/interval body in
 try/catch (or `.catch`) and log; an unhandled rejection takes the process
