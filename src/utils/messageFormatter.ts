@@ -197,10 +197,13 @@ export async function raidMessageFormatter(
   let bossName = "";
   let bossDetail = "";
 
+  const pokedex = new Pokedex('en-US');
   bosses.forEach((raidBoss) => {
     const url = urlFormatter(raidBoss.name, raidBoss.tier);
-    const pokedex = new Pokedex('en-US');
-    const raidBossDetail = pokedex.getPokemonByFuzzyName(raidBoss.name)
+    // Typed as always returning, but yields undefined for odd names
+    const raidBossDetail = pokedex.getPokemonByFuzzyName(raidBoss.name) as
+      | ReturnType<Pokedex["getPokemonByFuzzyName"]>
+      | undefined;
     
     // A shadow raid only hatches shadow bosses, and vice versa
     if (isShadow !== isShadowBoss(raidBoss)) {
@@ -208,7 +211,7 @@ export async function raidMessageFormatter(
     }
     
     //If the egg has popped, use leek duck info at the start
-    if (raidMessage.pokemonId === raidBossDetail.no) {
+    if (raidMessage.pokemonId === raidBossDetail?.no) {
       bossName = `<a href="${url}">${raidBoss.name}</a>`;
       bossName += raidBoss.canBeShiny ? "✨" : "";
       bossDetail = bossCpLine(raidBoss, raidMessage.weatherId);
@@ -240,7 +243,7 @@ export async function raidMessageFormatter(
 
   //If leek duck has no info and raid has popped
   if (bossName === "" && raidMessage.pokemonId !== 0) {
-    let name: string;
+    let name: string | undefined;
     try {
       const pokemonData = await fetchJson<{ name: string }>(
         `${URLS.POKEAPI_POKEMON}/${raidMessage.pokemonId}`,
@@ -251,25 +254,35 @@ export async function raidMessageFormatter(
         `Failed to fetch Pokemon data for ID ${raidMessage.pokemonId}:`,
         error,
       );
-      // Fallback: use Pokemon ID if name fetch fails
-      name = `Pokemon #${raidMessage.pokemonId}`;
     }
 
-    let pokebattlerName: string;
-    if (isShadow) {
-      // Format shadow Pokemon as POKEMON_NAME_SHADOW_FORM
-      // Normalize Alolan names using the helper function
-      let pokemonName = normalizeAlolanNameForShadow(name);
-      pokebattlerName =
-        pokemonName.toUpperCase().replace(/[-\s]/g, "_") + "_SHADOW_FORM";
-    } else if (actualTier === RAID_CONFIG.MEGA_RAID_TIER) {
-      pokebattlerName = name + "_MEGA";
+    if (name === undefined) {
+      // No name, so no Pokebattler page to link to
+      bossName = `Pokemon #${raidMessage.pokemonId}`;
     } else {
-      pokebattlerName = name.replace(/\s/g, "_");
+      // PokeAPI names are lowercase and hyphenated ("zamazenta-hero").
+      // Title-case only the display text: running the whole anchor
+      // through toTitleCase turned it into `<a Href=...>`, which
+      // Telegram rejects, dropping the link.
+      const displayName = toTitleCase(name.replace(/-/g, " "));
+      let pokebattlerName: string;
+      if (isShadow) {
+        // Format shadow Pokemon as POKEMON_NAME_SHADOW_FORM
+        // Normalize Alolan names using the helper function
+        pokebattlerName =
+          normalizeAlolanNameForShadow(name)
+            .toUpperCase()
+            .replace(/[-\s]/g, "_") + "_SHADOW_FORM";
+      } else if (actualTier === RAID_CONFIG.MEGA_RAID_TIER) {
+        pokebattlerName =
+          name.toUpperCase().replace(/[-\s]/g, "_") + "_MEGA";
+      } else {
+        pokebattlerName = name.toUpperCase().replace(/[-\s]/g, "_");
+      }
+      bossName = `<a href="${URLS.POKEBATTLER_RAIDS}/${pokebattlerName}">${toEscapeHTMLMsg(
+        displayName,
+      )}</a>`;
     }
-    bossName = toTitleCase(
-      `<a href="${URLS.POKEBATTLER_RAIDS}/${pokebattlerName}">${name}</a>`,
-    );
   }
 
   const message = `${actualTier}★ Raid at <u>${
