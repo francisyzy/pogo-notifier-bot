@@ -3,11 +3,9 @@ import { Scenes } from "telegraf";
 import { PrismaClient } from "@prisma/client";
 import { raidBosses } from "../types";
 import {
-  urlFormatter,
   isShadowBoss,
   raidBossTier,
-  bossCpRange,
-  isBossBoosted,
+  bossInlineLabel,
 } from "../utils/messageFormatter";
 import { URLS, RAID_CONFIG } from "../constants";
 import { getRaidFeed } from "../utils/getMaper";
@@ -101,17 +99,9 @@ const checkBoss = () => {
       const results: Record<number, { regular: string[]; shadow: string[] }> = {};
 
       raidBossesData.forEach((raidBoss) => {
-        let url = urlFormatter(raidBoss.name, raidBoss.tier);
         const tier = raidBossTier(raidBoss);
-        let bossName = `<a href="${url}">${raidBoss.name}</a>`;
-        bossName += raidBoss.canBeShiny ? "✨" : "";
         // One range only: the one that applies in the weather at the pin
-        const range = bossCpRange(raidBoss, weatherId);
-        if (range) {
-          bossName += ` <i>${range}${
-            isBossBoosted(raidBoss, weatherId) ? " ⚡" : ""
-          }</i>`;
-        }
+        const bossName = bossInlineLabel(raidBoss, weatherId);
         
         const isShadow = isShadowBoss(raidBoss);
         

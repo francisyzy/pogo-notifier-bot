@@ -92,6 +92,35 @@ export function bossCpRange(
 }
 
 /**
+ * Inline boss label for HTML lists, e.g.
+ * `<a href="…">Xurkitree</a>✨ <i>2171–2261 ⚡</i>`: the one 100% IV
+ * CP range for the weather (never both), ⚡ when boosted. Without CP
+ * data it is just the name, plus " ⚡" when boosted.
+ * @param boss Cached raid boss
+ * @param weatherId GAME_WEATHER id at the gym/pin; undefined when unknown
+ */
+export function bossInlineLabel(
+  boss: Pick<
+    RaidBossCache,
+    "name" | "tier" | "canBeShiny" | "combatPower" | "boostedWeather"
+  >,
+  weatherId?: number,
+): string {
+  const url = urlFormatter(boss.name, boss.tier);
+  // Boss names come from the provider
+  let label = `<a href="${url}">${toEscapeHTMLMsg(boss.name)}</a>`;
+  label += boss.canBeShiny ? "✨" : "";
+  const boosted = isBossBoosted(boss, weatherId);
+  const range = bossCpRange(boss, weatherId);
+  if (range) {
+    label += ` <i>${range}${boosted ? " ⚡" : ""}</i>`;
+  } else if (boosted) {
+    label += " ⚡";
+  }
+  return label;
+}
+
+/**
  * One-line boss detail for HTML messages, e.g.
  * "CP 2735–2848 ⚡ boosted (🌧 rainy) · fighting/steel" or
  * "CP 2188–2278 · fighting/steel". Parts the entry lacks are omitted.
@@ -212,17 +241,16 @@ export async function raidMessageFormatter(
     
     //If the egg has popped, use leek duck info at the start
     if (raidMessage.pokemonId === raidBossDetail?.no) {
-      bossName = `<a href="${url}">${raidBoss.name}</a>`;
+      bossName = `<a href="${url}">${toEscapeHTMLMsg(
+        raidBoss.name,
+      )}</a>`;
       bossName += raidBoss.canBeShiny ? "✨" : "";
       bossDetail = bossCpLine(raidBoss, raidMessage.weatherId);
     } else if (raidBossTier(raidBoss) === actualTier) {
-      let candidate = `<a href="${url}">${raidBoss.name}</a>`;
-      candidate += raidBoss.canBeShiny ? "✨" : "";
       if (isBossBoosted(raidBoss, raidMessage.weatherId)) {
-        candidate += " ⚡";
         anyBoosted = true;
       }
-      candidates.push(candidate);
+      candidates.push(bossInlineLabel(raidBoss, raidMessage.weatherId));
     }
   });
 
