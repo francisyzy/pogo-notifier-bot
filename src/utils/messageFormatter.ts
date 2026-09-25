@@ -85,7 +85,7 @@ export function bossInlineLabel(
   >,
   weatherId?: number,
 ): string {
-  const url = urlFormatter(boss.name, boss.tier);
+  const url = urlFormatter(boss.name);
   // Boss names come from the provider
   let label = `<a href="${url}">${toEscapeHTMLMsg(boss.name)}</a>`;
   label += boss.canBeShiny ? "✨" : "";
@@ -207,7 +207,7 @@ export async function raidMessageFormatter(
 
   const pokedex = new Pokedex('en-US');
   bosses.forEach((raidBoss) => {
-    const url = urlFormatter(raidBoss.name, raidBoss.tier);
+    const url = urlFormatter(raidBoss.name);
     // Typed as always returning, but yields undefined for odd names
     const raidBossDetail = pokedex.getPokemonByFuzzyName(raidBoss.name) as
       | ReturnType<Pokedex["getPokemonByFuzzyName"]>
@@ -272,21 +272,12 @@ export async function raidMessageFormatter(
       // through toTitleCase turned it into `<a Href=...>`, which
       // Telegram rejects, dropping the link.
       const displayName = toTitleCase(name.replace(/-/g, " "));
-      let pokebattlerName: string;
-      if (isShadow) {
-        // Format shadow Pokemon as POKEMON_NAME_SHADOW_FORM
-        // Normalize Alolan names using the helper function
-        pokebattlerName =
-          normalizeAlolanNameForShadow(name)
-            .toUpperCase()
-            .replace(/[-\s]/g, "_") + "_SHADOW_FORM";
-      } else if (actualTier === RAID_CONFIG.MEGA_RAID_TIER) {
-        pokebattlerName =
-          name.toUpperCase().replace(/[-\s]/g, "_") + "_MEGA";
-      } else {
-        pokebattlerName = name.toUpperCase().replace(/[-\s]/g, "_");
-      }
-      bossName = `<a href="${URLS.POKEBATTLER_RAIDS}/${pokebattlerName}">${toEscapeHTMLMsg(
+      const prefix = isShadow
+        ? "Shadow "
+        : actualTier === RAID_CONFIG.MEGA_RAID_TIER
+        ? "Mega "
+        : "";
+      bossName = `<a href="${urlFormatter(prefix + displayName)}">${toEscapeHTMLMsg(
         displayName,
       )}</a>`;
     }
@@ -410,127 +401,91 @@ function toTitleCase(str: string): string {
     .join(" ");
 }
 
-/**
- * Normalizes Alolan Pokemon names to Pokebattler format
- * Converts "Alolan X" or "Alola X" to "X Alola"
- * Handles various formats: "Alolan Marowak", "Alola Marowak", "marowak-alola", "alola-marowak"
- * @param pokemonName The Pokemon name (may contain "Alolan" or "Alola")
- * @returns Normalized name in "Pokemon Alola" format, or original name if not Alolan
- */
-function normalizeAlolanName(pokemonName: string): string {
-  const lowerName = pokemonName.toLowerCase();
-  if (lowerName.includes("alolan") || lowerName.includes("alola")) {
-    // Handle "alola-marowak" format: reorder to "marowak-alola"
-    if (lowerName.includes("-")) {
-      const parts = pokemonName.split("-");
-      if (parts.length === 2 && parts[0].toLowerCase() === "alola") {
-        return parts[1] + "-alola";
-      }
-    }
-    // Handle "Alolan X" or "Alola X" prefix: remove and add " Alola" suffix
-    // Remove "Alolan " or "Alola " prefix and reorder: "Alolan Marowak" -> "Marowak Alola"
-    return pokemonName.replace(/(Alolan|Alola)\s+/i, "").trim() + " Alola";
-  }
-  return pokemonName;
+// Regional prefixes as Pokebattler spells them in ids ("Alolan
+// Sandslash" -> SANDSLASH_ALOLA_FORM, "Hisuian Typhlosion" ->
+// TYPHLOSION_HISUIAN_FORM)
+const POKEBATTLER_REGIONS: Record<string, string> = {
+  alolan: "ALOLA",
+  galarian: "GALARIAN",
+  hisuian: "HISUIAN",
+  paldean: "PALDEA",
+};
+
+// Parenthesised form names that differ from Pokebattler's id, keyed
+// by the upper-cased species id
+const POKEBATTLER_FORMS: Record<string, Record<string, string>> = {
+  ZACIAN: { CROWNED: "CROWNED_SWORD" },
+  ZAMAZENTA: { CROWNED: "CROWNED_SHIELD" },
+};
+
+function pokebattlerToken(text: string): string {
+  return text
+    .replace(/♀/g, " female")
+    .replace(/♂/g, " male")
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "") // Flabébé -> Flabebe
+    .replace(/['’.:]/g, "")
+    .trim()
+    .toUpperCase()
+    .replace(/[\s-]+/g, "_");
 }
 
 /**
- * Normalizes Alolan Pokemon names specifically for shadow Pokemon URLs
- * Handles PokeAPI formats like "marowak-alola" or "alola-marowak"
- * @param pokemonName The Pokemon name from PokeAPI
- * @returns Normalized name ready for shadow form URL formatting
+ * Pokebattler raid page id for a boss name as ScrapedDuck/LeekDuck
+ * write it: "Xurkitree" -> XURKITREE, "Mega Charizard X" ->
+ * CHARIZARD_MEGA_X, "Primal Kyogre" -> KYOGRE_PRIMAL, "Thundurus
+ * (Incarnate)" -> THUNDURUS_INCARNATE_FORM, "Shadow Alolan Sandslash"
+ * -> SANDSLASH_ALOLA_SHADOW_FORM. Pokebattler ids are upper case;
+ * shadow ids drop the form ("Shadow Thundurus (Incarnate)" ->
+ * THUNDURUS_SHADOW_FORM).
  */
-function normalizeAlolanNameForShadow(pokemonName: string): string {
-  const lowerName = pokemonName.toLowerCase();
-  // Handle PokeAPI format: "marowak-alola" or "alola-marowak"
-  if (lowerName.includes("alolan")) {
-    return pokemonName.replace(/-?alolan/i, "").trim() + "-alola";
-  } else if (lowerName.includes("alola")) {
-    // Check if format is "alola-marowak" and needs reordering
-    const parts = pokemonName.split("-");
-    if (parts.length === 2 && parts[0].toLowerCase() === "alola") {
-      return parts[1] + "-alola";
-    }
-    // Already in correct format "marowak-alola"
-    return pokemonName;
-  }
-  return pokemonName;
-}
+export function pokebattlerId(name: string): string {
+  let rest = name.trim();
+  const isShadow = /^shadow\s+/i.test(rest);
+  rest = rest.replace(/^shadow\s+/i, "");
 
-export function urlFormatter(
-  name: string,
-  raidTier: string,
-): string {
-  const base = URLS.POKEBATTLER_RAIDS;
-  let url = `${base}/${name.replace(/\s/g, "_")}`;
-  
-  // Check if it's a shadow Pokemon (case-insensitive)
-  const isShadow = name.toLowerCase().includes("shadow");
+  const mega = rest.match(/^mega\s+(.+?)(?:\s+([XYZ]))?$/i);
+  if (mega) {
+    const suffix = mega[2] ? `_${mega[2].toUpperCase()}` : "";
+    return `${pokebattlerToken(mega[1])}_MEGA${suffix}`;
+  }
+  const primal = rest.match(/^primal\s+(.+)$/i);
+  if (primal) return `${pokebattlerToken(primal[1])}_PRIMAL`;
+
+  let region: string | undefined;
+  const regional = rest.match(/^(\w+)\s+(.+)$/);
+  if (regional && POKEBATTLER_REGIONS[regional[1].toLowerCase()]) {
+    region = POKEBATTLER_REGIONS[regional[1].toLowerCase()];
+    rest = regional[2];
+  }
+
+  let form: string | undefined;
+  const withForm = rest.match(/^(.+?)\s*\((.+)\)$/);
+  if (withForm) {
+    rest = withForm[1];
+    // "Hero of Many Battles" -> HERO, "Origin Forme" -> ORIGIN
+    const formName = withForm[2]
+      .replace(/\s+of\s+many\s+battles$/i, "")
+      .replace(/\s+forme?$/i, "");
+    form = pokebattlerToken(formName);
+  }
+
+  const species = pokebattlerToken(rest);
+  if (form === "NORMAL") form = undefined; // Deoxys (Normal) -> DEOXYS
+  if (form) form = POKEBATTLER_FORMS[species]?.[form] ?? form;
+
   if (isShadow) {
-    // Extract Pokemon name (remove "Shadow " prefix)
-    let pokemonName = name.replace(/^Shadow\s+/i, "").trim();
-    
-    // Normalize Alolan names if present
-    pokemonName = normalizeAlolanName(pokemonName);
-    
-    // Format as POKEMON_NAME_SHADOW_FORM (uppercase, spaces to underscores)
-    // For forms like "Marowak Alola", it becomes "MAROWAK_ALOLA_SHADOW_FORM"
-    const formattedName = pokemonName.toUpperCase().replace(/\s/g, "_") + "_SHADOW_FORM";
-    url = `${base}/${formattedName}`;
-  } else if (
-    raidBossTier({ tier: raidTier }) === RAID_CONFIG.MEGA_RAID_TIER
-  ) {
-    // Pokebattler: "Mega Venusaur" -> VENUSAUR_MEGA, "Mega Charizard X" -> CHARIZARD_MEGA_X
-    const match = name.match(/^Mega\s+(.+?)(?:\s+([XY]))?$/i);
-    const pokemonName = (match ? match[1] : name)
-      .toUpperCase()
-      .replace(/\s/g, "_");
-    const suffix = match?.[2] ? `_${match[2].toUpperCase()}` : "";
-    url = `${base}/${pokemonName}_MEGA${suffix}`;
-  } else if (name.toLowerCase().startsWith("primal ")) {
-    // Primal Groudon -> GROUDON_PRIMAL, Primal Kyogre -> KYOGRE_PRIMAL
-    const pokemonName = name.slice(7).trim(); // Remove "Primal "
-    const formattedName = pokemonName.toUpperCase().replace(/\s/g, "_") + "_PRIMAL";
-    url = `${base}/${formattedName}`;
-  } else if (name.includes("Deoxys (Att")) {
-    url = `${base}/DEOXYS_ATTACK_FORM`;
-  } else if (name.includes("Deoxys (Def")) {
-    url = `${base}/DEOXYS_DEFENSE_FORM`;
-  } else if (name.includes("Deoxys (Speed")) {
-    url = `${base}/DEOXYS_SPEED_FORM`;
-  } else if (name.includes("Deoxys (Normal")) {
-    url = `${base}/DEOXYS`;
-  } else if (name.includes("Genesect (Shock)")) {
-    url = `${base}/GENESECT_SHOCK_FORM`;
-  } else if (name.includes("Genesect (Chill)")) {
-    url = `${base}/GENESECT_CHILL_FORM`;
-  } else if (name.includes("Genesect (Burn)")) {
-    url = `${base}/GENESECT_BURN_FORM`;
-  } else if (name.includes("Genesect (Douse)")) {
-    url = `${base}/GENESECT_DOUSE_FORM`;
-  } else if (name.includes("Thundurus (Therian)")) {
-    url = `${base}/THUNDURUS_THERIAN_FORM`;
-  } else if (name.includes("Tornadus (Therian)")) {
-    url = `${base}/TORNADUS_THERIAN_FORM`;
-  } else if (name.includes("Landorus (Therian)")) {
-    url = `${base}/LANDORUS_THERIAN_FORM`;
-  } else if (name.includes("Zacian (Hero)")) {
-    url = `${base}/ZACIAN_HERO_FORM`;
-  } else if (name.includes("Zacian (Crowned)")) {
-    url = `${base}/ZACIAN_CROWNED_SHIELD_FORM`;
-  } else if (name.includes("Zamazenta (Hero)")) {
-    url = `${base}/ZAMAZENTA_HERO_FORM`;
-  } else if (name.includes("Zamazenta (Crowned)")) {
-    url = `${base}/ZAMAZENTA_CROWNED_SHIELD_FORM`;
-  } else if (name.toLowerCase().includes("alolan")) {
-    // Handle Alolan Pokemon generically
-    // Example: "Alolan Raichu" -> "RAICHU_ALOLA_FORM"
-    const pokemonName = normalizeAlolanName(name);
-    
-    // Format as POKEMON_NAME_ALOLA_FORM (uppercase, spaces to underscores)
-    const formattedName = pokemonName.toUpperCase().replace(/\s/g, "_") + "_ALOLA_FORM";
-    url = `${base}/${formattedName}`;
+    return `${species}${region ? `_${region}` : ""}_SHADOW_FORM`;
   }
+  const qualifier = [region, form].filter(Boolean).join("_");
+  return qualifier ? `${species}_${qualifier}_FORM` : species;
+}
 
-  return url;
+/**
+ * Pokebattler raid page for a boss
+ * @param name Boss name as ScrapedDuck/LeekDuck write it
+ * @returns URL of the boss's Pokebattler raid page
+ */
+export function urlFormatter(name: string): string {
+  return `${URLS.POKEBATTLER_RAIDS}/${pokebattlerId(name)}`;
 }
