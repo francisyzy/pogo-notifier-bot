@@ -6,6 +6,9 @@ import { perfectChecker } from "./perfectChecker";
 import { sleep } from "./sleep";
 import { perfectMessageFormatter } from "./messageFormatter";
 import { isNotifyAllowed, loadNotifyWindows } from "./notifyWindows";
+import { createLogger } from "./logger";
+
+const log = createLogger("perfect");
 
 const prisma = new PrismaClient();
 
@@ -13,7 +16,7 @@ const prisma = new PrismaClient();
  * Check perfect pokemons and notifies the user if there are perfect pokemons within the area
  */
 export async function notifyPerfect(): Promise<void> {
-  console.log("Checking pokemons");
+  log.info("Checking pokemons");
   const pokemons = await getPerfect();
   const pokemonMessages = await perfectChecker(pokemons);
   const windowsByUser = await loadNotifyWindows([
@@ -68,7 +71,7 @@ export async function notifyPerfect(): Promise<void> {
           }
         });
     } catch (error) {
-      console.error(error);
+      log.error(error);
     }
   }
 }
@@ -78,7 +81,7 @@ export async function notifyPerfect(): Promise<void> {
  * Check for legendary trio pokemons and notifies the user if there are pokemons
  */
 export async function notifyLegendary(): Promise<void> {
-  console.log("Checking legendary pokemons");
+  log.info("Checking legendary pokemons");
   const pokemons = await getTrio();
   const pokemonMessages = await perfectChecker(pokemons);
   const windowsByUser = await loadNotifyWindows([
@@ -133,7 +136,7 @@ export async function notifyLegendary(): Promise<void> {
           }
         });
     } catch (error) {
-      console.error(error);
+      log.error(error);
     }
   }
 }

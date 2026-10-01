@@ -3,6 +3,9 @@ import { getPerfect } from "../utils/getMaper";
 import { perfectMessageFormatter } from "../utils/messageFormatter";
 import { perfectCheckerAdHoc } from "../utils/perfectChecker";
 import { sleep } from "../utils/sleep";
+import { createLogger } from "../utils/logger";
+
+const log = createLogger("checkPerfect");
 
 const checkPerfect = () => {
   try {
@@ -69,7 +72,7 @@ const checkPerfect = () => {
       return;
     });
   } catch (error) {
-    console.error("Error in checkPerfect:", error);
+    log.error("Error in checkPerfect:", error);
   }
 };
 

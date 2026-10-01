@@ -4,6 +4,9 @@ import { InlineKeyboardButton } from "typegram";
 import { PrismaClient } from "@prisma/client";
 import config from "../config";
 import { RAID_ALERT_MINUTE_OPTIONS } from "../constants";
+import { createLogger } from "../utils/logger";
+
+const log = createLogger("manageRaidAlertMinutes");
 
 const prisma = new PrismaClient();
 
@@ -41,7 +44,7 @@ const manageRaidAlertMinutes = () => {
         );
         return true;
       } catch (error) {
-        console.error("Error updating raidAlertMinutes:", error);
+        log.error("Error updating raidAlertMinutes:", error);
         await ctx.reply(
           `❌ Error updating settings. If this persists, please contact support. /cancel to exit.`,
         );
@@ -166,7 +169,7 @@ const manageRaidAlertMinutes = () => {
     bot.command("manageraidalertminutes", manageRaidAlertMinutesHandler);
     bot.command("manageRaidAlertMinutes", manageRaidAlertMinutesHandler);
   } catch (error) {
-    console.error("Error in manageRaidAlertMinutes:", error);
+    log.error("Error in manageRaidAlertMinutes:", error);
   }
 };
 

@@ -13,6 +13,9 @@ import { PrismaClient } from "@prisma/client";
 import { raidMessage } from "../types";
 import { formatDistance } from "../utils/geo";
 import { sortByDistance } from "../utils/lastLocation";
+import { createLogger } from "../utils/logger";
+
+const log = createLogger("checkRaid");
 
 const prisma = new PrismaClient();
 
@@ -262,7 +265,7 @@ const checkRaid = () => {
       }
     });
   } catch (error) {
-    console.error("Error in checkRaid:", error);
+    log.error("Error in checkRaid:", error);
   }
 };
 

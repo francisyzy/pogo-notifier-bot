@@ -7,6 +7,9 @@ import { toEscapeHTMLMsg } from "./messageHandler";
 import { formatDistance } from "./geo";
 import { GAME_WEATHER, weatherIdFromName } from "./weather";
 import { isShadowBoss, raidBossTier } from "./raidTier";
+import { createLogger } from "./logger";
+
+const log = createLogger("format");
 
 // Kept importable from here; they live in raidTier.ts so cache.ts can
 // use them without a require cycle
@@ -190,7 +193,7 @@ export async function raidMessageFormatter(
     if (result === null) throw new Error("cache miss");
     bosses = result;
   } catch (error) {
-    console.error("Failed to fetch raid bosses:", error);
+    log.error("Failed to fetch raid bosses:", error);
     throw new Error("Unable to fetch raid boss data. Please try again later.");
   }
 
@@ -257,7 +260,7 @@ export async function raidMessageFormatter(
       );
       name = pokemonData.name;
     } catch (error) {
-      console.error(
+      log.error(
         `Failed to fetch Pokemon data for ID ${raidMessage.pokemonId}:`,
         error,
       );
@@ -322,7 +325,7 @@ export async function bossCount(
     if (result === null) throw new Error("cache miss");
     bosses = result;
   } catch (error) {
-    console.error("Failed to fetch raid bosses:", error);
+    log.error("Failed to fetch raid bosses:", error);
     throw new Error("Unable to fetch raid boss data. Please try again later.");
   }
 
@@ -357,7 +360,7 @@ export async function perfectMessageFormatter(
     );
     name = pokemonData.name;
   } catch (error) {
-    console.error(
+    log.error(
       `Failed to fetch Pokemon data for ID ${pokemonMessage.pokemon_id}:`,
       error,
     );

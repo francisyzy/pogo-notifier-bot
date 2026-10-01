@@ -9,6 +9,9 @@ import {
 import { CACHE_DIR, URLS, WEDNESDAY_SCRAPE_CRON } from "../constants";
 import { scrapeLeekDuckRaidBosses } from "./leekduckScraper";
 import { buildRotation } from "./raidRotation";
+import { createLogger } from "./logger";
+
+const log = createLogger("rotation");
 
 /**
  * The Wednesday run: builds this week's 5★/Mega/shadow 5★ rotation from
@@ -21,7 +24,7 @@ import { buildRotation } from "./raidRotation";
 export async function runWednesdayScrape(): Promise<void> {
   const events = await fetchEvents();
   if (!events) {
-    console.warn("[rotation] No events feed; keeping existing rotation");
+    log.warn("No events feed; keeping existing rotation");
     return;
   }
 
@@ -29,8 +32,8 @@ export async function runWednesdayScrape(): Promise<void> {
   try {
     known = await scrapeLeekDuckRaidBosses();
   } catch (error) {
-    console.warn(
-      "[rotation] LeekDuck scrape failed; override bosses may lack CP:",
+    log.warn(
+      "LeekDuck scrape failed; override bosses may lack CP:",
       error instanceof Error ? error.message : error,
     );
   }
@@ -38,7 +41,7 @@ export async function runWednesdayScrape(): Promise<void> {
   const rotation = buildRotation(events, known, Date.now());
   if (!rotation) {
     await rm(`${CACHE_DIR}/${ROTATION_CACHE_FILE}`, { force: true });
-    console.log("[rotation] No active raid-battles events; override cleared");
+    log.info("No active raid-battles events; override cleared");
     return;
   }
   await writeCacheFile(ROTATION_CACHE_FILE, {
@@ -46,8 +49,8 @@ export async function runWednesdayScrape(): Promise<void> {
     fetchedAt: Date.now(),
     data: rotation,
   });
-  console.log(
-    `[rotation] ${rotation.bosses.map((b) => b.name).join(", ")} until ${new Date(rotation.validUntil).toISOString()}`,
+  log.info(
+    `${rotation.bosses.map((b) => b.name).join(", ")} until ${new Date(rotation.validUntil).toISOString()}`,
   );
 }
 
@@ -61,21 +64,21 @@ let scheduledTasks: ScheduledTask[] = [];
  */
 export function registerWednesdayScraper(): void {
   if (scheduledTasks.length > 0) {
-    console.log("Wednesday scraper already registered");
+    log.info("Wednesday scraper already registered");
     return;
   }
 
   for (const cronExpr of Object.values(WEDNESDAY_SCRAPE_CRON)) {
     const task = cron.schedule(cronExpr, () => {
-      console.log(`[Wednesday Scraper] Running scheduled scrape at ${new Date().toISOString()}`);
+      log.info(`Running scheduled scrape at ${new Date().toISOString()}`);
       runWednesdayScrape().catch((err) => {
-        console.error("Wednesday scrape error:", err);
+        log.error("Wednesday scrape error:", err);
       });
     }, {
       timezone: "Asia/Singapore"
     });
     scheduledTasks.push(task);
-    console.log(`Wednesday scraper registered: ${cronExpr} SGT`);
+    log.info(`Wednesday scraper registered: ${cronExpr} SGT`);
   }
 }
 
@@ -87,5 +90,5 @@ export function stopWednesdayScraper(): void {
     task.stop();
   }
   scheduledTasks = [];
-  console.log("Wednesday scraper stopped");
+  log.info("Wednesday scraper stopped");
 }

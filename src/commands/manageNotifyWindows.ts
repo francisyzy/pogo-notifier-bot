@@ -15,6 +15,9 @@ import {
   parseClockTime,
   parseWeekdays,
 } from "../utils/notifyWindows";
+import { createLogger } from "../utils/logger";
+
+const log = createLogger("manageNotifyWindows");
 
 const prisma = new PrismaClient();
 
@@ -522,7 +525,7 @@ const manageNotifyWindows = () => {
       ctx.scene.enter("notifyWindowsManage"),
     );
   } catch (error) {
-    console.error("Error in manageNotifyWindows:", error);
+    log.error("Error in manageNotifyWindows:", error);
   }
 };
 

@@ -153,6 +153,11 @@ private chats (`ctx.chat?.type !== "private"`) at the start of any wizard.
   weather at the gym, tagged `⚡ boosted (🌧 rainy)` when boosted; never
   both ranges). `perfectMessageFormatter` tags a spawn whose own
   `weather` (WeatherBoostedCondition, 0 = none) is a `GAME_WEATHER` id.
+- `logger.ts`: `createLogger(scope)` → `log.debug/info/warn/error`,
+  printing `2026-09-30 06:13:00.021 INFO  [scope] msg` (SGT wall
+  clock). warn/error go to stderr (pm2's error log). Use it instead of
+  `console.*` in bot code; `src/scripts/` and `prisma/seed.ts` are CLI
+  tools and keep `console`.
 - `messageHandler.ts`: `toEscapeHTMLMsg`, the only escaper (all messages
   use HTML parse mode; there is no MarkdownV2 path).
 - `botCommands.ts`: source of truth for the Telegram command menu.
@@ -287,6 +292,7 @@ function directly or use `npm run smoke`.
 token; the variable is `API_TOKEN` even though `lib/bot.ts` says
 `BOT_TOKEN` in its error), `OWNER_ID`. Optional: `LOG_GROUP_ID` (in
 production, every non-owner incoming message is mirrored there),
+`LOG_LEVEL` (`debug`/`info`/`warn`/`error`, default `info`),
 `DATABASE_URL`, `PORT`, `URL`.
 
 Hardcoded tunables in `config.ts`: `eventBuffer`, `raidAlertMinutes`,

@@ -1,5 +1,8 @@
 import { Context, MiddlewareFn } from "telegraf";
 import { PrismaClient } from "@prisma/client";
+import { createLogger } from "./logger";
+
+const log = createLogger("lastActivity");
 
 const prisma = new PrismaClient();
 
@@ -25,7 +28,7 @@ export const trackLastActivity: MiddlewareFn<Context> = (ctx, next) => {
           data: { lastActivity: new Date(now) },
         })
         .catch((error) =>
-          console.error("Failed to update lastActivity:", error),
+          log.error("Failed to update lastActivity:", error),
         );
     }
   }

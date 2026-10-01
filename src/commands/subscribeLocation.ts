@@ -10,6 +10,9 @@ import {
   RADIUS_CHOICES_M,
 } from "../utils/geo";
 import { rememberLastLocation } from "../utils/lastLocation";
+import { createLogger } from "../utils/logger";
+
+const log = createLogger("subscribeLocation");
 
 const prisma = new PrismaClient();
 
@@ -218,7 +221,7 @@ const subscribeLocation = () => {
       });
     });
   } catch (error) {
-    console.error("Error in subscribeLocation:", error);
+    log.error("Error in subscribeLocation:", error);
   }
 };
 

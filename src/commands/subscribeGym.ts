@@ -6,6 +6,9 @@ import { gymSearcherBtn } from "../utils/gymSearcher";
 import { IMAGES } from "../constants";
 import { renameGymBtn } from "./nameGym";
 import { rememberLastLocation } from "../utils/lastLocation";
+import { createLogger } from "../utils/logger";
+
+const log = createLogger("subscribeGym");
 
 const prisma = new PrismaClient();
 
@@ -279,7 +282,7 @@ const subscribe = () => {
       });
     });
   } catch (error) {
-    console.error("Error in subscribeGym:", error);
+    log.error("Error in subscribeGym:", error);
   }
 };
 

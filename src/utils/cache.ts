@@ -10,6 +10,9 @@ import type {
 } from "../types";
 import { scrapeLeekDuckRaidBosses } from "./leekduckScraper";
 import { applyRotationOverride, RaidRotation } from "./raidRotation";
+import { createLogger } from "./logger";
+
+const log = createLogger("cache");
 
 /** Written by the Wednesday run (raidBossScraper.ts) */
 export const ROTATION_CACHE_FILE = "raid-rotation.json";
@@ -119,10 +122,10 @@ async function fetchRaidBossList(): Promise<RaidBossCache[] | null> {
     try {
       const bosses = await load();
       await writeCacheFile("raid-bosses.json", { url, fetchedAt: Date.now(), data: bosses });
-      console.log(`[cache] Fetched raid bosses from ${url}`);
+      log.info(`Fetched raid bosses from ${url}`);
       return bosses;
     } catch (err) {
-      console.warn(`[cache] Failed to fetch raid bosses from ${url}:`, err instanceof Error ? err.message : err);
+      log.warn(`Failed to fetch raid bosses from ${url}:`, err instanceof Error ? err.message : err);
     }
   }
 
@@ -130,9 +133,9 @@ async function fetchRaidBossList(): Promise<RaidBossCache[] | null> {
   if (cached) {
     const ageMinutes = (Date.now() - cached.fetchedAt) / 60_000;
     if (ageMinutes <= 120) {
-      console.log(`[cache] Using cached raid bosses (${ageMinutes.toFixed(1)} min old)`);
+      log.info(`Using cached raid bosses (${ageMinutes.toFixed(1)} min old)`);
     } else {
-      console.warn(`[cache] Every raid boss source failed; using stale cache from ${cached.url} (${(ageMinutes / 60).toFixed(1)} h old)`);
+      log.warn(`Every raid boss source failed; using stale cache from ${cached.url} (${(ageMinutes / 60).toFixed(1)} h old)`);
     }
     return cached.data;
   }
@@ -143,7 +146,7 @@ async function fetchRaidBossesJson(url: string): Promise<RaidBossCache[]> {
   const data = await fetchJson<RaidBossBackup[] | raidBosses>(url);
   const isBackupFormat = Array.isArray(data) && data.length > 0 && "no" in data[0];
   if (isBackupFormat) {
-    console.log(`[cache] Detected backup source format, adapting to current shape`);
+    log.info(`Detected backup source format, adapting to current shape`);
     return (data as RaidBossBackup[]).map(adaptBackupRaidBoss);
   }
   return data as RaidBossCache[];
@@ -154,14 +157,14 @@ export async function fetchEvents(): Promise<import("../types").rawEvents | null
   try {
     const data = await fetchJson<import("../types").rawEvents>(URLS.EVENTS_JSON);
     await writeCacheFile(cacheFile, { url: URLS.EVENTS_JSON, fetchedAt: Date.now(), data });
-    console.log(`[cache] Fetched events from ${URLS.EVENTS_JSON}`);
+    log.info(`Fetched events from ${URLS.EVENTS_JSON}`);
     return data;
   } catch (err) {
-    console.warn(`[cache] Failed to fetch events:`, err instanceof Error ? err.message : err);
+    log.warn(`Failed to fetch events:`, err instanceof Error ? err.message : err);
   }
   const cached = await readCacheFile<{ url: string; fetchedAt: number; data: import("../types").rawEvents }>(cacheFile);
   if (cached) {
-    console.log(`[cache] Using cached events (${(Date.now() - cached.fetchedAt) / 60_000} min old)`);
+    log.info(`Using cached events (${(Date.now() - cached.fetchedAt) / 60_000} min old)`);
     return cached.data;
   }
   return null;

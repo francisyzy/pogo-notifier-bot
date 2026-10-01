@@ -1,6 +1,9 @@
 import { PrismaClient } from "@prisma/client";
 import { raids } from "../types";
 import { GYM_CONFIG } from "../constants";
+import { createLogger } from "./logger";
+
+const log = createLogger("gyms");
 
 const prisma = new PrismaClient();
 
@@ -26,7 +29,7 @@ let updateGymsQueue: Promise<void> = Promise.resolve();
 export function updateGyms(raids: raids): Promise<void> {
   updateGymsQueue = updateGymsQueue.then(() =>
     upsertGyms(raids).catch((err) => {
-      console.error("updateGyms failed:", err);
+      log.error("updateGyms failed:", err);
     }),
   );
   return updateGymsQueue;
@@ -78,7 +81,7 @@ async function upsertGyms(raids: raids): Promise<void> {
       ),
     );
   }
-  console.log(
+  log.info(
     `updateGyms: ${entries.length} unique gyms from ${raids.length} raids in ${Date.now() - started}ms`,
   );
 }
@@ -106,7 +109,7 @@ export async function removeStaleGyms(): Promise<number> {
     await prisma.gym.deleteMany({
       where: { id: { in: staleGyms.map((g) => g.id) } },
     });
-    console.log(
+    log.info(
       `Removed ${staleGyms.length} stale gyms (no raid in ${GYM_CONFIG.STALE_GYM_DAYS} days, no subscriptions)`,
     );
   }

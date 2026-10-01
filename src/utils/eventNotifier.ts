@@ -4,6 +4,9 @@ import { getEvents } from "./getMaper";
 import config from "../config";
 import { rawEvent } from "../types";
 import { toEscapeHTMLMsg } from "./messageHandler";
+import { createLogger } from "./logger";
+
+const log = createLogger("events");
 
 /**
  * Builds the Telegram HTML message for an event that is about to start
@@ -33,7 +36,7 @@ export function formatEventMessage(event: rawEvent): string {
  * @see https://github.com/bigfoott/ScrapedDuck
  */
 export async function notifyEvent(): Promise<void> {
-  console.log("Checking notifyEvents");
+  log.info("Checking notifyEvents");
   const rawEvents = await getEvents();
   let notifier: { link: string; message: string }[] = [];
   const window = {

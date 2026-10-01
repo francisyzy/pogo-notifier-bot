@@ -14,6 +14,9 @@ import {
   radiusPrompt,
 } from "./subscribeLocation";
 import { hasLastLocation, sortByDistance } from "../utils/lastLocation";
+import { createLogger } from "../utils/logger";
+
+const log = createLogger("manageSubscribeLocation");
 
 const prisma = new PrismaClient();
 
@@ -333,7 +336,7 @@ const manageSubscribeLocation = () => {
       return ctx.scene.enter("perfectLocationManage");
     });
   } catch (error) {
-    console.error("Error in manageSubscribeLocation:", error);
+    log.error("Error in manageSubscribeLocation:", error);
   }
 };
 

@@ -6,6 +6,9 @@ import {
   convertArrayToString,
   convertBackToArray,
 } from "../utils/legacy_converter";
+import { createLogger } from "../utils/logger";
+
+const log = createLogger("manageRaidLevel");
 
 const prisma = new PrismaClient();
 
@@ -155,7 +158,7 @@ const manageRaidLevels = () => {
       return ctx.scene.enter("raidLevelManage");
     });
   } catch (error) {
-    console.error("Error in manageRaidLevel:", error);
+    log.error("Error in manageRaidLevel:", error);
   }
 };
 

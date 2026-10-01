@@ -6,6 +6,9 @@ import {
   distanceSuffix,
   subscribedGymsByDistance,
 } from "../utils/lastLocation";
+import { createLogger } from "../utils/logger";
+
+const log = createLogger("manageSubscribeGym");
 
 const prisma = new PrismaClient();
 
@@ -145,7 +148,7 @@ const manageGyms = () => {
       return ctx.scene.enter("gymListManage");
     });
   } catch (error) {
-    console.error("Error in manageSubscribeGym:", error);
+    log.error("Error in manageSubscribeGym:", error);
   }
 };
 

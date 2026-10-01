@@ -42,6 +42,9 @@ import {
   runWednesdayScrape,
   stopWednesdayScraper,
 } from "./utils/raidBossScraper";
+import { createLogger } from "./utils/logger";
+
+const log = createLogger("main");
 
 //Production Settings
 if (process.env.NODE_ENV === "production") {
@@ -87,8 +90,8 @@ if (process.env.NODE_ENV === "production") {
 // BOT_TOKEN in the shell, unavailable on prod where envs are managed externally)
 bot.telegram
   .setMyCommands(getBotCommands())
-  .then(() => console.log("Bot commands synced with Telegram"))
-  .catch((error) => console.error("Failed to sync bot commands:", error));
+  .then(() => log.info("Bot commands synced with Telegram"))
+  .catch((error) => log.error("Failed to sync bot commands:", error));
 
 helper();
 
@@ -99,7 +102,7 @@ ensureCacheDir();
 // weekday, so a restart mid-week still has this week's rotation
 registerWednesdayScraper();
 runWednesdayScrape().catch((error) =>
-  console.error("Startup raid rotation run failed:", error),
+  log.error("Startup raid rotation run failed:", error),
 );
 checkRaid();
 subscribe();
@@ -122,28 +125,28 @@ catchAll();
 //https://crontab.guru/#45_0-23_*_*_*
 schedule("45 0-23 * * *", async () => {
   try {
-    console.log(new Date());
-    console.log(new Date().toString());
+    log.info(new Date());
+    log.info(new Date().toString());
     await notifyEvent();
   } catch (error) {
-    console.error("Error in event notification cron:", error);
+    log.error("Error in event notification cron:", error);
   }
 });
 
 // Initial notifications on startup
 notifyAndUpdateUsers().catch((error) => {
-  console.error("Error in initial notifyAndUpdateUsers:", error);
+  log.error("Error in initial notifyAndUpdateUsers:", error);
 });
 notifyPerfect().catch((error) => {
-  console.error("Error in initial notifyPerfect:", error);
+  log.error("Error in initial notifyPerfect:", error);
 });
 notifyLegendary().catch((error) => {
-  console.error("Error in initial notifyLegendary:", error);
+  log.error("Error in initial notifyLegendary:", error);
 });
 
 // Clean up stale gyms on startup (runs again daily at 4am)
 removeStaleGyms().catch((error) => {
-  console.error("Error in initial removeStaleGyms:", error);
+  log.error("Error in initial removeStaleGyms:", error);
 });
 
 //Check raids every 10 mins, disable night checking
@@ -152,7 +155,7 @@ schedule("*/10 5-20 * * *", async () => {
   try {
     await notifyAndUpdateUsers();
   } catch (error) {
-    console.error("Error in raid notification cron:", error);
+    log.error("Error in raid notification cron:", error);
   }
 });
 
@@ -162,20 +165,20 @@ schedule("44-59 17 * * 3", async () => {
   try {
     await notifyAndUpdateUsers();
   } catch (error) {
-    console.error("Error in raid hour notification cron:", error);
+    log.error("Error in raid hour notification cron:", error);
   }
 });
 
 //Check perfect pokemon every 5 mins
 setInterval(() => {
   notifyPerfect().catch((error) => {
-    console.error("Error in notifyPerfect interval:", error);
+    log.error("Error in notifyPerfect interval:", error);
   });
 }, 300000);
 
 setInterval(() => {
   notifyLegendary().catch((error) => {
-    console.error("Error in notifyLegendary interval:", error);
+    log.error("Error in notifyLegendary interval:", error);
   });
 }, 330000);
 
@@ -184,20 +187,20 @@ schedule("0 4 * * *", async () => {
   try {
     await removeStaleGyms();
   } catch (error) {
-    console.error("Error in removeStaleGyms cron:", error);
+    log.error("Error in removeStaleGyms cron:", error);
   }
 });
 
 // Enable graceful stop
 process.once("SIGINT", () => {
-  console.log("Received SIGINT, shutting down gracefully...");
+  log.info("Received SIGINT, shutting down gracefully...");
   stopWednesdayScraper();
   clearAllRaidReminders();
   bot.stop("SIGINT");
 });
 
 process.once("SIGTERM", () => {
-  console.log("Received SIGTERM, shutting down gracefully...");
+  log.info("Received SIGTERM, shutting down gracefully...");
   stopWednesdayScraper();
   clearAllRaidReminders();
   bot.stop("SIGTERM");

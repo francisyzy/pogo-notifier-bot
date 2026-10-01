@@ -15,6 +15,9 @@ import {
 } from "../utils/weather";
 import { hasLastLocation } from "../utils/lastLocation";
 import { fetchRaidBosses, RaidBossCache } from "../utils/cache";
+import { createLogger } from "../utils/logger";
+
+const log = createLogger("checkBoss");
 
 const prisma = new PrismaClient();
 
@@ -40,7 +43,7 @@ async function weatherAtLastPin(
       weatherId: weatherAt(cells, user.lastLat, user.lastLong),
     };
   } catch (error) {
-    console.error("Failed to resolve weather at last pin:", error);
+    log.error("Failed to resolve weather at last pin:", error);
     return { hasPin: false };
   }
 }
@@ -65,7 +68,7 @@ const checkBoss = () => {
         }
         raidBossesData = bosses;
       } catch (error) {
-        console.error("Error fetching raid bosses:", error);
+        log.error("Error fetching raid bosses:", error);
         if (!ctx.chat) {
           return;
         }
@@ -157,7 +160,7 @@ const checkBoss = () => {
     bot.command("currentboss", currentBossHandler);
     bot.command("currentBoss", currentBossHandler);
   } catch (error) {
-    console.error("Error in checkBoss:", error);
+    log.error("Error in checkBoss:", error);
   }
 };
 

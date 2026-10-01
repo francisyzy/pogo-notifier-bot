@@ -2,6 +2,9 @@ import { PrismaClient } from "@prisma/client";
 import { pokemonMessage, pokemons } from "../types";
 import config from "../config";
 import { distanceMeters } from "./geo";
+import { createLogger } from "./logger";
+
+const log = createLogger("perfect");
 
 const prisma = new PrismaClient();
 
@@ -10,7 +13,7 @@ export async function perfectChecker(
 ): Promise<pokemonMessage[]> {
   let pokemonMessages: pokemonMessage[] = [];
   const subscribes = await prisma.locationSubscribe.findMany({});
-  console.log(perfectList.length);
+  log.info(perfectList.length);
   subscribes.forEach((subscribe) => {
     perfectList.forEach((perfect) => {
       // Each subscription carries its own radius (metres, set by the user)

@@ -6,6 +6,9 @@ import {
   distanceSuffix,
   subscribedGymsByDistance,
 } from "../utils/lastLocation";
+import { createLogger } from "../utils/logger";
+
+const log = createLogger("nameGym");
 
 const prisma = new PrismaClient();
 
@@ -202,7 +205,7 @@ const renameGym = () => {
       return ctx.scene.enter("renameGym", { gymId: ctx.match[1] });
     });
   } catch (error) {
-    console.error("Error in renameGym:", error);
+    log.error("Error in renameGym:", error);
   }
 };
 

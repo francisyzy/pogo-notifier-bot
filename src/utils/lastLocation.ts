@@ -1,5 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 import { distanceMeters, formatDistance } from "./geo";
+import { createLogger } from "./logger";
+
+const log = createLogger("lastLocation");
 
 const prisma = new PrismaClient();
 
@@ -25,7 +28,7 @@ export function rememberLastLocation(
       data: { lastLat: lat, lastLong: lng, lastLocationAt: new Date() },
     })
     .catch((error) =>
-      console.error("Failed to update last location:", error),
+      log.error("Failed to update last location:", error),
     );
 }
 

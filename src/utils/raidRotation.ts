@@ -2,6 +2,9 @@ import { Pokedex } from "pmgo-pokedex";
 import type { rawEvents } from "../types";
 import type { RaidBossCache } from "./cache";
 import { isShadowBoss, raidBossTier } from "./raidTier";
+import { createLogger } from "./logger";
+
+const log = createLogger("rotation");
 
 /**
  * This week's 5★ / Mega / shadow 5★ bosses, built from ScrapedDuck's
@@ -207,7 +210,7 @@ export function buildRotation(
     const kind = eventKind(event.name);
     const list = event.extraData?.raidbattles?.bosses;
     if (!kind || !Array.isArray(list)) {
-      console.warn(`[rotation] Skipping raid event "${event.name}"`);
+      log.warn(`Skipping raid event "${event.name}"`);
       continue;
     }
 

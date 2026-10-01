@@ -1,6 +1,9 @@
 import { raids, pokemons, rawEvents, weathers } from "../types";
 import { URLS } from "../constants";
 import { fetchEvents } from "./cache";
+import { createLogger } from "./logger";
+
+const log = createLogger("feed");
 
 async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
   const response = await fetch(url, {
@@ -23,7 +26,7 @@ export async function getRaidFeed(): Promise<{
   raids: raids;
   weathers: weathers;
 }> {
-  console.log("getRaids: Starting fetch at", new Date().toISOString());
+  log.info("getRaids: Starting fetch at", new Date().toISOString());
   const { raids, weathers } = await fetchJson<{
     raids: raids;
     weathers?: weathers;
@@ -32,7 +35,7 @@ export async function getRaidFeed(): Promise<{
       referer: URLS.SGPOKEMAP.REFERER,
     },
   });
-  console.log("getRaids: Fetch completed at", new Date().toISOString());
+  log.info("getRaids: Fetch completed at", new Date().toISOString());
 
   return { raids: raids as raids, weathers: weathers ?? [] };
 }
@@ -87,7 +90,7 @@ export async function getTrio(): Promise<pokemons> {
 export async function getEvents(): Promise<rawEvents> {
   const events = await fetchEvents();
   if (events === null) {
-    console.warn("getEvents: all sources unavailable, returning empty list");
+    log.warn("getEvents: all sources unavailable, returning empty list");
     return [] as rawEvents;
   }
   return events as rawEvents;
