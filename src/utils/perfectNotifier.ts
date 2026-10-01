@@ -16,7 +16,7 @@ const prisma = new PrismaClient();
  * Check perfect pokemons and notifies the user if there are perfect pokemons within the area
  */
 export async function notifyPerfect(): Promise<void> {
-  log.info("Checking pokemons");
+  log.debug("Checking 100% IV spawns");
   const pokemons = await getPerfect();
   const pokemonMessages = await perfectChecker(pokemons);
   const windowsByUser = await loadNotifyWindows([
@@ -71,7 +71,7 @@ export async function notifyPerfect(): Promise<void> {
           }
         });
     } catch (error) {
-      log.error(error);
+      log.error("Failed to notify a spawn:", error);
     }
   }
 }
@@ -81,7 +81,7 @@ export async function notifyPerfect(): Promise<void> {
  * Check for legendary trio pokemons and notifies the user if there are pokemons
  */
 export async function notifyLegendary(): Promise<void> {
-  log.info("Checking legendary pokemons");
+  log.debug("Checking legendary spawns");
   const pokemons = await getTrio();
   const pokemonMessages = await perfectChecker(pokemons);
   const windowsByUser = await loadNotifyWindows([
@@ -136,7 +136,7 @@ export async function notifyLegendary(): Promise<void> {
           }
         });
     } catch (error) {
-      log.error(error);
+      log.error("Failed to notify a spawn:", error);
     }
   }
 }

@@ -10,6 +10,7 @@ import type {
 } from "../types";
 import { scrapeLeekDuckRaidBosses } from "./leekduckScraper";
 import { applyRotationOverride, RaidRotation } from "./raidRotation";
+import { readJson } from "./http";
 import { createLogger } from "./logger";
 
 const log = createLogger("cache");
@@ -45,8 +46,7 @@ async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
       ...options?.headers,
     },
   });
-  if (!response.ok) throw new Error(`HTTP ${response.status} for ${url}`);
-  return response.json() as Promise<T>;
+  return readJson<T>(response, url);
 }
 
 interface RaidBossBackup {

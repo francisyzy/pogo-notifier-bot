@@ -36,7 +36,7 @@ export function formatEventMessage(event: rawEvent): string {
  * @see https://github.com/bigfoott/ScrapedDuck
  */
 export async function notifyEvent(): Promise<void> {
-  log.info("Checking notifyEvents");
+  log.debug("Checking events");
   const rawEvents = await getEvents();
   let notifier: { link: string; message: string }[] = [];
   const window = {

@@ -7,6 +7,7 @@ import { toEscapeHTMLMsg } from "./messageHandler";
 import { formatDistance } from "./geo";
 import { GAME_WEATHER, weatherIdFromName } from "./weather";
 import { isShadowBoss, raidBossTier } from "./raidTier";
+import { readJson, UpstreamError } from "./http";
 import { createLogger } from "./logger";
 
 const log = createLogger("format");
@@ -25,15 +26,13 @@ export { isShadowBoss, raidBossTier };
 async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
   try {
     const response = await fetch(url, options);
-    if (!response.ok) {
-      throw new Error(
-        `Failed to fetch ${url}: ${response.status} ${response.statusText}`,
-      );
-    }
-    return (await response.json()) as T;
+    return await readJson<T>(response, url);
   } catch (error) {
+    if (error instanceof UpstreamError) throw error;
     if (error instanceof Error) {
-      throw new Error(`Network error fetching ${url}: ${error.message}`);
+      throw new UpstreamError(
+        `Network error fetching ${url}: ${error.message}`,
+      );
     }
     throw new Error(`Unknown error fetching ${url}`);
   }

@@ -41,7 +41,7 @@ export function clearAllRaidReminders(): void {
  * Check raids and notifies the user if there are raids
  */
 export async function notifyAndUpdateUsers(): Promise<void> {
-  log.info("Checking raids");
+  log.debug("Checking raids");
   try {
     const { raids, weathers } = await getRaidFeed();
     const raidMessages = await gymChecker(raids, undefined, weathers);
@@ -70,13 +70,13 @@ export async function notifyAndUpdateUsers(): Promise<void> {
       if (
         convertBackToArray(user.raidLevelNotify).indexOf(effectiveTier) === -1
       ) {
-        log.info(user.name + " Skipped Raid " + raidMessage.level);
+        log.debug(user.name + " Skipped Raid " + raidMessage.level);
         continue;
       } else if (
         user.stopNotifyingMeToday &&
         isToday(user.stopNotifyingMeToday)
       ) {
-        log.info(user.name + " Skipped Raid stop notify");
+        log.debug(user.name + " Skipped Raid stop notify");
         continue;
       } else if (
         !isNotifyAllowed(windowsByUser.get(user.telegramId) ?? [], {
@@ -86,7 +86,7 @@ export async function notifyAndUpdateUsers(): Promise<void> {
       ) {
         // Outside the user's notification windows; not recorded as notified,
         // so it is re-evaluated on the next check if the raid is still on
-        log.info(user.name + " Skipped Raid outside notify window");
+        log.debug(user.name + " Skipped Raid outside notify window");
         continue;
       }
 
@@ -142,7 +142,7 @@ export async function notifyAndUpdateUsers(): Promise<void> {
             );
           } catch (error) {
             log.error(
-              `Failed to send raid message to user ${user.name} at ${new Date().toISOString()}:`,
+              `Failed to send raid message to user ${user.name}:`,
               error,
             );
             return;
@@ -196,7 +196,7 @@ export async function notifyAndUpdateUsers(): Promise<void> {
                       userAtReminderTime.stopNotifyingMeToday &&
                       isToday(userAtReminderTime.stopNotifyingMeToday)
                     ) {
-                      log.info(
+                      log.debug(
                         userAtReminderTime.name +
                           " Skipped Raid reminder - stop notify",
                       );
@@ -213,7 +213,7 @@ export async function notifyAndUpdateUsers(): Promise<void> {
                         { kind: "RAID", gymId: raidMessage.gymId },
                       )
                     ) {
-                      log.info(
+                      log.debug(
                         userAtReminderTime.name +
                           " Skipped Raid reminder - outside notify window",
                       );
@@ -240,7 +240,7 @@ export async function notifyAndUpdateUsers(): Promise<void> {
                     activeTimeouts.delete(timeoutKey);
             } catch (error) {
               log.error(
-                `Error sending raid reminder to user ${raidMessage.userTelegramId} at ${new Date().toISOString()}:`,
+                `Error sending raid reminder to user ${raidMessage.userTelegramId}:`,
                 error,
               );
               activeTimeouts.delete(timeoutKey);
@@ -255,7 +255,7 @@ export async function notifyAndUpdateUsers(): Promise<void> {
             if (error instanceof Prisma.PrismaClientKnownRequestError) {
               if (error.code === "P2002") {
                 //User has already been notified - this is expected, not an error
-                log.info(
+                log.debug(
                   `User ${user.name} already notified about raid at ${raidMessage.name}`,
                 );
               } else {
@@ -279,6 +279,6 @@ export async function notifyAndUpdateUsers(): Promise<void> {
       }
     }
   } catch (error) {
-    log.error("Error in notifyAndUpdateUsers at " + new Date().toISOString() + ":", error);
+    log.error("Error in notifyAndUpdateUsers:", error);
   }
 }

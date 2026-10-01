@@ -1,6 +1,7 @@
 import { raids, pokemons, rawEvents, weathers } from "../types";
 import { URLS } from "../constants";
 import { fetchEvents } from "./cache";
+import { readJson } from "./http";
 import { createLogger } from "./logger";
 
 const log = createLogger("feed");
@@ -13,8 +14,7 @@ async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
       "User-Agent": "pogo-notifier-bot/1.0",
     },
   });
-  if (!response.ok) throw new Error(`HTTP ${response.status} for ${url}`);
-  return response.json() as Promise<T>;
+  return readJson<T>(response, url);
 }
 
 /**
@@ -26,7 +26,7 @@ export async function getRaidFeed(): Promise<{
   raids: raids;
   weathers: weathers;
 }> {
-  log.info("getRaids: Starting fetch at", new Date().toISOString());
+  const started = Date.now();
   const { raids, weathers } = await fetchJson<{
     raids: raids;
     weathers?: weathers;
@@ -35,7 +35,7 @@ export async function getRaidFeed(): Promise<{
       referer: URLS.SGPOKEMAP.REFERER,
     },
   });
-  log.info("getRaids: Fetch completed at", new Date().toISOString());
+  log.debug(`Raid feed: ${raids.length} raids in ${Date.now() - started}ms`);
 
   return { raids: raids as raids, weathers: weathers ?? [] };
 }

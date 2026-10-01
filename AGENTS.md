@@ -158,6 +158,13 @@ private chats (`ctx.chat?.type !== "private"`) at the start of any wizard.
   clock). warn/error go to stderr (pm2's error log). Use it instead of
   `console.*` in bot code; `src/scripts/` and `prisma/seed.ts` are CLI
   tools and keep `console`.
+  Errors that `isTransientError` (`http.ts`) recognises (timeouts,
+  DNS, `fetch failed`, `UpstreamError`) print as one WARN line with no
+  stack, even via `log.error`; real bugs keep ERROR + stack. Per-cycle
+  chatter ("Checking raids", skipped raids) is DEBUG.
+- `http.ts`: `readJson(response, url)` turns a non-2xx status or an
+  HTML body (SGPokeMap's Cloudflare page) into `UpstreamError` instead
+  of a bare `SyntaxError`; every `fetchJson` copy goes through it.
 - `messageHandler.ts`: `toEscapeHTMLMsg`, the only escaper (all messages
   use HTML parse mode; there is no MarkdownV2 path).
 - `botCommands.ts`: source of truth for the Telegram command menu.

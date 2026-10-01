@@ -125,8 +125,6 @@ catchAll();
 //https://crontab.guru/#45_0-23_*_*_*
 schedule("45 0-23 * * *", async () => {
   try {
-    log.info(new Date());
-    log.info(new Date().toString());
     await notifyEvent();
   } catch (error) {
     log.error("Error in event notification cron:", error);

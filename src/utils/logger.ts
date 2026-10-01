@@ -1,4 +1,5 @@
 import { format } from "util";
+import { describeError, isTransientError } from "./http";
 
 export type LogLevel = "debug" | "info" | "warn" | "error";
 
@@ -30,6 +31,14 @@ export function sgtTimestamp(date = new Date()): string {
 }
 
 function write(level: LogLevel, scope: string, args: unknown[]): void {
+  // Network/upstream failures are routine (SGPokeMap Cloudflare pages,
+  // timeouts); a stack trace per occurrence buried real errors, so they
+  // print as one WARN line
+  const errors = args.filter((a) => a instanceof Error);
+  if (errors.length > 0 && errors.every(isTransientError)) {
+    if (level === "error") level = "warn";
+    args = args.map((a) => (a instanceof Error ? describeError(a) : a));
+  }
   threshold ??= thresholdFromEnv();
   if (LEVELS[level] < threshold) return;
   const line = `${sgtTimestamp()} ${level

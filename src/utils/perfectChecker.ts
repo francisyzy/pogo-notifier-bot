@@ -13,7 +13,7 @@ export async function perfectChecker(
 ): Promise<pokemonMessage[]> {
   let pokemonMessages: pokemonMessage[] = [];
   const subscribes = await prisma.locationSubscribe.findMany({});
-  log.info(perfectList.length);
+  log.debug(`${perfectList.length} spawns in feed`);
   subscribes.forEach((subscribe) => {
     perfectList.forEach((perfect) => {
       // Each subscription carries its own radius (metres, set by the user)
