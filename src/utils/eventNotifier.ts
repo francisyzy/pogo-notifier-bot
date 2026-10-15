@@ -4,15 +4,23 @@ import { getEvents } from "./getMaper";
 import config from "../config";
 import { rawEvent } from "../types";
 import { toEscapeHTMLMsg } from "./messageHandler";
-import { createLogger } from "./logger";
+import { createLogger, sgtTimestamp } from "./logger";
 
 const log = createLogger("events");
 
 /**
  * Builds the Telegram HTML message for an event that is about to start
+ * (or, for a retried announcement, has just started)
  */
-export function formatEventMessage(event: rawEvent): string {
-  let message = `<a href="${event.link}">${toEscapeHTMLMsg(event.name)}</a> is starting soon!`;
+export function formatEventMessage(
+  event: rawEvent,
+  now = new Date(),
+): string {
+  // A retried announcement can go out after the start time
+  const started = event.start != null && new Date(event.start) <= now;
+  let message = `<a href="${event.link}">${toEscapeHTMLMsg(event.name)}</a> ${
+    started ? "has started!" : "is starting soon!"
+  }`;
   const spotlight = event.extraData?.spotlight;
   if (event.eventType === "pokemon-spotlight-hour" && spotlight) {
     const details: string[] = [];
@@ -31,6 +39,58 @@ export function formatEventMessage(event: rawEvent): string {
   return message;
 }
 
+const SEND_ATTEMPTS = 3;
+const RETRY_DELAY_MS = 30_000;
+// Used when the start time has already passed by the time a send fails
+const LATE_RETRY_MS = 5 * 60_000;
+
+async function sendWithRetry(message: string): Promise<boolean> {
+  for (let attempt = 1; attempt <= SEND_ATTEMPTS; attempt++) {
+    try {
+      await bot.telegram.sendMessage("@SGPogoEvents", message, {
+        parse_mode: "HTML",
+      });
+      return true;
+    } catch (error) {
+      log.warn(
+        `Event announcement attempt ${attempt}/${SEND_ATTEMPTS} failed:`,
+        error,
+      );
+      if (attempt < SEND_ATTEMPTS) {
+        await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
+      }
+    }
+  }
+  return false;
+}
+
+/**
+ * The job runs hourly, so the next run is too late to make up a failed
+ * announcement (Telegram timeouts are routine on this host); try once
+ * more when the event starts instead
+ */
+function retryAtStart(event: rawEvent): void {
+  const untilStart = new Date(event.start!).getTime() - Date.now();
+  const delay = untilStart > 0 ? untilStart : LATE_RETRY_MS;
+  log.warn(
+    `Will retry announcing ${event.name} at ${sgtTimestamp(
+      new Date(Date.now() + delay),
+    )}`,
+  );
+  // unref: a pending retry must not hold the process open on shutdown
+  setTimeout(async () => {
+    try {
+      if (await sendWithRetry(formatEventMessage(event))) {
+        log.info(`Announced event on retry: ${event.name}`);
+      } else {
+        log.error(`Gave up announcing ${event.name}`);
+      }
+    } catch (error) {
+      log.error(`Retry announcing ${event.name} failed:`, error);
+    }
+  }, delay).unref();
+}
+
 /**
  * Check events from ScrapedDuck & notifies if event is about to start
  * @see https://github.com/bigfoott/ScrapedDuck
@@ -38,28 +98,25 @@ export function formatEventMessage(event: rawEvent): string {
 export async function notifyEvent(): Promise<void> {
   log.debug("Checking events");
   const rawEvents = await getEvents();
-  let notifier: { link: string; message: string }[] = [];
   const window = {
     start: subMinutes(new Date(), config.eventBuffer),
     end: addMinutes(new Date(), config.eventBuffer),
   };
+  const due = new Map<string, rawEvent>();
   rawEvents.forEach((event) => {
     if (!event.start) return;
     const eventStart = new Date(event.start);
-    if (isWithinInterval(eventStart, window)) {
-      notifier.push({ link: event.link, message: formatEventMessage(event) });
+    // ScrapedDuck can list one event more than once
+    if (isWithinInterval(eventStart, window) && !due.has(event.link)) {
+      due.set(event.link, event);
     }
   });
-  //Removes duplicate events
-  //https://stackoverflow.com/a/36744732
-  notifier = notifier.filter(
-    (value, index, self) =>
-      index === self.findIndex((t) => t.link === value.link),
-  );
-  //Sends notification out
-  notifier.forEach((notify) => {
-    bot.telegram.sendMessage("@SGPogoEvents", notify.message, {
-      parse_mode: "HTML",
-    });
-  });
+
+  for (const event of due.values()) {
+    if (await sendWithRetry(formatEventMessage(event))) {
+      log.info(`Announced event: ${event.name} (starts ${event.start})`);
+    } else {
+      retryAtStart(event);
+    }
+  }
 }
