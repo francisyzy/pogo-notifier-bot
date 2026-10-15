@@ -69,9 +69,13 @@ if (process.env.NODE_ENV === "production") {
           (ctx.message as Message.TextMessage).text
         }`;
         const logMessage = userInfo + toEscapeHTMLMsg(text);
-        bot.telegram.sendMessage(config.LOG_GROUP_ID, logMessage, {
-          parse_mode: "HTML",
-        });
+        bot.telegram
+          .sendMessage(config.LOG_GROUP_ID, logMessage, {
+            parse_mode: "HTML",
+          })
+          .catch((error) =>
+            log.warn("Failed to mirror message to log group:", error),
+          );
       }
     }
     return next();

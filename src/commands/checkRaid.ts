@@ -231,6 +231,11 @@ const checkRaid = () => {
               }),
               parse_mode: "HTML",
             },
+          ).catch((error) =>
+            log.warn(
+              `Failed to send /checkRaid reminder to user ${ctx.from!.id}:`,
+              error,
+            ),
           );
         }, offsetMs);
         message = `Will remind you about this raid when the raid is going to start in ${raidAlertMinutes} minutes`;
